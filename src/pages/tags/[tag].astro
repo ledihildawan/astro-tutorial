@@ -22,7 +22,10 @@ const { tag } = Astro.params;
 const { posts } = Astro.props;
 ---
 
-<BaseLayout pageTitle={tag}>
+<BaseLayout
+  pageTitle={tag}
+  description={`Daftar postingan blog yang memiliki tag "${tag}", memudahkan pembaca menjelajahi topik terkait.`}
+>
   <p>Posts tagged with {tag}</p>
   <ul>
     {posts.map((post) => <BlogPost url={`/posts/${post.id}/`} title={post.data.title} />)}

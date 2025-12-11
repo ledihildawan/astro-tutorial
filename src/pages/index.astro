@@ -1,28 +1,14 @@
 ---
 import '../styles/global.css';
 
-import BaseLayout from '../layouts/BaseLayout.astro';
 import Greeting from '../components/Greeting';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
-const pageTitle = 'Home Page';
+const pageTitle = 'My Awesome Blog';
+const description = 'Blog pribadi berisi catatan belajar, eksperimen, dan hal-hal menarik seputar web development.';
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{pageTitle}</title>
-  </head>
-  <body>
-    <BaseLayout pageTitle={pageTitle}>
-      <h2>My awesome blog subtitle</h2>
-      <Greeting client:load messages={['Hi', 'Hello', 'Howdy', 'Hey there']} />
-    </BaseLayout>
-
-    <script>
-      import '../scripts/menu.js';
-    </script>
-  </body>
-</html>
+<BaseLayout pageTitle={pageTitle} description={description}>
+  <h2>My awesome blog subtitle</h2>
+  <Greeting client:load messages={['Hi', 'Hello', 'Howdy', 'Hey there']} />
+</BaseLayout>
