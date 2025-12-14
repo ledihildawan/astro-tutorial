@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Marquee v15.9 – Consistent Variable</title>
+    <title>Universal Marquee v16.2 – Prefixed Classes for Better DX</title>
     <style is:global data-label="CORE_STYLES">
       :root {
         --um-duration-default: 15s;
         --um-gap-default: 2rem;
         --um-color-separator: #9ca3af;
         --um-separator-height: 1.25em;
+        --um-font-size: clamp(1rem, 2.5vw, 1.5rem);
       }
       .um-container {
         display: flex;
@@ -19,6 +20,9 @@
         min-width: 0;
         position: relative;
         transform: translate3d(0, 0, 0);
+      }
+      .um-container[role='region'] {
+        outline: none;
       }
       .um-sr-only {
         position: absolute;
@@ -58,6 +62,7 @@
         align-items: center;
         width: auto;
         object-fit: contain;
+        font-size: var(--um-font-size);
       }
       .um-img-skeleton {
         position: relative;
@@ -78,18 +83,12 @@
       .um-img-skeleton img.loaded {
         opacity: 1;
       }
-      .um-item-separator {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
       .um-item-separator .um-img-skeleton {
-        display: inline-block;
+        background-color: transparent;
         height: var(--um-separator-height);
         width: auto;
         min-width: var(--um-separator-height);
         aspect-ratio: 1/1;
-        background-color: transparent;
       }
       @media (prefers-reduced-motion: reduce) {
         .um-container {
@@ -155,12 +154,11 @@
       .RootLayoutContainer {
         width: calc(100% - (var(--layout-gutter) * 2));
         max-width: var(--layout-max-width);
-        min-height: 100%;
+        min-height: 100dvh;
         position: relative;
         margin-inline: auto;
         display: flex;
         flex-direction: column;
-        border: none;
         padding-top: var(--layout-vertical-padding);
         padding-bottom: 0;
         box-sizing: border-box;
@@ -168,24 +166,16 @@
       .RootLayoutContent {
         display: flex;
         flex-direction: column;
-        padding: 2rem 0;
-        gap: 3rem;
-        flex: 1;
       }
       .RootLayoutFooter {
         width: 100%;
         height: var(--layout-footer-height);
-        position: static;
-        bottom: auto;
-        left: 0;
-        right: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.85rem;
         color: #6b7280;
-        border-top: none;
-        margin-top: var(--layout-footer-height);
+        margin-top: auto;
       }
       h2.demo-title {
         margin: 0 0 0.5rem 0;
@@ -208,9 +198,6 @@
           background-color: transparent;
           height: 0;
         }
-        .RootLayoutContent {
-          padding: 2rem;
-        }
         .RootLayoutContainer {
           border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
           border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
@@ -227,46 +214,32 @@
       <div class="RootLayoutContainer">
         <div class="RootLayoutContent">
           <div>
-            <h2 class="demo-title">Area 1: Services & Branding</h2>
-            <p class="demo-desc">Gap: 6rem | Speed: Slow | Separator: MD Pabel Logo</p>
-            <div
-              id="marquee-demo-1"
-              style="background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 1rem 0; --um-font-size: 1.5rem; --um-gap: 6rem; --um-separator-height: 24px"
-            >
-              <noscript>Javascript Required.</noscript>
-            </div>
-          </div>
-          <div>
             <h2 class="demo-title">Area 2: News Ticker</h2>
-            <p class="demo-desc">Gap: 2rem | Speed: Fast | Dark Theme</p>
-            <div
-              id="marquee-demo-2"
-              style="background: #111827; color: white; padding: 0.8rem 0; --um-font-size: 1rem; --um-gap: 2rem;"
-            >
+            <p class="demo-desc">Gap: 2rem | Fast | Dark Theme | Touch pause</p>
+            <div id="marquee-demo-2" style="background: #111827; color: white; padding: 0.8rem 0; --um-gap: 2rem;">
             </div>
           </div>
           <div>
             <h2 class="demo-title">Area 3: Full Lazy Loading Gallery</h2>
-            <p class="demo-desc">Items & Separators are Images with Skeleton Loaders</p>
-            <div id="marquee-full-lazy" style="--um-gap: 3rem; --um-separator-height: 40px"></div>
+            <p class="demo-desc">Images + fade hint di reduced-motion</p>
+            <div id="marquee-full-lazy" style="--um-gap: 3rem; --um-separator-height: 24px"></div>
           </div>
         </div>
         <div class="RootLayoutFooter">
-          <span>Universal Marquee Demo &copy; 2025 – Consistent Grid</span>
+          <span>Universal Marquee Demo v16.2 © 2025 – Prefixed Classes for Better DX</span>
         </div>
       </div>
     </div>
+
     <script type="module">
       class ContentBuilder {
         constructor(options) {
           this._opts = options;
         }
-
         #buildSeparatorNode(separator) {
           const container = document.createElement('span');
           container.classList.add('um-item-separator');
           container.setAttribute('aria-hidden', 'true');
-
           if (typeof separator === 'string') {
             container.textContent = separator;
           } else if (separator instanceof Node) {
@@ -274,37 +247,27 @@
           } else if (typeof separator === 'object' && separator?.type === 'image') {
             const wrapper = document.createElement('div');
             wrapper.className = 'um-img-skeleton';
-
             const img = document.createElement('img');
             img.src = separator.src;
-            img.alt = separator.alt || '';
+            img.alt = separator.alt || 'Separator';
             img.loading = 'lazy';
-
             img.onload = () => img.classList.add('loaded');
             if (img.complete) img.classList.add('loaded');
-
             wrapper.appendChild(img);
             container.appendChild(wrapper);
           }
-
-          // Prevent any descendant from being focusable
           container.querySelectorAll('*').forEach((el) => {
             if (el.id) el.removeAttribute('id');
             el.setAttribute('tabindex', '-1');
           });
-
           return container;
         }
-
-        // addTrailingSeparator: true untuk seamless loop (mode animasi), false untuk daftar statis (reduced motion)
         buildCycleContent(forSR = false, addTrailingSeparator = true) {
           const frag = document.createDocumentFragment();
           const items = this._opts.items;
           if (!items?.length) return frag;
-
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
-
             if (forSR) {
               const li = document.createElement('li');
               li.textContent = item.alt || item;
@@ -316,26 +279,18 @@
                 wrapper.appendChild(node);
                 node = wrapper;
               }
-
               const cloned = node.cloneNode(true);
-
-              // Handle lazy loading untuk gambar dalam item
               const img = cloned.querySelector('img');
               if (img) {
                 img.onload = () => img.classList.add('loaded');
                 if (img.complete) img.classList.add('loaded');
               }
-
-              // Remove IDs and prevent focus
               if (cloned.id) cloned.removeAttribute('id');
               cloned.querySelectorAll('*').forEach((el) => {
                 if (el.id) el.removeAttribute('id');
                 el.setAttribute('tabindex', '-1');
               });
-
               frag.appendChild(cloned);
-
-              // Tambahkan separator kecuali pada item terakhir jika tidak diinginkan trailing
               if (i < items.length - 1 || addTrailingSeparator) {
                 const sep = this.#buildSeparatorNode(this._opts.separator);
                 if (sep) frag.appendChild(sep);
@@ -344,40 +299,31 @@
           }
           return frag;
         }
-
         buildCycleContainer(addTrailingSeparator = true) {
           const div = document.createElement('div');
           div.appendChild(this.buildCycleContent(false, addTrailingSeparator));
           return div;
         }
-
         buildSRList() {
           const ul = document.createElement('ul');
           ul.className = 'um-sr-only';
           ul.appendChild(this.buildCycleContent(true));
           return ul;
         }
-
-        // Pengukuran selalu pakai trailing separator agar akurat untuk mode animasi
         measureCycleMetrics(root) {
           if (!this._opts.items?.length) return { width: 0, gap: 0 };
-
           const temp = document.createElement('div');
           temp.className = 'um-track';
           temp.style.position = 'absolute';
           temp.style.visibility = 'hidden';
-
           let gapVal = this._opts.gap;
           if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
           temp.style.setProperty('--um-gap', gapVal);
-
           const cycle = this.buildCycleContainer(true);
           temp.appendChild(cycle);
           root.appendChild(temp);
-
           const width = cycle.offsetWidth || 0;
           const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
-
           root.removeChild(temp);
           return { width, gap: parsedGap };
         }
@@ -388,17 +334,20 @@
           this._track = track;
           this._opts = opts;
         }
-
         start(cycleWidth, gap) {
           if (this._anim) this._anim.cancel();
-
           if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
           const distance = cycleWidth + gap;
           if (distance <= 0) return;
 
-          const speed = this._opts.speed > 0 ? this._opts.speed : 50;
-          const duration = (distance / speed) * 1000;
+          let duration;
+          if (this._opts.duration) {
+            duration = this._opts.duration * 1000;
+          } else {
+            const speed = this._opts.speed > 0 ? this._opts.speed : 50;
+            duration = (distance / speed) * 1000;
+          }
 
           const from = 'translate3d(0,0,0)';
           const to = `translate3d(-${distance}px,0,0)`;
@@ -413,15 +362,12 @@
             easing: 'linear',
           });
         }
-
         pause() {
           if (this._anim?.playState === 'running') this._anim.pause();
         }
-
         play() {
           if (this._anim?.playState !== 'running') this._anim.play();
         }
-
         cancel() {
           if (this._anim) this._anim.cancel();
         }
@@ -434,18 +380,25 @@
 
           this._opts = {
             speed: 50,
+            duration: null,
             gap: '2rem',
             direction: 'left',
             items: [],
             separator: '',
             renderItem: (i) => document.createTextNode(i),
+            pauseOnHover: true,
+            ariaLabel: 'Marquee otomatis',
             ...opts,
           };
 
           this._root.classList.add('um-container', 'js-enabled');
+          this._root.setAttribute('role', 'region');
+          this._root.setAttribute('aria-label', this._opts.ariaLabel);
+
           this._builder = new ContentBuilder(this._opts);
           this.#setup();
           this.#initObservers();
+          this.#initInteractivity();
         }
 
         #setup() {
@@ -457,6 +410,7 @@
 
           this._root.appendChild(this._builder.buildSRList());
           this._root.appendChild(this._track);
+
           this.#reflow();
         }
 
@@ -466,31 +420,53 @@
 
           const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-          // Hentikan animasi jika ada
           if (this._anim) {
             this._anim.cancel();
             this._anim = null;
           }
 
-          // Hitung jumlah siklus yang dibutuhkan
           const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
           const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
 
           this._track.innerHTML = '';
           const frag = document.createDocumentFragment();
-
           for (let i = 0; i < cyclesCount; i++) {
-            // Trailing separator hanya untuk mode animasi (seamless loop)
             frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
           }
-
           this._track.appendChild(frag);
 
-          // Jalankan animasi hanya jika bukan reduced motion
           if (!reducedMotion) {
             this._anim = new AnimationController(this._track, this._opts);
             this._anim.start(metrics.width, metrics.gap);
+          } else {
+            const checkOverflow = () => {
+              const hasOverflow = this._track.scrollWidth > this._root.offsetWidth;
+              this._root.classList.toggle('um-overflow-left', hasOverflow);
+              this._root.classList.toggle('um-overflow-right', hasOverflow);
+              this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
+            };
+            checkOverflow();
+            new ResizeObserver(checkOverflow).observe(this._root);
           }
+        }
+
+        #initInteractivity() {
+          if (this._opts.pauseOnHover !== false) {
+            this._root.addEventListener('mouseenter', () => this._anim?.pause());
+            this._root.addEventListener('mouseleave', () => this._anim?.play());
+            this._root.addEventListener('focusin', () => this._anim?.pause());
+            this._root.addEventListener('focusout', () => this._anim?.play());
+          }
+
+          let touchTimer;
+          this._root.addEventListener('touchstart', () => {
+            this._anim?.pause();
+            clearTimeout(touchTimer);
+          });
+          this._root.addEventListener('touchend', () => {
+            clearTimeout(touchTimer);
+            touchTimer = setTimeout(() => this._anim?.play(), 600);
+          });
         }
 
         #initObservers() {
@@ -519,7 +495,6 @@
             document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
           });
 
-          // Rebuild saat preferensi reduced-motion berubah
           const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
           mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
         }
@@ -527,50 +502,30 @@
 
       window.UniversalMarquee = UniversalMarquee;
     </script>
+
     <script type="module">
       const initApp = () => {
-        const ITEMS_DEMO_1 = ['Web Design', 'App Development', 'SEO Audit', 'Cloud Server', 'Consulting'];
-        const SEPARATOR_DEMO_1 = { type: 'image', src: 'https://www.mdpabel.com/md-pabel.png', alt: 'Logo MDPabel' };
-
         const ITEMS_DEMO_2 = ['LOREM IPSUM', 'DOLOR SIT AMET', 'CONSECTETUR ADIPISCING', 'ELIT SED DO'];
-
         const GALLERY_ITEMS = [
           { src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', alt: 'Red Shoe' },
           { src: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80', alt: 'White Sneaker' },
           { src: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80', alt: 'Green Shoe' },
         ];
 
-        const textRenderer = (txt) => {
-          const span = document.createElement('span');
-          span.textContent = txt;
-          span.style.fontWeight = '600';
-          return span;
-        };
-
         const imageRenderer = (item) => {
           const wrapper = document.createElement('div');
           wrapper.className = 'um-img-skeleton';
           wrapper.style.width = '140px';
           wrapper.style.height = '90px';
-
           const img = document.createElement('img');
           img.src = item.src;
           img.alt = item.alt;
           img.loading = 'lazy';
           img.onload = () => img.classList.add('loaded');
           if (img.complete) img.classList.add('loaded');
-
           wrapper.appendChild(img);
           return wrapper;
         };
-
-        new UniversalMarquee('#marquee-demo-1', {
-          speed: 60,
-          gap: '6rem',
-          items: ITEMS_DEMO_1,
-          separator: SEPARATOR_DEMO_1,
-          renderItem: textRenderer,
-        });
 
         new UniversalMarquee('#marquee-demo-2', {
           speed: 100,
@@ -584,13 +539,18 @@
             span.style.color = '#e5e7eb';
             return span;
           },
+          pauseOnHover: true,
         });
 
         new UniversalMarquee('#marquee-full-lazy', {
-          speed: 50,
+          duration: 18,
           gap: '3rem',
           items: GALLERY_ITEMS,
-          separator: { type: 'image', src: 'https://cdn-icons-png.flaticon.com/512/766/766029.png', alt: '' },
+          separator: {
+            type: 'image',
+            src: 'https://cdn-icons-png.flaticon.com/512/766/766029.png',
+            alt: 'Separator dot',
+          },
           renderItem: imageRenderer,
         });
       };
