@@ -154,7 +154,7 @@
       .RootLayoutContainer {
         width: calc(100% - (var(--layout-gutter) * 2));
         max-width: var(--layout-max-width);
-        min-height: 100dvh;
+        min-height: 100%;
         position: relative;
         margin-inline: auto;
         display: flex;
@@ -168,14 +168,16 @@
         flex-direction: column;
       }
       .RootLayoutFooter {
-        width: 100%;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
         height: var(--layout-footer-height);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 0.85rem;
         color: #6b7280;
-        margin-top: auto;
       }
       h2.demo-title {
         margin: 0 0 0.5rem 0;
