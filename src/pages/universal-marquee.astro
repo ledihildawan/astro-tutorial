@@ -1,5 +1,5 @@
 ---
-// src/pages/index.astro (atau nama file lain di folder pages)
+// src/pages/index.astro
 ---
 
 <!doctype html>
@@ -7,7 +7,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Marquee v14.3 – Stable Edition</title>
+    <title>Universal Marquee v15.9 – Consistent Variable</title>
 
     <style is:global data-label="CORE_STYLES">
       :root {
@@ -99,19 +99,44 @@
         aspect-ratio: 1/1;
         background-color: transparent;
       }
+
+      /* === AKSESIBILITAS: PREFERS-REDUCED-MOTION === */
+      @media (prefers-reduced-motion: reduce) {
+        .um-container {
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch;
+          cursor: grab;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .um-container::-webkit-scrollbar {
+          display: none;
+        }
+        .um-track {
+          width: max-content !important;
+          transform: none !important;
+          animation: none !important;
+          justify-content: flex-start;
+        }
+      }
     </style>
 
     <style is:global data-label="ROOT_LAYOUT">
       :root {
         --color-bg-page: #f9fafb;
         --color-text-primary: #111827;
-        --color-guide-border: #ef4444; /* Merah estetik */
+        /* Hapus --color-guide-border, hanya gunakan --color-gridline */
+        --color-gridline: #ef4444;
+
+        /* --- UKURAN LAYOUT --- */
+        --layout-max-width: 1100px;
+        --layout-gutter: 1.25rem;
         --layout-guide-width: 1px;
         --layout-guide-style: dashed;
-        --layout-max-width: 1100px;
         --layout-vertical-padding: 3rem;
         --layout-footer-height: 3rem;
       }
+
       body {
         margin: 0;
         padding: 0;
@@ -119,50 +144,70 @@
         display: flex;
         background-color: var(--color-bg-page);
         color: var(--color-text-primary);
+        min-height: 100vh;
       }
+
       /* --- RootLayout Structure --- */
       .RootLayout {
         position: relative;
         width: 100%;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
         z-index: 0;
       }
+
+      /* GARIS HORIZONTAL (ATAS & BAWAH) */
       .RootLayout::before,
       .RootLayout::after {
         content: '';
-        border-top: var(--layout-guide-width) var(--layout-guide-style) var(--color-guide-border);
+        /* Menggunakan --color-gridline */
+        border-top: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         height: 0;
         position: absolute;
         left: 0;
         right: 0;
         z-index: 1;
-        opacity: 0.4;
+        opacity: 1;
       }
       .RootLayout::before {
         top: var(--layout-vertical-padding);
       }
       .RootLayout::after {
         bottom: var(--layout-vertical-padding);
-        border-bottom: var(--layout-guide-width) var(--layout-guide-style) var(--color-guide-border);
+        /* Menggunakan --color-gridline */
+        border-bottom: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         border-top: none;
       }
+
+      /* --- CONTAINER UTAMA (Mobile First) --- */
       .RootLayoutContainer {
-        width: 100%;
+        width: calc(100% - (var(--layout-gutter) * 2));
         max-width: var(--layout-max-width);
-        min-height: calc(100dvh - var(--layout-footer-height) - var(--layout-vertical-padding));
+        min-height: 100dvh;
+
         position: relative;
+        margin-inline: auto;
+        display: flex;
+        flex-direction: column;
+
+        /* MOBILE FIRST: TIDAK ADA BORDER KIRI & KANAN */
+        border: none;
+
         padding-top: var(--layout-vertical-padding);
         padding-bottom: var(--layout-footer-height);
-        border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-guide-border);
-        border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-guide-border);
+        box-sizing: border-box;
       }
+
       .RootLayoutContent {
         display: flex;
         flex-direction: column;
-        padding: 2rem;
+        padding: 2rem 0;
         gap: 3rem;
+        flex: 1;
       }
+
+      /* FOOTER FIX: HILANGKAN BORDER TOP */
       .RootLayoutFooter {
         width: 100%;
         height: var(--layout-footer-height);
@@ -175,8 +220,9 @@
         justify-content: center;
         font-size: 0.85rem;
         color: #6b7280;
-        border-top: 1px dashed rgba(239, 68, 68, 0.3);
+        border-top: none;
       }
+
       h2.demo-title {
         margin: 0 0 0.5rem 0;
         font-size: 1.1rem;
@@ -190,6 +236,35 @@
         margin: 0 0 1rem 0;
         font-size: 0.85rem;
         color: #9ca3af;
+      }
+
+      /* --- MEDIA QUERY (Desktop: > 64rem / 1024px) --- */
+      @media (min-width: 64rem) {
+        /* 1. GARIS HORIZONTAL (Atas/Bawah) tetap DASHED */
+        .RootLayout::before,
+        .RootLayout::after {
+          opacity: 1;
+          background-color: transparent;
+          height: 0;
+        }
+
+        /* 2. Tambah Padding Samping Konten */
+        .RootLayoutContent {
+          padding: 2rem;
+        }
+
+        /* 3. MUNCULKAN GARIS VERTIKAL (Kiri & Kanan) - Dashed */
+        .RootLayoutContainer {
+          /* Menggunakan --color-gridline */
+          border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
+          border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
+        }
+
+        /* 4. Hapus pseudo-elements solid (jika ada) */
+        .RootLayoutContainer:before,
+        .RootLayoutContainer:after {
+          content: none;
+        }
       }
     </style>
   </head>
@@ -227,7 +302,7 @@
         </div>
 
         <div class="RootLayoutFooter">
-          <span>Universal Marquee Demo &copy; 2025 – RootLayout Edition</span>
+          <span>Universal Marquee Demo &copy; 2025 – Consistent Grid</span>
         </div>
       </div>
     </div>
@@ -331,17 +406,24 @@
         _track;
         _opts;
         _anim = null;
+
         constructor(track, opts) {
           this._track = track;
           this._opts = opts;
         }
+
         start(width, gap) {
           if (this._anim) this._anim.cancel();
+
+          const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (prefersReducedMotion) return;
+
           const safeWidth = Number.isFinite(width) ? width : 0;
           const safeGap = Number.isFinite(gap) ? gap : 0;
           const safeSpeed = this._opts.speed && this._opts.speed > 0 ? this._opts.speed : 50;
           const dist = safeWidth + safeGap;
           if (dist <= 0) return;
+
           const duration = (dist / safeSpeed) * 1000;
           let from = 'translate3d(0,0,0)';
           let to = `translate3d(-${dist}px,0,0)`;
@@ -349,15 +431,32 @@
             from = `translate3d(-${dist}px,0,0)`;
             to = 'translate3d(0,0,0)';
           }
+
           this._anim = this._track.animate([{ transform: from }, { transform: to }], {
             duration,
             iterations: Infinity,
             easing: 'linear',
           });
         }
+
+        pause() {
+          if (this._anim && this._anim.playState === 'running') {
+            this._anim.pause();
+          }
+        }
+
+        play() {
+          if (this._anim && this._anim.playState !== 'running') {
+            this._anim.play();
+          }
+        }
       }
 
       class UniversalMarquee {
+        _resizeTimer;
+        _observer;
+        _isInViewport = false;
+
         constructor(selector, opts) {
           this._root = document.querySelector(selector);
           if (!this._root) return;
@@ -372,9 +471,11 @@
           };
           this._root.classList.add('um-container', 'js-enabled');
           this._builder = new ContentBuilder(this._opts);
+
           this.#setup();
-          new ResizeObserver(() => requestAnimationFrame(this.#reflow.bind(this))).observe(this._root);
+          this.#initObservers();
         }
+
         #setup() {
           this._root.innerHTML = '';
           this._track = document.createElement('div');
@@ -384,6 +485,7 @@
           this._root.appendChild(this._track);
           this.#reflow();
         }
+
         #reflow() {
           const m = this._builder.measureCycleMetrics(this._root, this._track);
           if (m.width === 0) return;
@@ -392,8 +494,46 @@
           const frag = document.createDocumentFragment();
           for (let i = 0; i < Math.max(3, cycles); i++) frag.appendChild(this._builder.buildCycleContainer());
           this._track.appendChild(frag);
+
           if (!this._anim) this._anim = new AnimationController(this._track, this._opts);
           this._anim.start(m.width, m.gap);
+        }
+
+        #initObservers() {
+          const resizeHandler = () => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => {
+              requestAnimationFrame(this.#reflow.bind(this));
+            }, 200);
+          };
+          new ResizeObserver(resizeHandler).observe(this._root);
+
+          if ('IntersectionObserver' in window) {
+            this._observer = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((entry) => {
+                  if (!this._anim) return;
+                  this._isInViewport = entry.isIntersecting;
+                  if (entry.isIntersecting) {
+                    if (!document.hidden) this._anim.play();
+                  } else {
+                    this._anim.pause();
+                  }
+                });
+              },
+              { rootMargin: '50px 0px' }
+            );
+            this._observer.observe(this._root);
+          }
+
+          document.addEventListener('visibilitychange', () => {
+            if (!this._anim) return;
+            if (document.hidden) {
+              this._anim.pause();
+            } else {
+              if (this._isInViewport) this._anim.play();
+            }
+          });
         }
       }
 
@@ -402,7 +542,6 @@
 
     <script type="module">
       const initApp = () => {
-        // --- DATA SETUP ---
         const ITEMS_DEMO_1 = ['Web Design', 'App Development', 'SEO Audit', 'Cloud Server', 'Consulting'];
         const SEPARATOR_DEMO_1 = {
           type: 'image',
@@ -416,7 +555,6 @@
           { src: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80', alt: 'Green Shoe' },
         ];
 
-        // --- RENDERERS ---
         const textRenderer = (txt) => {
           const s = document.createElement('span');
           s.textContent = txt;
@@ -440,7 +578,6 @@
           return wrapper;
         };
 
-        // --- INSTANCES ---
         new window.UniversalMarquee('#marquee-demo-1', {
           speed: 60,
           gap: '6rem',
