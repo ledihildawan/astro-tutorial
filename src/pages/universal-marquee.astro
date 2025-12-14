@@ -181,38 +181,44 @@
       }
 
       /* --- CONTAINER UTAMA (Mobile First) --- */
+      /* Ganti seluruh blok .RootLayoutContainer (Line 126) */
       .RootLayoutContainer {
         width: calc(100% - (var(--layout-gutter) * 2));
         max-width: var(--layout-max-width);
-        min-height: 100dvh;
+
+        /* FIX: Ganti min-height: 100dvh menjadi min-height: 100% */
+        /* Kontainer utama (RootLayout) yang akan kita gunakan untuk menentukan tinggi 100% */
+        min-height: 100%;
 
         position: relative;
         margin-inline: auto;
         display: flex;
         flex-direction: column;
 
-        /* MOBILE FIRST: TIDAK ADA BORDER KIRI & KANAN */
         border: none;
 
+        /* FIX: Hapus padding-bottom. Kita akan menggunakan margin-top pada footer */
         padding-top: var(--layout-vertical-padding);
-        padding-bottom: var(--layout-footer-height);
+        padding-bottom: 0; /* Hapus padding yang mengalokasikan ruang footer */
         box-sizing: border-box;
       }
 
+      /* Ganti seluruh blok .RootLayoutContent (Line 144) */
       .RootLayoutContent {
         display: flex;
         flex-direction: column;
         padding: 2rem 0;
         gap: 3rem;
-        flex: 1;
+        flex: 1; /* Konten tumbuh untuk mendorong footer */
       }
 
-      /* FOOTER FIX: HILANGKAN BORDER TOP */
+      /* Ganti seluruh blok .RootLayoutFooter (Line 153) */
       .RootLayoutFooter {
         width: 100%;
         height: var(--layout-footer-height);
-        position: absolute;
-        bottom: 0;
+        /* FIX: Hapus position: absolute dan bottom: 0 */
+        position: static;
+        bottom: auto;
         left: 0;
         right: 0;
         display: flex;
@@ -221,6 +227,8 @@
         font-size: 0.85rem;
         color: #6b7280;
         border-top: none;
+        /* Tambahkan padding-top untuk memastikan konten di atas footer tidak menabrak */
+        margin-top: var(--layout-footer-height);
       }
 
       h2.demo-title {
