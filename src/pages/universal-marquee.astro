@@ -1,16 +1,19 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Marquee v16.2 – Prefixed Classes for Better DX</title>
+    <title>Universal Marquee</title>
     <style is:global data-label="CORE_STYLES">
       :root {
         --um-duration-default: 15s;
         --um-gap-default: 2rem;
         --um-color-separator: #9ca3af;
         --um-separator-height: 1.25em;
-        --um-font-size: clamp(1rem, 2.5vw, 1.5rem);
+        --um-font-size: clamp(1.2rem, 3vw, 2rem);
+        --um-gallery-item-width: 420px;
+        --um-gallery-item-height: 280px;
+        --um-gallery-border-radius: 24px;
       }
       .um-container {
         display: flex;
@@ -60,16 +63,31 @@
         white-space: nowrap;
         display: flex;
         align-items: center;
-        width: auto;
-        object-fit: contain;
         font-size: var(--um-font-size);
+        font-weight: 700;
+        font-family:
+          'Inter',
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          sans-serif;
       }
       .um-img-skeleton {
         position: relative;
         background-color: #e5e7eb;
         overflow: hidden;
-        border-radius: 4px;
-        transition: background-color 0.3s;
+        border-radius: var(--um-gallery-border-radius);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition:
+          background-color 0.4s,
+          box-shadow 0.5s;
+        width: var(--um-gallery-item-width);
+        height: var(--um-gallery-item-height);
+        min-width: var(--um-gallery-item-width);
+        min-height: var(--um-gallery-item-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .um-img-skeleton img {
         position: absolute;
@@ -78,17 +96,40 @@
         height: 100%;
         object-fit: contain;
         opacity: 0;
-        transition: opacity 0.5s ease-out;
+        transition: opacity 0.7s ease-out;
       }
       .um-img-skeleton img.loaded {
         opacity: 1;
       }
+      .um-img-skeleton.loaded {
+        background-color: transparent;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      }
       .um-item-separator .um-img-skeleton {
         background-color: transparent;
+        box-shadow: none;
         height: var(--um-separator-height);
         width: auto;
         min-width: var(--um-separator-height);
         aspect-ratio: 1/1;
+      }
+      .um-container.um-overflow-left::before,
+      .um-container.um-overflow-right::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 120px;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .um-container.um-overflow-left::before {
+        left: 0;
+        background: linear-gradient(to right, var(--bg), transparent);
+      }
+      .um-container.um-overflow-right::after {
+        right: 0;
+        background: linear-gradient(to left, var(--bg), transparent);
       }
       @media (prefers-reduced-motion: reduce) {
         .um-container {
@@ -112,13 +153,18 @@
         --layout-gutter: 1.25rem;
         --layout-guide-width: 1px;
         --layout-guide-style: dashed;
-        --layout-vertical-padding: 3rem;
-        --layout-footer-height: 3rem;
+        --layout-vertical-padding: 4rem;
+        --layout-footer-height: 4rem;
       }
       body {
         margin: 0;
         padding: 0;
-        font-family: 'Segoe UI', Arial, sans-serif;
+        font-family:
+          'Inter',
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          sans-serif;
         display: flex;
         background-color: var(--color-bg-page);
         color: var(--color-text-primary);
@@ -180,6 +226,7 @@
       .RootLayoutContent {
         display: flex;
         flex-direction: column;
+        flex: 1;
       }
       .RootLayoutFooter {
         bottom: 0;
@@ -209,257 +256,38 @@
           border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
           border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         }
-        .RootLayoutContainer:before,
-        .RootLayoutContainer:after {
-          content: none;
-        }
       }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div class="RootLayout">
       <div class="RootLayoutContainer">
         <div class="RootLayoutHeader">
-          <h1>Universal Marquee</h1>
+          <svg xmlns="http://www.w3.org/2000/svg" width="72" fill="none" viewBox="0 0 554 264">
+            <path
+              fill="#000"
+              d="m136.657 5.657-125.5 125.5 126.5 126.5-5.657 5.656L0 131.314l.158-.158L.001 131 131 0l5.657 5.657Zm51 0-125.5 125.5 126.5 126.5-5.657 5.656L51 131.314l.158-.158-.157-.156L182 0l5.657 5.657ZM502.656 131l-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L366 5.657 371.657 0l130.999 131Zm51 0-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L417 5.657 422.657 0l130.999 131Zm-97.695.327-5.657 5.657-86.271-86.27-.068.068v160.889l.165.165 80.51-80.508 5.657 5.656-82.101 82.1.001.001-4.066 4.065-4.166-4.167v.001l-51-51 5.657-5.656 10.343 10.343v-44.068l-22.534 22.533.002.002-.082.081.033.033-19.005 19.004.002.002-6.367 6.366-26.193-26.192.001-.002-21.826-21.827v44.068l10.343-10.343 5.657 5.656-50.211 50.211.002.002-4.957 4.956-6.371-6.371.001-.002-79.796-79.796 5.657-5.656 80.51 80.508.165-.165V50.782l-.068-.068-86.271 86.27L98 131.327l91.67-91.67 87.31 87.311 87.311-87.31 91.67 91.669Zm-257.965 72.344 22-22v-74.8l9 9v.004l28.191 28.19.001-.001 19.795 19.796 13.047-13.048-13.467-13.467-.001.003-78.566-78.566v144.889Zm85.025-71.945 8.54 8.54v.002l4.503 4.503h.001l.002.001 28.898-28.897v-.004l9-9v74.8l22 22V58.782l-72.944 72.944Z"
+            ></path>
+          </svg>
         </div>
         <div class="RootLayoutContent">
-          <div>
-            <h2 class="demo-title">Area 2: News Ticker</h2>
-            <p class="demo-desc">Gap: 2rem | Fast | Dark Theme | Touch pause</p>
-            <div id="marquee-demo-2" style="background: #111827; color: white; padding: 0.8rem 0; --um-gap: 2rem;">
+          <main>
+            <div
+              id="marquee-demo-1"
+              style="background: #111827; color: white; padding: 0.8rem 0; --um-gap: 3rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-2.68deg);"
+            >
+              <h2 class="demo-title"></h2>
             </div>
-          </div>
-          <div>
-            <h2 class="demo-title">Area 3: Full Lazy Loading Gallery</h2>
-            <p class="demo-desc">Images + fade hint di reduced-motion</p>
-            <div id="marquee-full-lazy" style="--um-gap: 3rem; --um-separator-height: 24px"></div>
-          </div>
-          <div>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus veritatis in nostrum voluptatum ullam
-            tempore eum iusto voluptas, officiis autem? Repudiandae asperiores accusamus doloribus temporibus suscipit
-            possimus hic quos. Odit, enim exercitationem quas iste ipsam ab. Officiis quasi eum tenetur sequi,
-            architecto odit esse quaerat sunt officia placeat voluptas nulla consequuntur dolorum rem ex voluptates modi
-            asperiores alias magnam sit nisi rerum. Minima officia sapiente suscipit assumenda expedita, voluptas
-            voluptate aliquam libero dolore dolorum facilis veritatis, debitis architecto omnis vero necessitatibus
-            tenetur fugiat qui soluta nostrum ex maxime. Soluta voluptates, incidunt architecto culpa labore veritatis
-            nemo quibusdam veniam facere temporibus nobis provident pariatur reiciendis impedit vitae ad sit deleniti.
-            Consequatur quae soluta dolorem repellat ad. Officia minus iusto expedita suscipit. Quod quis in cupiditate
-            illum deserunt, nemo voluptate quaerat ex exercitationem? Earum, omnis aliquam quod excepturi natus amet
-            dolorum incidunt aspernatur maiores cum cumque vero totam sit, id dolorem sint eius fugiat porro eum neque
-            tenetur! Aspernatur amet in reiciendis fugit consequatur, nam error asperiores porro culpa totam facere
-            temporibus recusandae! Autem veritatis eum at beatae ipsam rerum vero quasi dolore nesciunt, maiores dolores
-            commodi? Exercitationem asperiores repellendus atque. Sapiente maxime adipisci unde, ipsam vel id obcaecati
-            laborum iusto, atque doloribus nostrum, labore accusantium debitis illo. Voluptatum quidem error dicta sit
-            quod rerum, quisquam molestias aperiam tenetur quasi quos! Pariatur porro quae placeat ex. Voluptatum
-            numquam fugiat ad fugit itaque tempore quaerat ipsam perspiciatis ducimus officiis est facilis animi ipsum
-            exercitationem eius mollitia soluta, sequi, pariatur ea vero a recusandae error, natus provident! Dolore
-            accusantium dolor nisi! Exercitationem, aut fuga optio officiis doloribus eos nisi. Ipsa suscipit laboriosam
-            blanditiis distinctio quis autem in aliquid quam temporibus nesciunt nisi architecto, quasi sapiente iusto
-            corporis voluptates? At modi obcaecati ex, recusandae rerum esse aliquid nisi numquam excepturi veniam odio
-            impedit accusamus reprehenderit quam ad eligendi eaque eius molestiae maiores omnis unde. Aliquid cumque
-            quos sunt voluptatibus suscipit quibusdam quas eveniet veritatis sint delectus laboriosam officia quasi
-            tempora nulla cupiditate perspiciatis rem quam eum, earum ipsam ex? Possimus natus consequatur dolorem nisi
-            adipisci itaque repellendus ex blanditiis? Natus provident tempore, ut eum doloribus nulla voluptatem magnam
-            similique eveniet quam inventore officiis! Inventore rerum distinctio deleniti in laboriosam vero maxime,
-            minus ad blanditiis molestias eos minima? Incidunt a minima alias quis. Consectetur ex sapiente, nobis eaque
-            consequatur, dicta, error quod obcaecati voluptatibus quo laudantium sunt. Voluptatibus nemo labore
-            laudantium blanditiis doloribus odit. Distinctio quis at rerum enim. Placeat ipsum doloremque quae libero
-            corrupti mollitia voluptatibus quo, obcaecati aspernatur magni ea molestiae debitis nemo delectus,
-            consequatur beatae. Alias ipsum repudiandae quas temporibus facere, fuga earum repellendus enim dignissimos,
-            laudantium illo blanditiis nam saepe obcaecati accusantium cum ut consectetur eaque eveniet dolores velit.
-            Fuga consequuntur id, sequi iusto tenetur non eligendi dolorum autem, placeat unde minus accusamus fugiat
-            aut at. Ea, error corrupti perferendis facilis quam amet adipisci perspiciatis consectetur ullam repellat
-            recusandae nam sequi, consequatur libero repellendus maiores nihil sit dolore similique reiciendis, veniam
-            at! Soluta nisi tempora fugit possimus delectus ab, necessitatibus expedita nemo facilis error aperiam?
-            Neque doloremque cum officiis ducimus quam debitis mollitia adipisci quae sed vitae in quia ipsam eos sunt
-            quibusdam nemo molestiae dolorem numquam, sit tempore. Voluptatem aliquam similique modi cupiditate
-            provident saepe dolor vel, cum odit enim minima, commodi accusantium quidem pariatur necessitatibus vero
-            expedita voluptate consectetur quos esse. Dolore nobis error culpa excepturi corrupti quam quidem sit
-            explicabo, vel voluptatum fugiat animi quia ut dolorum veniam iste? Veritatis fugiat quibusdam voluptatum
-            delectus sed quidem quas nemo sunt, laudantium cupiditate tenetur nostrum aliquam unde necessitatibus amet
-            rem quod porro alias temporibus maiores officia distinctio consectetur cumque. Omnis nesciunt quasi
-            provident facilis exercitationem quod, eos adipisci. Suscipit consequatur sed vitae quo ea quas reiciendis
-            ducimus obcaecati alias porro quam error, ipsa velit illum modi fugiat sit sequi corporis, nesciunt quod
-            quia consequuntur laudantium. Officiis, incidunt porro? Similique omnis amet maxime beatae debitis
-            obcaecati? Iusto distinctio odio cupiditate quo maiores. Ea cupiditate ab dolores fugit perferendis illum
-            voluptate quos, cumque suscipit soluta, iure officiis repellat excepturi numquam placeat eveniet mollitia
-            voluptas. Quia, voluptatum suscipit asperiores corporis ut harum quisquam eum voluptates ad aspernatur magni
-            facere laboriosam nam veniam tenetur animi blanditiis optio molestiae quis pariatur. Molestias commodi
-            architecto saepe illum asperiores ab minus harum soluta. Harum nihil neque doloribus tempore iusto
-            temporibus maiores aliquam commodi modi suscipit eum nam amet saepe beatae perferendis quaerat, cupiditate
-            consequuntur dolor! Tempora hic eos quas? Eaque minus dignissimos numquam rem quasi, amet molestiae, ad
-            totam officia, possimus beatae impedit expedita doloribus harum dolores ratione? Modi tempore, quidem
-            temporibus mollitia similique explicabo iste consectetur. Voluptatibus non earum nostrum, consequuntur,
-            explicabo commodi dolor sapiente officia, vitae esse distinctio saepe numquam? Obcaecati fugiat aspernatur
-            numquam ducimus ut, cumque ipsam debitis architecto distinctio a? Ipsam quod inventore vero maxime veniam
-            debitis voluptatum nisi ex nobis doloremque commodi, aspernatur a temporibus maiores quia ad, laboriosam
-            corrupti magni error quaerat enim! Accusantium porro neque nihil a cupiditate mollitia amet necessitatibus?
-            Sit natus a consectetur mollitia harum sed, obcaecati earum dolorum ipsum laboriosam repudiandae modi
-            dignissimos, voluptates quas! Rerum aperiam maxime laborum odit? Animi eos, nam vero ipsum minima a? Quidem
-            sequi quam suscipit enim et, neque quis, voluptatum accusamus iusto quisquam sapiente odio a ipsum corporis
-            perferendis saepe eius. Id nihil quisquam, nisi quaerat consectetur, ratione eaque eius officia quo fugiat,
-            perspiciatis dolores quis earum. Nisi, ullam ipsa rem sit omnis iste labore delectus quaerat perspiciatis
-            quisquam molestiae, reprehenderit officiis facere ducimus. Eius voluptates porro praesentium vitae, illo ut,
-            minima perferendis temporibus similique officia optio placeat rem asperiores, deserunt ullam a corporis
-            mollitia totam esse saepe magnam reprehenderit dolores dolorem. Autem illo commodi doloribus ipsam tempore
-            iste ea id laborum. Inventore ducimus, sed tempora vitae est perspiciatis optio obcaecati officiis
-            distinctio id dicta debitis maiores facere pariatur. Aliquam possimus ullam consequatur tempora assumenda
-            expedita. Officia rerum magnam maiores assumenda ipsam, natus fuga, praesentium, possimus deserunt id vel?
-            Inventore dolorum provident, maiores consequatur eius nostrum atque neque temporibus officiis accusantium
-            necessitatibus, id minima tempore, aliquid dicta. Nostrum harum numquam eveniet optio nam alias cumque ab ea
-            natus sunt ducimus consectetur reprehenderit saepe quas error nisi nesciunt voluptates similique animi nemo
-            earum enim, autem, minima blanditiis! Voluptate placeat perferendis facere quod provident! Asperiores vitae
-            quae maiores, nihil tempore explicabo ab totam neque voluptatem impedit eaque suscipit nemo, dicta corporis
-            quisquam minus eos consectetur dignissimos repudiandae facilis aliquid! Natus quod rem officia omnis,
-            similique quaerat consectetur iure aliquam. Rem, odio impedit eaque dicta porro excepturi sint
-            exercitationem sunt fuga illum culpa atque eum doloribus asperiores, eos eligendi sed cumque corporis minima
-            dolorum. Dolores harum ratione culpa assumenda officiis exercitationem est, quis iusto maxime nam laboriosam
-            eius. Maxime praesentium, laborum veniam velit nemo sit, excepturi ipsum vero consectetur adipisci non quam
-            reiciendis officia perspiciatis reprehenderit tempore qui, atque aut saepe? Magni a atque alias ea minus non
-            debitis sequi vero incidunt, nisi corporis eveniet repellendus accusamus ad nobis fugit ipsa suscipit, quasi
-            animi doloribus libero repudiandae! Eum necessitatibus accusantium, unde illum expedita assumenda eligendi
-            quae earum cum blanditiis atque delectus. Reiciendis laborum quisquam dolorum? Accusamus cum nihil
-            laudantium mollitia expedita doloribus similique numquam, hic suscipit placeat cupiditate dolores magni
-            dicta culpa harum non necessitatibus illo quaerat minima possimus ut, voluptas autem. Maiores voluptate,
-            ipsam fugiat ex sapiente accusantium at blanditiis! Saepe omnis sequi blanditiis id, eum dolor
-            necessitatibus illo iure debitis ipsa rerum, sint esse aliquam ex voluptatum dignissimos libero laboriosam
-            velit? Soluta, suscipit! Corporis eligendi dolore sequi fuga molestias laborum itaque dolorem explicabo
-            fugiat eveniet distinctio asperiores, architecto velit eos repellendus a placeat in, dolorum veritatis atque
-            quidem? Iusto delectus aliquid minus cumque dicta placeat quaerat fuga, ad enim, velit eaque ducimus
-            molestias veritatis aperiam architecto, vitae at inventore voluptate et fugiat beatae. Iusto aut consequatur
-            non unde quos minus dolorum laudantium nemo doloremque magni! Impedit fugit obcaecati commodi accusantium
-            autem cupiditate eaque libero. Omnis nobis hic voluptatem eaque laboriosam. Nam error exercitationem, dolor,
-            odio nobis magni ipsam laboriosam assumenda saepe minima unde necessitatibus tenetur. Officia nesciunt ab
-            fuga numquam sapiente optio debitis facere odit? Sint possimus eos aperiam nesciunt, dolorem deleniti
-            doloribus accusantium expedita perspiciatis! Dolores nulla nesciunt nam tenetur omnis eos quae incidunt, ex
-            eaque voluptates quas ea libero quidem illo quam quod aspernatur minus odit fugiat necessitatibus eius ullam
-            enim? Odit voluptates laboriosam quibusdam aut nulla porro nam cum ratione soluta ullam. Totam ea architecto
-            magni aut aperiam? Ullam nihil, deserunt maxime unde vel voluptates nisi aspernatur expedita quasi! Sit
-            quidem porro explicabo autem. Exercitationem dignissimos aut, rem commodi, sint velit veritatis a cum eos,
-            odio totam esse libero. Animi magnam aspernatur vero eveniet natus commodi id, molestias totam? Nam
-            cupiditate veritatis voluptate atque sunt repellat omnis perferendis consequuntur recusandae voluptatem
-            neque distinctio eum assumenda id beatae quisquam quo quas, autem quod excepturi corrupti aspernatur?
-            Doloribus voluptatibus velit animi. Perspiciatis voluptatem hic quo delectus laboriosam ab quas suscipit.
-            Ipsa earum odio amet corrupti dignissimos maiores voluptate cum nemo minus nostrum, repudiandae, numquam
-            facilis possimus doloremque nobis? Consectetur ullam, magni quis temporibus itaque architecto illum possimus
-            explicabo sapiente nihil nulla non totam! Quibusdam quas accusamus sint ipsam iusto, blanditiis dolorem
-            minus recusandae magnam laborum facere optio, omnis facilis earum nemo corrupti, nobis aut. Possimus quod
-            necessitatibus, corporis eveniet fugit nihil beatae ratione dicta similique a ipsa distinctio maxime sint.
-            Omnis nisi ipsum aliquam rerum doloribus beatae. Labore qui reiciendis illo blanditiis velit aperiam aliquid
-            eos tempore magnam? Qui facilis nostrum consequatur quo earum. Nam doloribus quisquam repellendus deserunt
-            totam, ea sed necessitatibus iusto, debitis accusantium quas vero. Nulla, eligendi? Quod nobis quia deleniti
-            illum, exercitationem est, rerum reprehenderit blanditiis voluptatibus vero impedit, quaerat placeat atque
-            voluptate nemo modi ipsa labore numquam necessitatibus consequuntur aliquam? Delectus, distinctio voluptatem
-            culpa illum reiciendis ipsum cupiditate reprehenderit sit nobis recusandae aperiam quis, placeat, fugiat
-            quam. Adipisci quo non veniam unde corporis dolores maiores! Expedita facilis tenetur architecto
-            consequuntur, quo, ab maxime eos accusamus tempora autem deleniti velit excepturi aut dolorum assumenda
-            doloribus vitae, illum commodi debitis. Cum repellat ad repellendus voluptate dolores ducimus, molestiae
-            voluptatibus inventore ipsa ab vel, perspiciatis quasi officia delectus enim, asperiores maxime! Quidem
-            perspiciatis corporis minus amet minima eum aspernatur, nam quia iste, ipsa iure quibusdam non ut saepe
-            tenetur labore doloremque deserunt veritatis quis repellat. Maiores mollitia veritatis dolorum harum quos
-            aliquid unde facere enim, consequuntur, pariatur ea, eius consectetur excepturi doloremque vitae nam iusto.
-            Sit ipsam rerum tempore doloremque et aliquid vero omnis, voluptas velit harum similique nam nihil quod
-            natus corrupti consectetur, veniam perferendis, cupiditate consequatur quaerat repellendus! Voluptatum minus
-            distinctio architecto consequuntur magnam. Reiciendis eaque voluptas harum iste qui ipsa dignissimos quam
-            aliquid numquam! Aut rerum quis laudantium soluta placeat accusantium dolore reiciendis ex, tempore officia
-            deleniti tenetur nemo, corrupti temporibus odio eaque laboriosam debitis tempora quibusdam provident
-            incidunt perferendis dolores molestias minima. Sit, temporibus vel sed eaque voluptatum, harum rem sapiente
-            consequatur optio, sint aliquam saepe! Repudiandae laborum, consequatur illo itaque dolores hic eaque, ullam
-            doloribus neque cumque nam distinctio error, adipisci quia aut! Culpa magni nam quisquam voluptatum eaque
-            ratione sequi veritatis perferendis error illo accusantium accusamus aut, modi nostrum ab delectus qui
-            repellat fugiat sed repellendus aliquam doloremque. Facere, consequuntur praesentium autem ut minima
-            asperiores nemo, nesciunt, eum placeat labore inventore molestias soluta! Sapiente doloribus harum earum
-            possimus voluptate, id facere, hic consequatur unde ea aliquid quam esse. Maxime veritatis voluptatem non
-            consequatur, asperiores delectus ducimus necessitatibus! Nobis dolore dolor consequatur accusantium ipsum
-            consectetur, fugiat inventore totam. Sapiente reiciendis minus laboriosam dolore totam ex atque maxime iure
-            minima impedit quisquam iste cupiditate tempora incidunt harum distinctio, odit debitis modi tenetur.
-            Delectus nihil sapiente assumenda voluptatem iure accusantium, nam expedita ipsam? Unde neque quidem optio
-            assumenda consectetur? Ducimus expedita dolore quaerat doloribus! Deserunt esse, quas labore nostrum
-            voluptate ea quasi eveniet nesciunt minus? Quidem id, rerum laboriosam laborum qui, accusantium voluptate
-            doloribus voluptates velit expedita magni dicta debitis animi odio ratione enim dolorem iure nostrum! Ut
-            consectetur totam consequatur fugit quia accusantium voluptate nam iure ipsa, quod dolor reiciendis. Officia
-            fugit possimus error natus similique expedita beatae magni, nostrum atque iusto commodi maiores. Doloremque
-            laboriosam quidem expedita repellendus dolore? Corrupti nemo ducimus fugiat porro eum est repellendus
-            voluptates expedita obcaecati accusamus neque, distinctio quibusdam voluptatem aliquid necessitatibus velit
-            commodi earum ratione. Ipsa, provident a nobis veniam corrupti labore fugiat quis eius iste et modi quos
-            quam ratione voluptates facere, ea illo! Nostrum explicabo doloremque animi voluptatibus alias provident,
-            ipsum eius id! Voluptas labore alias voluptatum quo recusandae similique veritatis blanditiis, quam in
-            veniam? Magnam exercitationem aperiam voluptas eligendi tempore minima fuga laboriosam minus enim. Deserunt
-            cumque libero labore, debitis suscipit neque vitae autem aperiam? Quaerat accusamus ullam est dolorem! Eaque
-            reiciendis, animi eos, facilis alias consequatur in odio voluptatum pariatur possimus magnam aut? Minima,
-            unde sit similique quidem, odit enim sint fugit laboriosam rerum consequatur harum? Dicta cupiditate
-            blanditiis dolorum nemo quisquam omnis dolor in quidem odit? Quisquam, in. Quos, eligendi consequatur
-            explicabo est recusandae porro similique eveniet quam error, tempora deserunt in veniam numquam ad
-            temporibus nisi cumque hic quo pariatur sed voluptates? Suscipit, corrupti consectetur voluptatum sapiente
-            tempore ea nemo quibusdam repellendus eum asperiores officiis eaque necessitatibus, dolorum expedita impedit
-            amet illum repudiandae quos. Quibusdam, odio? Sunt placeat nemo reprehenderit ut in? Voluptatem dicta amet
-            ullam voluptatibus, odit, rem totam tenetur quibusdam aut deleniti beatae corrupti molestiae earum veritatis
-            magnam aliquid ducimus in dolore molestias, iusto quas aspernatur? Sapiente corporis maiores modi ipsum
-            mollitia nihil itaque minima quidem impedit explicabo nesciunt ipsa, rem dicta soluta animi quas porro.
-            Maiores sequi officia, ab nulla tempore reiciendis vel at, molestiae magni voluptates dolor tempora earum
-            eveniet distinctio sapiente! At animi molestias quisquam quam architecto quas illo fuga excepturi voluptates
-            veniam. Consectetur accusamus asperiores veniam optio quo temporibus praesentium dicta, porro quod nihil
-            voluptates iste nisi ut, natus harum vitae necessitatibus provident. Recusandae earum quam sapiente aut odit
-            optio facilis a rerum repudiandae distinctio fugiat enim placeat ipsam architecto, dolores dicta esse in
-            incidunt eius temporibus corrupti. Nesciunt tempora reiciendis eius aspernatur provident dolores temporibus
-            facere cumque totam, autem similique eum ipsa impedit quos alias placeat dicta odio officiis nostrum neque
-            veritatis labore? Illo consequuntur eligendi vero ab quod? Et reprehenderit perferendis magni, sapiente
-            repudiandae odio voluptatem. Accusantium adipisci iste architecto recusandae cupiditate vitae asperiores,
-            aut modi eligendi facere. Blanditiis impedit voluptatibus mollitia, provident dolor consequatur eveniet
-            harum illum ipsam doloribus, dolore dolorum corporis exercitationem aperiam magni molestiae tenetur vitae
-            accusantium quae laudantium aliquam eligendi veniam aliquid sint. Asperiores minima sequi nisi ex minus
-            ipsam consequuntur laboriosam adipisci necessitatibus pariatur voluptas atque ab quas reprehenderit expedita
-            et, quod dicta doloremque tenetur maiores numquam beatae ea. Alias iusto non quis neque perferendis
-            voluptatem, aspernatur doloremque deserunt necessitatibus quisquam eos fugiat nemo autem dolore magnam?
-            Dolores laudantium ut, saepe veritatis cum cumque, voluptate, quae maiores placeat doloremque aut! Aliquid
-            nobis et, fuga soluta iusto vitae voluptatum fugit rem. Accusantium aspernatur voluptatum, ad temporibus
-            deleniti, rem blanditiis labore laboriosam inventore quos tempora dicta quas consectetur officia nihil et
-            numquam beatae fugiat? Dolores nihil error eligendi at nemo qui ullam tenetur laudantium ab laborum
-            provident optio tempora praesentium repellat, aspernatur nulla autem commodi enim nesciunt ducimus culpa!
-            Excepturi dolorum, eligendi, facere perferendis blanditiis libero vero corrupti, earum neque ab consequuntur
-            modi dolorem hic numquam beatae molestias laudantium quas quam. Placeat, ipsa deserunt. Aut harum eligendi
-            error officiis. Ut, accusamus perspiciatis? Repellat iure minima cupiditate quas nostrum eius reprehenderit
-            aliquid ad numquam quod error fugiat, velit praesentium provident quia fuga, sed quam, nam accusantium
-            tempore! Sed cum rerum veritatis voluptatum explicabo possimus quo dolorum. Esse molestias at fuga, nostrum
-            corrupti pariatur quod. Iusto inventore itaque, dignissimos tenetur enim dicta laboriosam recusandae
-            deleniti ipsa est, ratione doloribus asperiores facilis sed doloremque! Impedit suscipit dignissimos totam
-            veniam consectetur esse consequatur veritatis pariatur delectus? Nesciunt fuga, veritatis cupiditate harum
-            molestiae vel itaque? Assumenda sunt quae optio vero cum impedit unde omnis ex soluta, neque fuga hic, totam
-            nihil voluptas iste. Cupiditate tempora accusantium consequatur placeat ipsam totam quisquam, eveniet
-            architecto, autem ea amet fugiat quo alias natus laboriosam deserunt consectetur ad iste doloremque
-            reiciendis nam at. Cupiditate odit tenetur a pariatur omnis minima recusandae at veritatis adipisci. Placeat
-            ea earum in repellendus aut voluptas, officia doloremque nemo reiciendis velit aperiam sit odio. Ea itaque
-            nobis repudiandae odit voluptas sapiente ex consequatur molestiae et beatae consequuntur recusandae dicta
-            laborum, animi sequi accusamus quas hic id temporibus deserunt adipisci modi corporis at. Magnam quis
-            mollitia rem ratione, voluptatibus libero, et quas explicabo nulla perspiciatis provident illo. Quam
-            accusamus possimus iusto iste, at consequuntur illum eveniet et velit inventore blanditiis beatae dolorem
-            amet repellendus dolore adipisci placeat ea dolor ab quos harum, neque earum expedita commodi. Nam,
-            asperiores? Minus veritatis explicabo aliquid quam. Tempora, assumenda. Ab consequatur accusantium pariatur
-            reiciendis, ea sed minima et possimus suscipit alias nihil, aliquam esse nisi earum veniam facilis
-            excepturi, deserunt ipsa! Consequatur quia ab tempore? Voluptatibus fugiat iste consectetur sint
-            reprehenderit quibusdam, dolor ex velit labore officia nobis neque, excepturi perferendis vitae illum?
-            Perspiciatis tempora modi asperiores et quisquam sed minima fuga, quo omnis provident doloribus, ipsa sit
-            reprehenderit. Voluptatibus, odio expedita! Enim cum doloremque ratione veniam molestiae? Delectus, adipisci
-            nostrum. Esse odit assumenda nesciunt quod fugiat nisi quos! Voluptas laboriosam similique quis dolorem
-            quos? Quidem dicta ab autem placeat distinctio neque ratione eius dolorem libero doloremque quibusdam, eum,
-            sint quod facilis. Cumque nulla, quas animi fugiat velit ad doloribus! At perspiciatis quae sed corporis, a
-            id, commodi aliquam soluta ea voluptas quibusdam error mollitia recusandae officia saepe facilis itaque quam
-            perferendis rem molestias iste rerum minus, quia architecto? Provident quisquam non exercitationem
-            perferendis obcaecati. Quidem exercitationem tempore ad assumenda eveniet corrupti aperiam, quis fuga
-            praesentium minus atque, eligendi vero sint ipsam magni? Debitis corporis totam accusamus, ea magni amet
-            aperiam adipisci labore. Doloremque maxime aliquid expedita beatae repellat recusandae pariatur iure quod
-            iusto animi odio nam quidem fugit cupiditate nihil culpa exercitationem ullam amet officiis debitis
-            eligendi, temporibus earum, numquam ea. Enim perspiciatis numquam dolorum impedit quibusdam illo voluptatum
-            sed porro ipsam temporibus corrupti consequuntur, hic eos fugiat vero amet optio aliquid iure mollitia.
-            Voluptatum recusandae officia sint officiis architecto.
-          </div>
+          </main>
         </div>
         <div class="RootLayoutFooter">
-          <span>Universal Marquee Demo v16.2 © 2025 – Prefixed Classes for Better DX</span>
+          <span>Copyright © Universal Marquee 2025 by Ledi Hildawan x AI</span>
         </div>
       </div>
     </div>
-
     <script type="module">
       class ContentBuilder {
         constructor(options) {
@@ -473,17 +301,8 @@
             container.textContent = separator;
           } else if (separator instanceof Node) {
             container.appendChild(separator.cloneNode(true));
-          } else if (typeof separator === 'object' && separator?.type === 'image') {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'um-img-skeleton';
-            const img = document.createElement('img');
-            img.src = separator.src;
-            img.alt = separator.alt || 'Separator';
-            img.loading = 'lazy';
-            img.onload = () => img.classList.add('loaded');
-            if (img.complete) img.classList.add('loaded');
-            wrapper.appendChild(img);
-            container.appendChild(wrapper);
+          } else if (separator && separator.tagName === 'svg') {
+            container.appendChild(separator.cloneNode(true));
           }
           container.querySelectorAll('*').forEach((el) => {
             if (el.id) el.removeAttribute('id');
@@ -511,8 +330,13 @@
               const cloned = node.cloneNode(true);
               const img = cloned.querySelector('img');
               if (img) {
-                img.onload = () => img.classList.add('loaded');
-                if (img.complete) img.classList.add('loaded');
+                const markLoaded = () => {
+                  img.classList.add('loaded');
+                  cloned.classList.add('loaded');
+                };
+                img.onload = markLoaded;
+                img.onerror = markLoaded;
+                if (img.complete && img.naturalWidth > 0) markLoaded();
               }
               if (cloned.id) cloned.removeAttribute('id');
               cloned.querySelectorAll('*').forEach((el) => {
@@ -566,25 +390,17 @@
         start(cycleWidth, gap) {
           if (this._anim) this._anim.cancel();
           if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
           const distance = cycleWidth + gap;
           if (distance <= 0) return;
-
-          let duration;
-          if (this._opts.duration) {
-            duration = this._opts.duration * 1000;
-          } else {
-            const speed = this._opts.speed > 0 ? this._opts.speed : 50;
-            duration = (distance / speed) * 1000;
-          }
-
+          let duration = this._opts.duration
+            ? this._opts.duration * 1000
+            : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
           const from = 'translate3d(0,0,0)';
           const to = `translate3d(-${distance}px,0,0)`;
           const keyframes =
             this._opts.direction === 'right'
               ? [{ transform: to }, { transform: from }]
               : [{ transform: from }, { transform: to }];
-
           this._anim = this._track.animate(keyframes, {
             duration,
             iterations: Infinity,
@@ -606,7 +422,6 @@
         constructor(selector, opts) {
           this._root = document.querySelector(selector);
           if (!this._root) return;
-
           this._opts = {
             speed: 50,
             duration: null,
@@ -616,54 +431,41 @@
             separator: '',
             renderItem: (i) => document.createTextNode(i),
             pauseOnHover: true,
-            ariaLabel: 'Marquee otomatis',
+            ariaLabel: 'List of items automatically moving in a marquee',
             ...opts,
           };
-
           this._root.classList.add('um-container', 'js-enabled');
           this._root.setAttribute('role', 'region');
           this._root.setAttribute('aria-label', this._opts.ariaLabel);
-
+          this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
           this._builder = new ContentBuilder(this._opts);
           this.#setup();
           this.#initObservers();
           this.#initInteractivity();
         }
-
         #setup() {
           this._root.innerHTML = '';
           this._track = document.createElement('div');
           this._track.className = 'um-track';
           this._track.setAttribute('aria-hidden', 'true');
           if ('inert' in this._track) this._track.inert = true;
-
           this._root.appendChild(this._builder.buildSRList());
           this._root.appendChild(this._track);
-
           this.#reflow();
         }
-
         #reflow() {
           const metrics = this._builder.measureCycleMetrics(this._root);
           if (metrics.width === 0) return;
-
+          if (this._anim) this._anim.cancel();
           const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-          if (this._anim) {
-            this._anim.cancel();
-            this._anim = null;
-          }
-
           const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
           const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
-
           this._track.innerHTML = '';
           const frag = document.createDocumentFragment();
           for (let i = 0; i < cyclesCount; i++) {
             frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
           }
           this._track.appendChild(frag);
-
           if (!reducedMotion) {
             this._anim = new AnimationController(this._track, this._opts);
             this._anim.start(metrics.width, metrics.gap);
@@ -672,13 +474,11 @@
               const hasOverflow = this._track.scrollWidth > this._root.offsetWidth;
               this._root.classList.toggle('um-overflow-left', hasOverflow);
               this._root.classList.toggle('um-overflow-right', hasOverflow);
-              this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
             };
             checkOverflow();
             new ResizeObserver(checkOverflow).observe(this._root);
           }
         }
-
         #initInteractivity() {
           if (this._opts.pauseOnHover !== false) {
             this._root.addEventListener('mouseenter', () => this._anim?.pause());
@@ -686,7 +486,6 @@
             this._root.addEventListener('focusin', () => this._anim?.pause());
             this._root.addEventListener('focusout', () => this._anim?.play());
           }
-
           let touchTimer;
           this._root.addEventListener('touchstart', () => {
             this._anim?.pause();
@@ -697,14 +496,12 @@
             touchTimer = setTimeout(() => this._anim?.play(), 600);
           });
         }
-
         #initObservers() {
           const resizeHandler = () => {
             clearTimeout(this._resizeTimer);
             this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
           };
           new ResizeObserver(resizeHandler).observe(this._root);
-
           if ('IntersectionObserver' in window) {
             this._observer = new IntersectionObserver(
               (entries) => {
@@ -718,73 +515,82 @@
             );
             this._observer.observe(this._root);
           }
-
           document.addEventListener('visibilitychange', () => {
             if (!this._anim) return;
             document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
           });
-
           const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
           mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
         }
       }
-
       window.UniversalMarquee = UniversalMarquee;
     </script>
-
     <script type="module">
+      const createSeparatorSVG = () => {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '64');
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('viewBox', '0 0 554 264');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('fill', '#fff');
+        path.setAttribute(
+          'd',
+          'm136.657 5.657-125.5 125.5 126.5 126.5-5.657 5.656L0 131.314l.158-.158L.001 131 131 0l5.657 5.657Zm51 0-125.5 125.5 126.5 126.5-5.657 5.656L51 131.314l.158-.158-.157-.156L182 0l5.657 5.657ZM502.656 131l-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L366 5.657 371.657 0l130.999 131Zm51 0-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L417 5.657 422.657 0l130.999 131Zm-97.695.327-5.657 5.657-86.271-86.27-.068.068v160.889l.165.165 80.51-80.508 5.657 5.656-82.101 82.1.001.001-4.066 4.065-4.166-4.167v.001l-51-51 5.657-5.656 10.343 10.343v-44.068l-22.534 22.533.002.002-.082.081.033.033-19.005 19.004.002.002-6.367 6.366-26.193-26.192.001-.002-21.826-21.827v44.068l10.343-10.343 5.657 5.656-50.211 50.211.002.002-4.957 4.956-6.371-6.371.001-.002-79.796-79.796 5.657-5.656 80.51 80.508.165-.165V50.782l-.068-.068-86.271 86.27L98 131.327l91.67-91.67 87.31 87.311 87.311-87.31 91.67 91.669Zm-257.965 72.344 22-22v-74.8l9 9v.004l28.191 28.19.001-.001 19.795 19.796 13.047-13.048-13.467-13.467-.001.003-78.566-78.566v144.889Zm85.025-71.945 8.54 8.54v.002l4.503 4.503h.001l.002.001 28.898-28.897v-.004l9-9v74.8l22 22V58.782l-72.944 72.944Z'
+        );
+        svg.appendChild(path);
+        return svg;
+      };
+
       const initApp = () => {
-        const ITEMS_DEMO_2 = ['LOREM IPSUM', 'DOLOR SIT AMET', 'CONSECTETUR ADIPISCING', 'ELIT SED DO'];
-        const GALLERY_ITEMS = [
-          { src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', alt: 'Red Shoe' },
-          { src: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80', alt: 'White Sneaker' },
-          { src: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&q=80', alt: 'Green Shoe' },
+        const DEMO_1_ITEMS = [
+          'Seamless infinite horizontal marquee with dynamic cycle duplication (minimum 3 cycles)',
+          'Two animation modes: speed-based (px/s) or duration-based (fixed cycle time)',
+          "Configurable direction: 'left' or 'right'",
+          'Custom gap via --um-gap or gap option (default 2rem)',
+          "Custom separator: string, DOM Node, or object {type: 'image', src, alt}",
+          'Flexible renderItem callback for rendering arbitrary content',
+          "Built-in lazy loading (loading='lazy') with skeleton placeholder",
+          'Smooth fade-in transition on image load (.loaded class)',
+          'Fixed gallery item dimensions (420×280px default) + border-radius & box-shadow',
+          'Gradient overflow masks (.um-overflow-left/right) with custom --bg',
+          'Pause on hover/focus (mouseenter, focusin)',
+          'Touch interaction: pause on touchstart + delayed resume (600ms)',
+          'IntersectionObserver: auto pause/play when entering/leaving viewport',
+          'Visibilitychange handler: pause when tab is hidden',
+          'Full prefers-reduced-motion compliance → fallback to overflow-x scroll',
+          "Accessibility: SR-only <ul> list, aria-label, role='region', aria-hidden & inert on track",
+          'ResizeObserver for automatic reflow on container resize',
+          'Accurate cycle width measurement via temporary hidden element',
+          'Dynamic cycle duplication based on container width',
+          'High-performance rendering: Web Animations API, translate3d, will-change: transform',
+          'No external dependencies – pure vanilla JS',
+          'Fully responsive and mobile-friendly',
+          'Highly customizable via CSS variables',
         ];
-
-        const imageRenderer = (item) => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'um-img-skeleton';
-          wrapper.style.width = '140px';
-          wrapper.style.height = '90px';
-          const img = document.createElement('img');
-          img.src = item.src;
-          img.alt = item.alt;
-          img.loading = 'lazy';
-          img.onload = () => img.classList.add('loaded');
-          if (img.complete) img.classList.add('loaded');
-          wrapper.appendChild(img);
-          return wrapper;
-        };
-
-        new UniversalMarquee('#marquee-demo-2', {
-          speed: 100,
-          gap: '2rem',
-          direction: 'right',
-          items: ITEMS_DEMO_2,
-          separator: ' • ',
-          renderItem: (t) => {
+        new UniversalMarquee('#marquee-demo-1', {
+          speed: 60,
+          gap: '3rem',
+          direction: 'left',
+          items: DEMO_1_ITEMS,
+          separator: createSeparatorSVG(),
+          renderItem: (text) => {
             const span = document.createElement('span');
-            span.textContent = t;
-            span.style.color = '#e5e7eb';
+            span.textContent = text;
+            span.style.fontSize = '1.5rem';
+            span.style.fontWeight = '800';
+            span.style.letterSpacing = '0.5px';
             return span;
           },
           pauseOnHover: true,
-        });
-
-        new UniversalMarquee('#marquee-full-lazy', {
-          duration: 18,
-          gap: '3rem',
-          items: GALLERY_ITEMS,
-          separator: {
-            type: 'image',
-            src: 'https://cdn-icons-png.flaticon.com/512/766/766029.png',
-            alt: 'Separator dot',
-          },
-          renderItem: imageRenderer,
+          ariaLabel: 'List of Universal Marquee features',
         });
       };
 
-      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', initApp) : initApp();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+      } else {
+        initApp();
+      }
     </script>
   </body>
 </html>
