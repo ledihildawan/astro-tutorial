@@ -15,6 +15,11 @@
         --um-gallery-item-height: 280px;
         --um-gallery-border-radius: 24px;
       }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --um-color-separator: #6b7280;
+        }
+      }
       .um-container {
         display: flex;
         overflow: hidden;
@@ -143,18 +148,31 @@
           justify-content: flex-start;
         }
       }
+      @media (prefers-color-scheme: dark) {
+        .um-img-skeleton {
+          background-color: #374151;
+        }
+        .um-img-skeleton.loaded {
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+      }
     </style>
     <style is:global data-label="ROOT_LAYOUT">
       :root {
         --color-bg-page: #fff;
         --color-text-primary: #111827;
         --color-gridline: #eef1ee;
-        --layout-max-width: 1200px;
-        --layout-gutter: 1.25rem;
-        --layout-guide-width: 1px;
-        --layout-guide-style: dashed;
-        --layout-vertical-padding: 4rem;
-        --layout-footer-height: 4rem;
+        --um-bg-marquee: #111827;
+        --um-text-marquee: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-bg-page: #0f172a;
+          --color-text-primary: #f3f4f6;
+          --color-gridline: #1e293b;
+          --um-bg-marquee: #f8fafc;
+          --um-text-marquee: #111827;
+        }
       }
       body {
         margin: 0;
@@ -170,7 +188,7 @@
         color: var(--color-text-primary);
         min-height: 100vh;
       }
-      .RootLayout {
+      .root-layout {
         position: relative;
         width: 100%;
         display: flex;
@@ -178,8 +196,8 @@
         align-items: center;
         z-index: 0;
       }
-      .RootLayout::before,
-      .RootLayout::after {
+      .root-layout::before,
+      .root-layout::after {
         content: '';
         border-top: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         height: 0;
@@ -189,15 +207,15 @@
         z-index: 1;
         opacity: 1;
       }
-      .RootLayout::before {
+      .root-layout::before {
         top: var(--layout-vertical-padding);
       }
-      .RootLayout::after {
+      .root-layout::after {
         bottom: var(--layout-vertical-padding);
         border-bottom: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         border-top: none;
       }
-      .RootLayoutContainer {
+      .root-layout-container {
         width: calc(100% - (var(--layout-gutter) * 2));
         max-width: var(--layout-max-width);
         min-height: 100%;
@@ -209,8 +227,8 @@
         padding-bottom: var(--layout-vertical-padding);
         box-sizing: border-box;
       }
-      .RootLayoutHeader,
-      .RootLayoutFooter {
+      .root-layout-header,
+      .root-layout-footer {
         position: absolute;
         right: 0;
         bottom: 0;
@@ -220,42 +238,58 @@
         align-items: center;
         justify-content: center;
       }
-      .RootLayoutHeader {
+      .root-layout-header {
         top: 0;
       }
-      .RootLayoutContent {
+      .root-layout-content {
         display: flex;
         flex-direction: column;
         flex: 1;
       }
-      .RootLayoutFooter {
+      .root-layout-footer {
         bottom: 0;
       }
-      h2.demo-title {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        text-align: center;
-        color: #374151;
-      }
-      p.demo-desc {
-        text-align: center;
-        margin: 0 0 1rem 0;
-        font-size: 0.85rem;
-        color: #9ca3af;
+      :root {
+        --layout-max-width: 1200px;
+        --layout-gutter: 1.25rem;
+        --layout-guide-width: 1px;
+        --layout-guide-style: dashed;
+        --layout-vertical-padding: 4rem;
+        --layout-footer-height: 4rem;
       }
       @media (min-width: 64rem) {
-        .RootLayout::before,
-        .RootLayout::after {
+        .root-layout::before,
+        .root-layout::after {
           opacity: 1;
           background-color: transparent;
           height: 0;
         }
-        .RootLayoutContainer {
+        .root-layout-container {
           border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
           border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         }
+      }
+      #marquee-demo-1 {
+        background-color: var(--um-bg-marquee);
+        color: var(--um-text-marquee);
+        padding: 0.8rem 0;
+        --um-gap: 3rem;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-2.68deg);
+        width: 100%;
+        max-width: 1400px;
+        box-sizing: border-box;
+      }
+      #marquee-demo-1 .um-item {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+      #marquee-demo-1 .um-item-separator svg {
+        color: inherit;
+        opacity: 0.6;
       }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -263,28 +297,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div class="RootLayout">
-      <div class="RootLayoutContainer">
-        <div class="RootLayoutHeader">
+    <div class="root-layout">
+      <div class="root-layout-container">
+        <div class="root-layout-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="72" fill="none" viewBox="0 0 554 264">
             <path
-              fill="#000"
+              fill="currentColor"
               d="m136.657 5.657-125.5 125.5 126.5 126.5-5.657 5.656L0 131.314l.158-.158L.001 131 131 0l5.657 5.657Zm51 0-125.5 125.5 126.5 126.5-5.657 5.656L51 131.314l.158-.158-.157-.156L182 0l5.657 5.657ZM502.656 131l-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L366 5.657 371.657 0l130.999 131Zm51 0-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L417 5.657 422.657 0l130.999 131Zm-97.695.327-5.657 5.657-86.271-86.27-.068.068v160.889l.165.165 80.51-80.508 5.657 5.656-82.101 82.1.001.001-4.066 4.065-4.166-4.167v.001l-51-51 5.657-5.656 10.343 10.343v-44.068l-22.534 22.533.002.002-.082.081.033.033-19.005 19.004.002.002-6.367 6.366-26.193-26.192.001-.002-21.826-21.827v44.068l10.343-10.343 5.657 5.656-50.211 50.211.002.002-4.957 4.956-6.371-6.371.001-.002-79.796-79.796 5.657-5.656 80.51 80.508.165-.165V50.782l-.068-.068-86.271 86.27L98 131.327l91.67-91.67 87.31 87.311 87.311-87.31 91.67 91.669Zm-257.965 72.344 22-22v-74.8l9 9v.004l28.191 28.19.001-.001 19.795 19.796 13.047-13.048-13.467-13.467-.001.003-78.566-78.566v144.889Zm85.025-71.945 8.54 8.54v.002l4.503 4.503h.001l.002.001 28.898-28.897v-.004l9-9v74.8l22 22V58.782l-72.944 72.944Z"
             ></path>
           </svg>
         </div>
-        <div class="RootLayoutContent">
+        <div class="root-layout-content">
           <main>
-            <div
-              id="marquee-demo-1"
-              style="background: #111827; color: white; padding: 0.8rem 0; --um-gap: 3rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-2.68deg);"
-            >
-              <h2 class="demo-title"></h2>
-            </div>
+            <h1 class="um-sr-only">Universal Marquee</h1>
+            <h2 class="um-sr-only">Features</h2>
+            <div id="marquee-demo-1" aria-label="List of Universal Marquee features"></div>
           </main>
         </div>
-        <div class="RootLayoutFooter">
-          <span>Copyright © Universal Marquee 2025 by Ledi Hildawan x AI</span>
+        <div class="root-layout-footer">
+          <span>Copyright © Universal Marquee 2025 by Ledi Hildawan</span>
         </div>
       </div>
     </div>
@@ -300,8 +331,6 @@
           if (typeof separator === 'string') {
             container.textContent = separator;
           } else if (separator instanceof Node) {
-            container.appendChild(separator.cloneNode(true));
-          } else if (separator && separator.tagName === 'svg') {
             container.appendChild(separator.cloneNode(true));
           }
           container.querySelectorAll('*').forEach((el) => {
@@ -358,10 +387,32 @@
           return div;
         }
         buildSRList() {
-          const ul = document.createElement('ul');
-          ul.className = 'um-sr-only';
-          ul.appendChild(this.buildCycleContent(true));
-          return ul;
+          const mode = this._opts.screenReaderMode || 'ordered';
+          const items = this._opts.items;
+          if (!items?.length) {
+            const div = document.createElement('div');
+            div.className = 'um-sr-only';
+            return div;
+          }
+          let container;
+          if (mode === 'ordered') {
+            container = document.createElement('ol');
+          } else if (mode === 'unordered') {
+            container = document.createElement('ul');
+          } else {
+            container = document.createElement('div');
+          }
+          container.className = 'um-sr-only';
+          if (mode === 'plain') {
+            items.forEach((item) => {
+              const p = document.createElement('p');
+              p.textContent = item.alt || item;
+              container.appendChild(p);
+            });
+          } else {
+            container.appendChild(this.buildCycleContent(true));
+          }
+          return container;
         }
         measureCycleMetrics(root) {
           if (!this._opts.items?.length) return { width: 0, gap: 0 };
@@ -381,7 +432,6 @@
           return { width, gap: parsedGap };
         }
       }
-
       class AnimationController {
         constructor(track, opts) {
           this._track = track;
@@ -417,7 +467,6 @@
           if (this._anim) this._anim.cancel();
         }
       }
-
       class UniversalMarquee {
         constructor(selector, opts) {
           this._root = document.querySelector(selector);
@@ -432,12 +481,16 @@
             renderItem: (i) => document.createTextNode(i),
             pauseOnHover: true,
             ariaLabel: 'List of items automatically moving in a marquee',
+            screenReader: true,
+            screenReaderMode: 'ordered',
             ...opts,
           };
           this._root.classList.add('um-container', 'js-enabled');
-          this._root.setAttribute('role', 'region');
-          this._root.setAttribute('aria-label', this._opts.ariaLabel);
           this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
+          if (this._opts.screenReader) {
+            this._root.setAttribute('role', 'region');
+            this._root.setAttribute('aria-label', this._opts.ariaLabel);
+          }
           this._builder = new ContentBuilder(this._opts);
           this.#setup();
           this.#initObservers();
@@ -449,7 +502,9 @@
           this._track.className = 'um-track';
           this._track.setAttribute('aria-hidden', 'true');
           if ('inert' in this._track) this._track.inert = true;
-          this._root.appendChild(this._builder.buildSRList());
+          if (this._opts.screenReader) {
+            this._root.appendChild(this._builder.buildSRList());
+          }
           this._root.appendChild(this._track);
           this.#reflow();
         }
@@ -532,7 +587,7 @@
         svg.setAttribute('fill', 'none');
         svg.setAttribute('viewBox', '0 0 554 264');
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('fill', '#fff');
+        path.setAttribute('fill', 'currentColor');
         path.setAttribute(
           'd',
           'm136.657 5.657-125.5 125.5 126.5 126.5-5.657 5.656L0 131.314l.158-.158L.001 131 131 0l5.657 5.657Zm51 0-125.5 125.5 126.5 126.5-5.657 5.656L51 131.314l.158-.158-.157-.156L182 0l5.657 5.657ZM502.656 131l-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L366 5.657 371.657 0l130.999 131Zm51 0-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L417 5.657 422.657 0l130.999 131Zm-97.695.327-5.657 5.657-86.271-86.27-.068.068v160.889l.165.165 80.51-80.508 5.657 5.656-82.101 82.1.001.001-4.066 4.065-4.166-4.167v.001l-51-51 5.657-5.656 10.343 10.343v-44.068l-22.534 22.533.002.002-.082.081.033.033-19.005 19.004.002.002-6.367 6.366-26.193-26.192.001-.002-21.826-21.827v44.068l10.343-10.343 5.657 5.656-50.211 50.211.002.002-4.957 4.956-6.371-6.371.001-.002-79.796-79.796 5.657-5.656 80.51 80.508.165-.165V50.782l-.068-.068-86.271 86.27L98 131.327l91.67-91.67 87.31 87.311 87.311-87.31 91.67 91.669Zm-257.965 72.344 22-22v-74.8l9 9v.004l28.191 28.19.001-.001 19.795 19.796 13.047-13.048-13.467-13.467-.001.003-78.566-78.566v144.889Zm85.025-71.945 8.54 8.54v.002l4.503 4.503h.001l.002.001 28.898-28.897v-.004l9-9v74.8l22 22V58.782l-72.944 72.944Z'
@@ -540,33 +595,32 @@
         svg.appendChild(path);
         return svg;
       };
-
+      const DEMO_1_ITEMS = [
+        'Seamless infinite horizontal marquee with dynamic cycle duplication (minimum 3 cycles)',
+        'Dual animation modes: speed-based (pixels/second) or duration-based (fixed cycle time)',
+        'Configurable scrolling direction: left or right',
+        'Customizable gap via --um-gap CSS variable or gap option (default 2rem)',
+        'Flexible separator support: text, SVG, DOM Node, or image object with src/alt',
+        'Custom renderItem callback for rendering text, images, or complex DOM elements',
+        'Built-in lazy loading for images with skeleton placeholder and fade-in transition',
+        'Configurable gallery item sizes (default 420×280px) with border-radius and box-shadow',
+        'Dynamic gradient overflow masks (left/right) using computed --bg color',
+        'Interactive pause on hover (mouseenter/mouseleave) and focus (focusin/focusout)',
+        'Touch interaction support: pause on touchstart, resume after 600ms on touchend',
+        'IntersectionObserver for auto play/pause based on viewport visibility (50px root margin)',
+        'Tab visibility handler: pauses animation when page/tab is hidden',
+        'Prefers-reduced-motion compliance: falls back to horizontal scroll with no animation',
+        'Robust accessibility: role="region", custom aria-label, SR-only lists (ordered, unordered, or plain modes)',
+        'Inert attribute support on animated track for enhanced accessibility',
+        'ResizeObserver for automatic reflow on container or viewport resize',
+        'Accurate cycle width and gap measurement using temporary hidden DOM element',
+        'Dynamic cycle count calculation based on container width for smooth looping',
+        'High-performance rendering with Web Animations API, translate3d, and will-change: transform',
+        'Pure vanilla JavaScript with zero external dependencies',
+        'Fully responsive design optimized for desktop and mobile',
+        'Extensive customization via CSS variables (--um-font-size, --um-gap, etc.)',
+      ];
       const initApp = () => {
-        const DEMO_1_ITEMS = [
-          'Seamless infinite horizontal marquee with dynamic cycle duplication (minimum 3 cycles)',
-          'Two animation modes: speed-based (px/s) or duration-based (fixed cycle time)',
-          "Configurable direction: 'left' or 'right'",
-          'Custom gap via --um-gap or gap option (default 2rem)',
-          "Custom separator: string, DOM Node, or object {type: 'image', src, alt}",
-          'Flexible renderItem callback for rendering arbitrary content',
-          "Built-in lazy loading (loading='lazy') with skeleton placeholder",
-          'Smooth fade-in transition on image load (.loaded class)',
-          'Fixed gallery item dimensions (420×280px default) + border-radius & box-shadow',
-          'Gradient overflow masks (.um-overflow-left/right) with custom --bg',
-          'Pause on hover/focus (mouseenter, focusin)',
-          'Touch interaction: pause on touchstart + delayed resume (600ms)',
-          'IntersectionObserver: auto pause/play when entering/leaving viewport',
-          'Visibilitychange handler: pause when tab is hidden',
-          'Full prefers-reduced-motion compliance → fallback to overflow-x scroll',
-          "Accessibility: SR-only <ul> list, aria-label, role='region', aria-hidden & inert on track",
-          'ResizeObserver for automatic reflow on container resize',
-          'Accurate cycle width measurement via temporary hidden element',
-          'Dynamic cycle duplication based on container width',
-          'High-performance rendering: Web Animations API, translate3d, will-change: transform',
-          'No external dependencies – pure vanilla JS',
-          'Fully responsive and mobile-friendly',
-          'Highly customizable via CSS variables',
-        ];
         new UniversalMarquee('#marquee-demo-1', {
           speed: 60,
           gap: '3rem',
@@ -576,16 +630,15 @@
           renderItem: (text) => {
             const span = document.createElement('span');
             span.textContent = text;
-            span.style.fontSize = '1.5rem';
-            span.style.fontWeight = '800';
-            span.style.letterSpacing = '0.5px';
+            span.classList.add('um-item');
             return span;
           },
           pauseOnHover: true,
           ariaLabel: 'List of Universal Marquee features',
+          screenReader: true,
+          screenReaderMode: 'plain',
         });
       };
-
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initApp);
       } else {
