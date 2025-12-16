@@ -995,13 +995,10 @@
           <main>
             <h1 style="text-align: center; font-size: 3.5rem;">Universal Marquee</h1>
 
-            <section>
-              <h2 class="um-sr-only">Intro</h2>
-              <p class="intro">
-                Lightweight, accessible vanilla JS library for infinite horizontal marquees. Works with text, images, or
-                custom content. Scrolls continuously left or right.
-              </p>
-            </section>
+            <p class="intro">
+              Lightweight, accessible vanilla JS library for infinite horizontal marquees. Works with text, images, or
+              custom content. Scrolls continuously left or right.
+            </p>
 
             <section class="section" aria-labelledby="features-heading">
               <h2 id="features-heading">Key Features</h2>
@@ -1565,33 +1562,33 @@
       const sambaViews = [
         {
           view: 'Side Profile',
-          // Gambar sisi klasik
           img: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp',
+          alt: 'Adidas Samba OG - Classic side profile view showing the iconic T-toe design and gum sole',
         },
         {
           view: 'Top-Down / Lacing',
-          // Tampak atas fokus pada tali
           img: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp',
+          alt: 'Adidas Samba OG - Top-down view highlighting the premium leather upper and precise lacing system',
         },
         {
           view: 'Toe Box Detail',
-          // Close up bagian depan/suede
           img: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp',
+          alt: 'Adidas Samba OG - Close-up detail of the suede T-toe overlay and textured leather',
         },
         {
           view: 'Lifestyle / On-Foot',
-          // Contoh pemakaian
           img: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp',
+          alt: 'Adidas Samba OG - Lifestyle shot worn on foot, showing comfortable fit and street style',
         },
         {
           view: 'Heel Tab & Sole',
-          // Bagian belakang dan sol gum
           img: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp',
+          alt: 'Adidas Samba OG - Rear view featuring the heel tab and signature translucent gum rubber sole',
         },
         {
           view: 'Perspective View',
-          // Sudut 3/4
           img: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp',
+          alt: 'Adidas Samba OG - Three-quarter perspective angle showcasing the timeless silhouette',
         },
       ];
 
@@ -1617,12 +1614,48 @@
 
       // Demo 4: Stock/Crypto Ticker (Updated)
       const stocks = [
-        { sym: 'BTC', val: '$94,230', change: '2.4%', up: true },
-        { sym: 'ETH', val: '$5,120', change: '0.8%', up: false },
-        { sym: 'SOL', val: '$145', change: '5.2%', up: true },
-        { sym: 'NVDA', val: '$880', change: '3.1%', up: true },
-        { sym: 'TSLA', val: '$175', change: '1.5%', up: false },
-        { sym: 'AAPL', val: '$190', change: '0.2%', up: true },
+        {
+          sym: 'BTC',
+          val: '$86,000',
+          change: '3.0%',
+          up: false, // down karena -3% di beberapa sumber
+          text: 'Bitcoin (BTC) current price $86,000, down 3.0% in the last 24 hours',
+        },
+        {
+          sym: 'ETH',
+          val: '$3,000',
+          change: '5.0%',
+          up: false,
+          text: 'Ethereum (ETH) current price $3,000, down 5.0% in the last 24 hours',
+        },
+        {
+          sym: 'SOL',
+          val: '$127',
+          change: '3.8%',
+          up: false,
+          text: 'Solana (SOL) current price $127, down 3.8% in the last 24 hours',
+        },
+        {
+          sym: 'NVDA',
+          val: '$177',
+          change: '1.2%',
+          up: true,
+          text: 'NVIDIA (NVDA) stock price $177, up 1.2%',
+        },
+        {
+          sym: 'TSLA',
+          val: '$475',
+          change: '3.6%',
+          up: true,
+          text: 'Tesla (TSLA) stock price $475, up 3.6%',
+        },
+        {
+          sym: 'AAPL',
+          val: '$274',
+          change: '1.5%',
+          up: false,
+          text: 'Apple (AAPL) stock price $274, down 1.5%',
+        },
       ];
 
       new UniversalMarquee('#demo-ticker', {
