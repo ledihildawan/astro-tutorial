@@ -3,7 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Marquee</title>
+    <title>Universal Marquee - Seamless Infinite Horizontal Marquee JavaScript Library</title>
+    <meta
+      name="description"
+      content="Universal Marquee is a lightweight, accessible, pure vanilla JavaScript library for creating seamless infinite horizontal marquees with text, images, or custom content. Supports speed/duration modes, pause on hover, accessibility, and prefers-reduced-motion."
+    />
+    <meta
+      name="keywords"
+      content="javascript marquee, infinite marquee, horizontal scrolling marquee, accessible marquee, vanilla js marquee, seamless marquee, image marquee, text marquee"
+    />
+    <meta name="author" content="Ledi Hildawan" />
+    <meta property="og:title" content="Universal Marquee - Seamless Infinite Horizontal Marquee" />
+    <meta
+      property="og:description"
+      content="Lightweight vanilla JavaScript library for accessible, responsive infinite marquees with dynamic duplication, lazy loading, and full customization."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://universal-marquee.example.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet" />
     <style is:global data-label="CORE_STYLES">
       :root {
         --um-duration-default: 15s;
@@ -292,9 +311,6 @@
         opacity: 0.6;
       }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div class="root-layout">
@@ -309,9 +325,20 @@
         </div>
         <div class="root-layout-content">
           <main>
-            <h1 class="um-sr-only">Universal Marquee</h1>
-            <h2 class="um-sr-only">Features</h2>
-            <div id="marquee-demo-1" aria-label="List of Universal Marquee features"></div>
+            <h1>Universal Marquee - Seamless Infinite Horizontal Marquee</h1>
+            <p>
+              Universal Marquee is a lightweight, accessible, pure vanilla JavaScript library that provides a seamless
+              infinite horizontal marquee effect. It supports text, images, or any custom content moving continuously
+              from left to right or right to left without interruption.
+            </p>
+            <h2>Key Features</h2>
+            <div
+              id="marquee-demo-1"
+              role="region"
+              aria-label="List of Universal Marquee key features"
+              aria-live="polite"
+            >
+            </div>
           </main>
         </div>
         <div class="root-layout-footer">
@@ -596,29 +623,23 @@
         return svg;
       };
       const DEMO_1_ITEMS = [
-        'Seamless infinite horizontal marquee with dynamic cycle duplication (minimum 3 cycles)',
-        'Dual animation modes: speed-based (pixels/second) or duration-based (fixed cycle time)',
-        'Configurable scrolling direction: left or right',
-        'Customizable gap via --um-gap CSS variable or gap option (default 2rem)',
-        'Flexible separator support: text, SVG, DOM Node, or image object with src/alt',
-        'Custom renderItem callback for rendering text, images, or complex DOM elements',
-        'Built-in lazy loading for images with skeleton placeholder and fade-in transition',
-        'Configurable gallery item sizes (default 420×280px) with border-radius and box-shadow',
-        'Dynamic gradient overflow masks (left/right) using computed --bg color',
-        'Interactive pause on hover (mouseenter/mouseleave) and focus (focusin/focusout)',
-        'Touch interaction support: pause on touchstart, resume after 600ms on touchend',
-        'IntersectionObserver for auto play/pause based on viewport visibility (50px root margin)',
-        'Tab visibility handler: pauses animation when page/tab is hidden',
-        'Prefers-reduced-motion compliance: falls back to horizontal scroll with no animation',
-        'Robust accessibility: role="region", custom aria-label, SR-only lists (ordered, unordered, or plain modes)',
-        'Inert attribute support on animated track for enhanced accessibility',
-        'ResizeObserver for automatic reflow on container or viewport resize',
-        'Accurate cycle width and gap measurement using temporary hidden DOM element',
-        'Dynamic cycle count calculation based on container width for smooth looping',
-        'High-performance rendering with Web Animations API, translate3d, and will-change: transform',
-        'Pure vanilla JavaScript with zero external dependencies',
-        'Fully responsive design optimized for desktop and mobile',
-        'Extensive customization via CSS variables (--um-font-size, --um-gap, etc.)',
+        'Seamless infinite horizontal marquee with automatic dynamic cycle duplication for perfect looping (minimum 3 cycles)',
+        'Dual animation modes: speed-based scrolling (pixels per second) or fixed duration-based cycle time',
+        'Configurable scrolling direction – left to right or right to left',
+        'Customizable gap between items using CSS variable or JavaScript option (default 2rem)',
+        'Flexible separator support: plain text, SVG icons, DOM nodes, or images',
+        'Custom renderItem function to display plain text, images, or complex custom DOM elements',
+        'Built-in lazy loading for images with skeleton placeholder and smooth fade-in effect',
+        'Configurable gallery item dimensions and styling with border radius and shadow',
+        'Dynamic gradient overlay masks on left and right sides based on background color',
+        'Pause animation on hover, focus, and touch interactions for better user control',
+        'Automatic play/pause based on viewport visibility using IntersectionObserver',
+        'Respects prefers-reduced-motion – switches to static horizontal scroll when enabled',
+        'Full accessibility support with screen-reader-only list, proper ARIA attributes, and inert track',
+        'High performance using Web Animations API and GPU-accelerated transforms',
+        'Pure vanilla JavaScript – zero external dependencies',
+        'Fully responsive and mobile-friendly design',
+        'Extensive customization options via CSS variables and JavaScript configuration',
       ];
       const initApp = () => {
         new UniversalMarquee('#marquee-demo-1', {
@@ -634,7 +655,7 @@
             return span;
           },
           pauseOnHover: true,
-          ariaLabel: 'List of Universal Marquee features',
+          ariaLabel: 'List of Universal Marquee key features',
           screenReader: true,
           screenReaderMode: 'plain',
         });
