@@ -976,6 +976,29 @@
           border-color: #fecaca;
         }
       }
+
+      .copy-btn {
+        margin-top: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: #e2e8f0;
+        border: none;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .copy-btn:hover {
+        background: #cbd5e1;
+      }
+      @media (prefers-color-scheme: dark) {
+        .copy-btn {
+          background: #334155;
+        }
+        .copy-btn:hover {
+          background: #475569;
+        }
+      }
     </style>
   </head>
 
@@ -1011,21 +1034,36 @@
               </div>
             </section>
 
-            <!-- How to Use – sekarang selaras dengan section lain -->
             <section class="section how-to-use" aria-labelledby="usage-heading">
               <h2 id="usage-heading">How to Use</h2>
               <p>
-                Include the library script at the end of <code>&lt;body&gt;</code> (with <code>type="module"</code>),
-                then initialize it using <code>new UniversalMarquee(selector, options)</code>.
+                Include the library script at the end of the <code>&lt;body&gt;</code> (with <code>type="module"</code
+                >), then initialize it using <code>new UniversalMarquee(selector, options)</code>.
               </p>
               <div class="examples-grid">
+                <!-- 1. Scrolling Testimonials -->
                 <article class="usage-example">
                   <h3>Scrolling Testimonials</h3>
-                  <p>Perfect for showcasing customer feedback to build trust without disrupting the main layout.</p>
-                  <div id="demo-testimonials" role="region" aria-label="Scrolling testimonials demo" aria-live="polite">
+                  <p>
+                    Ideal for displaying customer reviews in a scrolling manner, building trust without disrupting the
+                    main layout.
+                  </p>
+                  <div
+                    id="demo-testimonials"
+                    role="region"
+                    aria-label="Scrolling testimonial marquee demo"
+                    aria-live="polite"
+                  >
                   </div>
-                  <pre
-                    style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;testimonials&quot; class=&quot;um-container um-testimonials&quot;&gt;&lt;&#47;div&gt;
+                  <p>
+                    Create an empty container div, then initialize UniversalMarquee with an array of testimonial data
+                    and a renderItem function to create beautiful review cards.
+                  </p>
+                  <!-- Visual code block – ONLY for sighted users -->
+                  <figure class="code-block-visual" aria-hidden="true">
+                    <figcaption>Full code example for Scrolling Testimonials</figcaption>
+                    <pre
+                      style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;testimonials&quot; class=&quot;um-container um-testimonials&quot;&gt;&lt;&#47;div&gt;
 &lt;script type=&quot;module&quot;&gt;
   new UniversalMarquee&#40;&#39;#testimonials&#39;&#44; &#123;
     items&#58; &#91;
@@ -1042,13 +1080,55 @@
     speed&#58; 40
   &#125;&#41;;
 &lt;&#47;script&gt;</code></pre>
+                    <button class="copy-btn" aria-label="Copy Scrolling Testimonials code to clipboard">
+                      Copy code
+                    </button>
+                  </figure>
+                  <!-- FOR SCREEN READERS: Structured and readable explanation -->
+                  <div class="um-sr-only" role="region" aria-label="Explanation of how to use Scrolling Testimonials">
+                    <h4>How to create a Scrolling Testimonials marquee:</h4>
+                    <ol>
+                      <li>
+                        Create an empty div element with a unique ID (e.g., "testimonials") and add the class
+                        "um-container".
+                      </li>
+                      <li>Add a script tag with type="module".</li>
+                      <li>Initialize the library using: new UniversalMarquee with the selector '#testimonials'.</li>
+                      <li>
+                        Provide the "items" option as an array of objects, where each object has a "text" property
+                        containing the testimonial content.
+                      </li>
+                      <li>
+                        Use the "renderItem" option: a function that receives an item parameter, creates a div element
+                        with class "testimonial-card", and sets its innerHTML to a paragraph containing the quote from
+                        item.text.
+                      </li>
+                      <li>
+                        Set "gap" to '2.5rem' for spacing between items, and "speed" to 40 for a moderate animation
+                        speed.
+                      </li>
+                    </ol>
+                    <p>
+                      Example items data: first object with text "Amazing product!", second with text "Transformed my
+                      workflow."
+                    </p>
+                  </div>
                 </article>
+
+                <!-- 2. Product Showcase -->
                 <article class="usage-example">
                   <h3>Product Showcase</h3>
-                  <p>Great for highlighting featured or new products on a homepage.</p>
-                  <div id="demo-products" role="region" aria-label="Product showcase demo" aria-live="polite"></div>
-                  <pre
-                    style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;products&quot; class=&quot;um-container um-gallery&quot;&gt;&lt;&#47;div&gt;
+                  <p>Perfect for highlighting featured or new products on the homepage with high-quality images.</p>
+                  <div id="demo-products" role="region" aria-label="Product showcase marquee demo" aria-live="polite">
+                  </div>
+                  <p>
+                    Prepare an array of images with src and alt properties, then use renderItem to create image cards
+                    with a skeleton loading effect.
+                  </p>
+                  <figure class="code-block-visual" aria-hidden="true">
+                    <figcaption>Full code example for Product Showcase</figcaption>
+                    <pre
+                      style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;products&quot; class=&quot;um-container um-gallery&quot;&gt;&lt;&#47;div&gt;
 &lt;script type=&quot;module&quot;&gt;
   new UniversalMarquee&#40;&#39;#products&#39;&#44; &#123;
     items&#58; &#91;
@@ -1058,19 +1138,47 @@
     renderItem&#58; &#40;item&#41; &#61;&gt; &#123;
       const div &#61; document&#46;createElement&#40;&#39;div&#39;&#41;&#59;
       div&#46;className &#61; &#39;product-card um-img-skeleton&#39;&#59;
-      div&#46;innerHTML &#61; &#96;&lt;img src=&quot;$&#123;item&#46;src&#125;&quot;&gt;&#96;&#59;
+      div&#46;innerHTML &#61; &#96;&lt;img src=&quot;$&#123;item&#46;src&#125;&quot; alt=&quot;$&#123;item&#46;alt&#125;&quot;&gt;&#96;&#59;
       return div&#59;
     &#125;&#44;
     speed&#58; 50
   &#125;&#41;;
 &lt;&#47;script&gt;</code></pre>
+                    <button class="copy-btn" aria-label="Copy Product Showcase code to clipboard">Copy code</button>
+                  </figure>
+                  <div class="um-sr-only" role="region" aria-label="Explanation of how to use Product Showcase">
+                    <h4>How to create a Product Showcase marquee:</h4>
+                    <ol>
+                      <li>Create an empty div with ID "products" and class "um-container".</li>
+                      <li>
+                        The items option is an array of objects with "src" (image URL) and "alt" (alternative text)
+                        properties.
+                      </li>
+                      <li>
+                        renderItem creates a div with class "product-card um-img-skeleton", then adds an img element
+                        using src and alt from the item.
+                      </li>
+                      <li>Set "speed" to 50 for a comfortable animation when viewing product details.</li>
+                    </ol>
+                    <p>Example item: src "img1.jpg", alt "Sneakers".</p>
+                  </div>
                 </article>
+
+                <!-- 3. News Ticker -->
                 <article class="usage-example">
                   <h3>News Ticker</h3>
-                  <p>Ideal for displaying breaking news or alerts with a fast-moving ticker effect.</p>
-                  <div id="demo-ticker" role="region" aria-label="News ticker demo" aria-live="polite"></div>
-                  <pre
-                    style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;ticker&quot; class=&quot;um-container&quot;&gt;&lt;&#47;div&gt;
+                  <p>
+                    Great for displaying latest news, promotions, or notifications with a classic fast ticker effect.
+                  </p>
+                  <div id="demo-ticker" role="region" aria-label="News ticker marquee demo" aria-live="polite"></div>
+                  <p>
+                    Use a simple array of strings as items, add a separator, and set a high speed with right-to-left
+                    direction.
+                  </p>
+                  <figure class="code-block-visual" aria-hidden="true">
+                    <figcaption>Full code example for News Ticker</figcaption>
+                    <pre
+                      style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;ticker&quot; class=&quot;um-container&quot;&gt;&lt;&#47;div&gt;
 &lt;script type=&quot;module&quot;&gt;
   new UniversalMarquee&#40;&#39;#ticker&#39;&#44; &#123;
     items&#58; &#91;
@@ -1082,6 +1190,23 @@
     direction&#58; &#39;right&#39;
   &#125;&#41;;
 &lt;&#47;script&gt;</code></pre>
+                    <button class="copy-btn" aria-label="Copy News Ticker code to clipboard">Copy code</button>
+                  </figure>
+                  <div class="um-sr-only" role="region" aria-label="Explanation of how to use News Ticker">
+                    <h4>How to create a News Ticker marquee:</h4>
+                    <ol>
+                      <li>Create an empty div with ID "ticker" and class "um-container".</li>
+                      <li>Items are a simple array of strings containing the news or notification text.</li>
+                      <li>Add the "separator" option, such as ' &bull; ' to separate items.</li>
+                      <li>
+                        Set "speed" to 80 for a fast effect, and "direction" to 'right' for the classic ticker direction
+                        (right to left).
+                      </li>
+                    </ol>
+                    <p>
+                      Example items: "New Feature: AI Integration Now Live!" and "Flash Sale: 50% Off Select Items".
+                    </p>
+                  </div>
                 </article>
               </div>
             </section>
@@ -1690,5 +1815,20 @@
     } else {
       initApp();
     }
+
+    // Tambahkan ini di dalam initApp() atau di script terpisah
+    document.querySelectorAll('.copy-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const code = btn.previousElementSibling.querySelector('code').textContent;
+        try {
+          await navigator.clipboard.writeText(code);
+          btn.textContent = 'Copied!';
+          setTimeout(() => (btn.textContent = 'Copy code'), 2000);
+        } catch (err) {
+          btn.textContent = 'Failed';
+          setTimeout(() => (btn.textContent = 'Copy code'), 2000);
+        }
+      });
+    });
   </script>
 </html>
