@@ -329,18 +329,34 @@
         line-height: 1.7;
         opacity: 0.9;
       }
+      /* Styling untuk Code Block */
       .usage-example pre {
-        background: #0f172a;
-        color: #e2e8f0;
-        padding: 1.5rem;
+        /* Default Light Mode */
+        background-color: #f1f5f9; /* Slate-100 */
+        color: #334155; /* Slate-700 (Dark text) */
+        border: 1px solid #e2e8f0;
+
+        padding: 1.25rem;
         border-radius: 12px;
         overflow-x: auto;
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         line-height: 1.5;
-        margin: 2rem 0 0;
-      }
-      .usage-example code {
+        margin-top: 1.5rem;
         font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      }
+
+      /* Override untuk Dark Mode */
+      @media (prefers-color-scheme: dark) {
+        .usage-example pre {
+          background-color: #020617 !important; /* Background Gelap (Pakai !important jika bandel) */
+          color: #e2e8f0 !important; /* Teks Terang */
+          border-color: #1e293b;
+        }
+      }
+
+      .usage-example code {
+        font-family: inherit;
+        color: inherit;
       }
     </style>
 
@@ -496,52 +512,207 @@
       }
     </style>
     <style>
-      /* Testimonials */
+      /* --- DEMO 1: Modern Testimonials (Glassmorphism + Adaptive) --- */
       #demo-testimonials {
-        --um-gap: 3rem;
-        padding: 2rem 0;
-        background: linear-gradient(to right, #f8fafc, #f1f5f9);
-        border-radius: 20px;
-        margin: 2rem 0;
-      }
-      @media (prefers-color-scheme: dark) {
-        #demo-testimonials {
-          background: linear-gradient(to right, #1e293b, #0f172a);
-        }
-      }
-      #demo-testimonials .um-item {
-        background: white;
-        padding: 1.5rem 2rem;
-        border-radius: 16px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        font-size: 1.3rem;
-        font-weight: 600;
-        min-width: 300px;
-      }
-      @media (prefers-color-scheme: dark) {
-        #demo-testimonials .um-item {
-          background: #1e293b;
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-      }
-
-      /* Products */
-      #demo-products {
         --um-gap: 2rem;
         padding: 3rem 0;
+        /* Default Light Mode Background */
+        background:
+          radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 70%),
+          linear-gradient(to right, #f8fafc, #eff6ff);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
       }
 
-      /* News Ticker */
-      #demo-ticker {
-        background: #ff6ac1;
-        color: white;
-        padding: 1rem 0;
-        font-weight: 800;
-        font-size: 1.4rem;
-        --um-gap: 4rem;
+      .testimonial-card {
+        /* Light Mode Card */
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        padding: 1.5rem;
+        border-radius: 16px;
+        width: 320px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        white-space: normal;
+        color: #1e293b;
+        transition:
+          transform 0.3s ease,
+          background-color 0.3s,
+          border-color 0.3s;
       }
-      #demo-ticker .um-item {
-        padding: 0.5rem 1.5rem;
+
+      .t-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .t-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+      }
+      .t-info h4 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: inherit;
+      }
+      .t-info span {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .t-stars {
+        color: #fbbf24;
+        font-size: 0.9rem;
+      }
+      .t-body {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        opacity: 0.9;
+        font-style: italic;
+      }
+
+      /* Dark Mode Override for Testimonials */
+      @media (prefers-color-scheme: dark) {
+        #demo-testimonials {
+          background:
+            radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 70%),
+            linear-gradient(to right, #0f172a, #1e293b);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+        .testimonial-card {
+          background: rgba(30, 41, 59, 0.7); /* Dark semi-transparent */
+          border-color: rgba(255, 255, 255, 0.1);
+          color: #f1f5f9;
+        }
+        .t-info span {
+          color: #94a3b8;
+        }
+      }
+
+      /* --- DEMO 2: Album Cover Flow --- */
+      #demo-products {
+        --um-gap: 1.5rem;
+        padding: 2.5rem 0;
+        /* Neutral dark bg for media looks good in both modes usually, but let's adapt */
+        background: #f1f5f9;
+        border-radius: 20px;
+      }
+      @media (prefers-color-scheme: dark) {
+        #demo-products {
+          background: #111827;
+        }
+      }
+
+      .album-card {
+        width: 180px;
+        height: 180px;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .album-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      .album-card:hover img {
+        transform: scale(1.15);
+      }
+
+      .album-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 60%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .album-card:hover .album-overlay {
+        opacity: 1;
+      }
+      .album-overlay span {
+        color: white;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .album-overlay small {
+        color: #cbd5e1;
+        font-size: 0.75rem;
+      }
+
+      /* --- DEMO 3: Tech Ticker --- */
+      #demo-ticker {
+        /* High contrast tech look */
+        background: #0f172a;
+        border-left: 4px solid #10b981;
+        color: #f8fafc;
+        padding: 1rem 0;
+        font-family: 'JetBrains Mono', 'Menlo', monospace;
+        font-size: 0.95rem;
+        --um-gap: 4rem;
+        border-radius: 8px;
+      }
+      /* In Light mode, maybe we want a "Bloomberg Terminal" white look? */
+      @media (prefers-color-scheme: light) {
+        #demo-ticker {
+          background: #e2e8f0;
+          color: #1e293b;
+          border-left-color: #059669;
+        }
+      }
+
+      .ticker-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      .ticker-sym {
+        font-weight: 800;
+      }
+      .ticker-change {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+      .t-up {
+        color: #22c55e;
+        background: rgba(34, 197, 94, 0.15);
+      }
+      .t-down {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.15);
+      }
+
+      /* Dark mode adjustment for visibility */
+      @media (prefers-color-scheme: dark) {
+        .t-up {
+          color: #4ade80;
+          background: rgba(74, 222, 128, 0.1);
+        }
+        .t-down {
+          color: #f87171;
+          background: rgba(248, 113, 113, 0.1);
+        }
       }
     </style>
   </head>
@@ -588,19 +759,14 @@
                 Include the library script at the end of <code>&lt;body&gt;</code> (with <code>type="module"</code>),
                 then initialize it using <code>new UniversalMarquee(selector, options)</code>.
               </p>
-
               <div class="examples-grid">
                 <article class="usage-example">
                   <h3>1. Scrolling Testimonials</h3>
                   <p>Perfect for showcasing customer feedback to build trust without disrupting the main layout.</p>
-                  <div
-                    id="demo-testimonials"
-                    role="region"
-                    aria-label="List of Universal Marquee key features"
-                    aria-live="polite"
-                  >
+                  <div id="demo-testimonials" role="region" aria-label="Scrolling testimonials demo" aria-live="polite">
                   </div>
-                  <pre><code>&lt;div id=&quot;testimonials&quot; class=&quot;um-container um-testimonials&quot;&gt;&lt;&#47;div&gt;
+                  <pre
+                    style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;testimonials&quot; class=&quot;um-container um-testimonials&quot;&gt;&lt;&#47;div&gt;
 &lt;script type=&quot;module&quot;&gt;
   new UniversalMarquee&#40;&#39;#testimonials&#39;&#44; &#123;
     items&#58; &#91;
@@ -618,18 +784,12 @@
   &#125;&#41;;
 &lt;&#47;script&gt;</code></pre>
                 </article>
-
                 <article class="usage-example">
                   <h3>2. Product Showcase</h3>
                   <p>Great for highlighting featured or new products on a homepage.</p>
-                  <div
-                    id="demo-products"
-                    role="region"
-                    aria-label="List of Universal Marquee key features"
-                    aria-live="polite"
-                  >
-                  </div>
-                  <pre><code>&lt;div id=&quot;products&quot; class=&quot;um-container um-gallery&quot;&gt;&lt;&#47;div&gt;
+                  <div id="demo-products" role="region" aria-label="Product showcase demo" aria-live="polite"></div>
+                  <pre
+                    style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;products&quot; class=&quot;um-container um-gallery&quot;&gt;&lt;&#47;div&gt;
 &lt;script type=&quot;module&quot;&gt;
   new UniversalMarquee&#40;&#39;#products&#39;&#44; &#123;
     items&#58; &#91;
@@ -646,18 +806,12 @@
   &#125;&#41;;
 &lt;&#47;script&gt;</code></pre>
                 </article>
-
                 <article class="usage-example">
                   <h3>3. News Ticker</h3>
                   <p>Ideal for displaying breaking news or alerts with a fast-moving ticker effect.</p>
-                  <div
-                    id="demo-ticker"
-                    role="region"
-                    aria-label="List of Universal Marquee key features"
-                    aria-live="polite"
-                  >
-                  </div>
-                  <pre><code>&lt;div id=&quot;ticker&quot; class=&quot;um-container&quot;&gt;&lt;&#47;div&gt;
+                  <div id="demo-ticker" role="region" aria-label="News ticker demo" aria-live="polite"></div>
+                  <pre
+                    style="background:#f1f5f9; padding:1rem; border-radius:8px; overflow:auto;"><code>&lt;div id=&quot;ticker&quot; class=&quot;um-container&quot;&gt;&lt;&#47;div&gt;
 &lt;script type=&quot;module&quot;&gt;
   new UniversalMarquee&#40;&#39;#ticker&#39;&#44; &#123;
     items&#58; &#91;
@@ -989,56 +1143,94 @@
         gradientOverlay: false,
       });
 
+      // Demo 2: Testimonials (User Reviews Style)
+      const reviews = [
+        { name: 'Sarah J.', role: 'Dev', text: 'This library saved me hours of work!', stars: 5 },
+        { name: 'Mike T.', role: 'Designer', text: 'Smooth animations and easy to setup.', stars: 5 },
+        { name: 'Alex R.', role: 'Manager', text: 'Best marquee solution I found.', stars: 4 },
+        { name: 'Emily W.', role: 'CTO', text: 'Performance is top notch. Love it.', stars: 5 },
+        { name: 'David K.', role: 'Frontend', text: 'Accessible and lightweight. Perfect.', stars: 5 },
+      ];
+
       new UniversalMarquee('#demo-testimonials', {
-        items: [
-          { text: 'Amazing product!', author: 'John Doe' },
-          { text: 'Transformed my workflow.', author: 'Jane Smith' },
-          { text: 'Best ever!', author: 'Alex' },
-          { text: 'Highly recommend!', author: 'Sarah' },
-          { text: 'Incredible support team.', author: 'Mike' },
-        ],
+        items: reviews,
         renderItem: (item) => {
           const div = document.createElement('div');
-          div.className = 'um-item';
-          div.innerHTML = `<strong>"${item.text}"</strong><br>— ${item.author}`;
+          div.className = 'testimonial-card';
+          div.innerHTML = `
+          <div class="t-header">
+            <div class="t-avatar">${item.name.charAt(0)}</div>
+            <div class="t-info">
+              <h4>${item.name}</h4>
+              <span>${item.role}</span>
+            </div>
+            <div class="t-stars">${'★'.repeat(item.stars)}</div>
+          </div>
+          <div class="t-body">"${item.text}"</div>
+        `;
           return div;
         },
-        speed: 35,
+        speed: 20, // Slower for reading
+        gap: '2rem',
         pauseOnHover: true,
       });
 
+      // Demo 3: Product/Media Flow (Album Covers)
+      // Menggunakan placeholder image yang estetik dari Unsplash Source / Picsum
+      const albums = [
+        { title: 'Neon Nights', artist: 'Cyberwave', img: 'https://picsum.photos/id/10/400/400' },
+        { title: 'Mountain Echo', artist: 'Nature Sounds', img: 'https://picsum.photos/id/28/400/400' },
+        { title: 'Urban Flow', artist: 'City Beats', img: 'https://picsum.photos/id/58/400/400' },
+        { title: 'Coffee House', artist: 'Acoustic', img: 'https://picsum.photos/id/30/400/400' },
+        { title: 'Deep Ocean', artist: 'Ambient', img: 'https://picsum.photos/id/16/400/400' },
+        { title: 'Retro Future', artist: 'Synth', img: 'https://picsum.photos/id/56/400/400' },
+      ];
+
       new UniversalMarquee('#demo-products', {
-        items: [
-          { src: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp', alt: 'Cool Sneakers' },
-          { src: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp', alt: 'Awesome T-Shirt' },
-          { src: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp', alt: 'Stylish Hat' },
-          { src: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp', alt: 'Premium Bag' },
-          { src: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp', alt: 'Premium Bag' },
-          { src: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp', alt: 'Premium Bag' },
-        ],
+        items: albums,
         renderItem: (item) => {
           const div = document.createElement('div');
-          div.className = 'um-img-skeleton um-item';
-          div.style.width = '320px';
-          div.style.height = '220px';
-          div.innerHTML = `<img src="${item.src}" alt="${item.alt}" loading="lazy">`;
+          div.className = 'album-card um-img-skeleton'; // Keep skeleton class for lazy load effect
+          div.innerHTML = `
+          <img src="${item.img}" alt="${item.title}" loading="lazy">
+          <div class="album-overlay">
+            <span>${item.title}</span>
+            <small>${item.artist}</small>
+          </div>
+        `;
           return div;
         },
-        speed: 45,
-        gap: '0.5rem',
+        speed: 40,
+        gap: '1.5rem',
       });
 
+      // Demo 4: Stock/Crypto Ticker
+      const stocks = [
+        { sym: 'BTC', val: '$94,230', change: '+2.4%', up: true },
+        { sym: 'ETH', val: '$5,120', change: '-0.8%', up: false },
+        { sym: 'JS', val: '$1,337', change: '+12.5%', up: true },
+        { sym: 'CSS', val: '$420', change: '+5.0%', up: true },
+        { sym: 'HTML', val: '$100', change: '+0.1%', up: true },
+        { sym: 'REACT', val: '$850', change: '-2.1%', up: false },
+      ];
+
       new UniversalMarquee('#demo-ticker', {
-        items: [
-          'New Feature: AI Integration Now Live! 🎉',
-          'Flash Sale: 50% Off Select Items 🔥',
-          'Update: Version 2.0 Released! 🚀',
-          'Join our community for more fun! ✨',
-          'Limited time offer ending soon ⏰',
-        ],
-        separator: ' 🎊 ',
-        speed: 80,
-        direction: 'right',
+        items: stocks,
+        renderItem: (item) => {
+          const div = document.createElement('div');
+          div.className = 'ticker-item';
+          const arrow = item.up ? '▲' : '▼';
+          const colorClass = item.up ? 'ticker-up' : 'ticker-down';
+          div.innerHTML = `
+          <span class="ticker-symbol">${item.sym}</span>
+          <span class="ticker-val">${item.val}</span>
+          <span class="ticker-change ${colorClass}">${arrow} ${item.change}</span>
+        `;
+          return div;
+        },
+        separator: '  |  ',
+        speed: 50,
+        direction: 'left', // Tickers usually go left
       });
     };
 
