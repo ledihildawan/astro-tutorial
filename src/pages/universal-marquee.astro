@@ -429,20 +429,42 @@
         font-weight: 700;
         font-size: clamp(2rem, 5vw, 3.5rem);
         letter-spacing: 2px;
+
+        /* Text Shadow disederhanakan sedikit untuk performa */
         text-shadow:
-          0 0 10px #fff,
+          0 0 5px rgba(255, 255, 255, 0.5),
           3px 3px 0 #000;
+
         padding: 1rem 2.5rem;
         border-radius: 60px;
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(5px);
+
+        /* --- PERUBAHAN UTAMA DI SINI --- */
+
+        /* 1. Ganti backdrop-filter dengan background semi-transparan yang lebih solid/gelap */
+        /* Sebelumnya: background: rgba(0, 0, 0, 0.4); */
+        background: rgba(20, 20, 35, 0.85);
+
+        /* 2. HAPUS atau Comment backdrop-filter */
+        /* backdrop-filter: blur(5px);  <-- INI PENYEBAB LAG */
+        -webkit-backdrop-filter: none;
+
+        /* 3. Sederhanakan Box Shadow (inset shadow berat untuk render) */
         box-shadow:
-          0 0 20px rgba(255, 255, 255, 0.6),
-          inset 0 0 20px rgba(255, 255, 255, 0.2);
+          0 8px 20px rgba(0, 0, 0, 0.3),
+          inset 0 0 0 2px rgba(255, 255, 255, 0.15); /* Ganti inset blur dengan border solid halus */
+
+        /* 4. Beritahu browser bahwa elemen ini akan bergerak */
+        will-change: transform;
+
+        /* --- AKHIR PERUBAHAN --- */
+
         align-items: center;
         text-align: center;
         line-height: 1.3;
         transition: transform 0.3s ease;
+
+        /* Pastikan hardware acceleration aktif */
+        transform: translateZ(0);
       }
 
       #marquee-demo-1 .um-item:nth-child(odd) {
