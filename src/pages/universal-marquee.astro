@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Fredoka+One&family=Inter:wght@700;800;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Fredoka+One&family=Inter:wght@700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -286,7 +286,7 @@
       }
 
       /* How to Use Section Styles */
-      .how-to-use p {
+      .how-to-use > p {
         text-align: center;
         max-width: 800px;
         margin: 0 auto 3rem;
@@ -329,39 +329,56 @@
         line-height: 1.7;
         opacity: 0.9;
       }
-      /* Styling untuk Code Block */
+      /* Styling untuk Code Block – DIPERBARUI dengan font modern */
       .usage-example pre {
-        /* Default Light Mode */
-        background-color: #f1f5f9; /* Slate-100 */
-        color: #334155; /* Slate-700 (Dark text) */
+        /* Light Mode */
+        background-color: #f1f5f9;
+        color: #334155;
         border: 1px solid #e2e8f0;
-
-        padding: 1.25rem;
-        border-radius: 12px;
+        padding: 1.5rem;
+        border-radius: 16px;
         overflow-x: auto;
-        font-size: 0.9rem;
-        line-height: 1.5;
+        font-size: 0.925rem;
+        line-height: 1.65;
         margin-top: 1.5rem;
-        font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+        font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+        letter-spacing: -0.2px;
+        tab-size: 2;
       }
 
-      /* Override untuk Dark Mode */
+      .usage-example pre code {
+        font-family: inherit;
+        background: none;
+        padding: 0;
+        color: inherit;
+      }
+
+      /* Dark Mode – tetap bagus dengan JetBrains Mono */
       @media (prefers-color-scheme: dark) {
         .usage-example pre {
-          background-color: #020617 !important; /* Background Gelap (Pakai !important jika bandel) */
-          color: #e2e8f0 !important; /* Teks Terang */
+          background-color: #020617 !important;
+          color: #e2e8f0 !important;
           border-color: #1e293b;
         }
       }
 
-      .usage-example code {
-        font-family: inherit;
-        color: inherit;
+      /* Optional: Tambahkan sedikit scroll indicator */
+      .usage-example pre::-webkit-scrollbar {
+        height: 8px;
+      }
+      .usage-example pre::-webkit-scrollbar-thumb {
+        background: rgba(100, 100, 100, 0.3);
+        border-radius: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .usage-example pre::-webkit-scrollbar-thumb {
+          background: rgba(200, 200, 200, 0.2);
+        }
       }
     </style>
 
     <!-- SUPER FUN STYLE KHUSUS #marquee-demo-1 -->
-    <style>
+    <style is:global data-label="MARQUEE_DEMO_1_STYLES">
       #marquee-demo-1 {
         background: linear-gradient(90deg, #ff6ac1, #9b59b6, #3498db, #2ecc71, #f1c40f, #e67e22, #ff6ac1);
         background-size: 300% 300%;
@@ -422,9 +439,7 @@
         box-shadow:
           0 0 20px rgba(255, 255, 255, 0.6),
           inset 0 0 20px rgba(255, 255, 255, 0.2);
-        display: inline-flex;
         align-items: center;
-        white-space: normal;
         text-align: center;
         line-height: 1.3;
         transition: transform 0.3s ease;
@@ -511,7 +526,7 @@
         }
       }
     </style>
-    <style>
+    <style is:global data-label="MARQUEE_DEMO_2_AND_3_STYLES">
       /* --- DEMO 1: Modern Testimonials (Glassmorphism + Adaptive) --- */
       #demo-testimonials {
         --um-gap: 2rem;
@@ -659,59 +674,120 @@
         font-size: 0.75rem;
       }
 
-      /* --- DEMO 3: Tech Ticker --- */
+      /* --- DEMO 3: Tech Ticker (Modern Financial Terminal Style) --- */
       #demo-ticker {
-        /* High contrast tech look */
-        background: #0f172a;
-        border-left: 4px solid #10b981;
-        color: #f8fafc;
-        padding: 1rem 0;
+        /* Background gelap ala terminal modern */
+        background: #020617;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 1.25rem 0;
+
+        /* Font monospace untuk data */
         font-family: 'JetBrains Mono', 'Menlo', monospace;
-        font-size: 0.95rem;
-        --um-gap: 4rem;
-        border-radius: 8px;
+        font-size: 0.9rem;
+
+        /* Shadow halus */
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06),
+          inset 0 0 20px rgba(0, 0, 0, 0.5); /* Inner shadow depth */
+
+        /* Gap antar item */
+        --um-gap: 3rem;
+        position: relative;
       }
-      /* In Light mode, maybe we want a "Bloomberg Terminal" white look? */
-      @media (prefers-color-scheme: light) {
-        #demo-ticker {
-          background: #e2e8f0;
-          color: #1e293b;
-          border-left-color: #059669;
-        }
+
+      /* Dekorasi garis aksen "Live" di kiri */
+      #demo-ticker::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 15%;
+        bottom: 15%;
+        width: 4px;
+        background: #10b981; /* Green accent */
+        border-radius: 0 4px 4px 0;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
       }
 
       .ticker-item {
         display: flex;
         align-items: center;
-        gap: 0.6rem;
-      }
-      .ticker-sym {
-        font-weight: 800;
-      }
-      .ticker-change {
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 700;
-      }
-      .t-up {
-        color: #22c55e;
-        background: rgba(34, 197, 94, 0.15);
-      }
-      .t-down {
-        color: #ef4444;
-        background: rgba(239, 68, 68, 0.15);
+        gap: 0.75rem;
+        color: #e2e8f0;
       }
 
-      /* Dark mode adjustment for visibility */
-      @media (prefers-color-scheme: dark) {
+      .ticker-sym {
+        font-weight: 800;
+        color: #94a3b8; /* Simbol warna agak redup */
+        letter-spacing: 0.5px;
+      }
+
+      .ticker-val {
+        font-weight: 700;
+        color: #f8fafc; /* Nilai warna putih terang */
+      }
+
+      /* Pill Shape untuk persentase */
+      .ticker-change {
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        letter-spacing: -0.02em;
+      }
+
+      /* Warna Indikator Naik */
+      .t-up {
+        background-color: rgba(16, 185, 129, 0.15); /* Hijau transparan */
+        color: #34d399; /* Hijau terang */
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      /* Warna Indikator Turun */
+      .t-down {
+        background-color: rgba(239, 68, 68, 0.15); /* Merah transparan */
+        color: #f87171; /* Merah terang */
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      /* Separator styling */
+      .ticker-separator {
+        color: #334155;
+        font-weight: 300;
+      }
+
+      /* Light Mode Override (Opsional, agar tetap terbaca jika user di light mode) */
+      @media (prefers-color-scheme: light) {
+        #demo-ticker {
+          background: #ffffff;
+          border-color: #cbd5e1;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        #demo-ticker::before {
+          display: none; /* Hilangkan aksen neon di light mode */
+        }
+        .ticker-item {
+          color: #0f172a;
+        }
+        .ticker-sym {
+          color: #64748b;
+        }
+        .ticker-val {
+          color: #0f172a;
+        }
         .t-up {
-          color: #4ade80;
-          background: rgba(74, 222, 128, 0.1);
+          background-color: #dcfce7;
+          color: #15803d;
+          border-color: #bbf7d0;
         }
         .t-down {
-          color: #f87171;
-          background: rgba(248, 113, 113, 0.1);
+          background-color: #fee2e2;
+          color: #b91c1c;
+          border-color: #fecaca;
         }
       }
     </style>
@@ -761,7 +837,7 @@
               </p>
               <div class="examples-grid">
                 <article class="usage-example">
-                  <h3>1. Scrolling Testimonials</h3>
+                  <h3>Scrolling Testimonials</h3>
                   <p>Perfect for showcasing customer feedback to build trust without disrupting the main layout.</p>
                   <div id="demo-testimonials" role="region" aria-label="Scrolling testimonials demo" aria-live="polite">
                   </div>
@@ -785,7 +861,7 @@
 &lt;&#47;script&gt;</code></pre>
                 </article>
                 <article class="usage-example">
-                  <h3>2. Product Showcase</h3>
+                  <h3>Product Showcase</h3>
                   <p>Great for highlighting featured or new products on a homepage.</p>
                   <div id="demo-products" role="region" aria-label="Product showcase demo" aria-live="polite"></div>
                   <pre
@@ -807,7 +883,7 @@
 &lt;&#47;script&gt;</code></pre>
                 </article>
                 <article class="usage-example">
-                  <h3>3. News Ticker</h3>
+                  <h3>News Ticker</h3>
                   <p>Ideal for displaying breaking news or alerts with a fast-moving ticker effect.</p>
                   <div id="demo-ticker" role="region" aria-label="News ticker demo" aria-live="polite"></div>
                   <pre
@@ -844,18 +920,33 @@
         this._opts = options;
       }
       #buildSeparatorNode(separator) {
+        // Jika separator kosong/null/undefined, kembalikan null
+        if (separator === null || separator === undefined || separator === '') {
+          return null;
+        }
+
         const container = document.createElement('span');
         container.classList.add('um-item-separator');
         container.setAttribute('aria-hidden', 'true');
+
         if (typeof separator === 'string') {
-          container.textContent = separator;
+          // Solusi Terbaik: Gunakan innerHTML.
+          // Ini aman menangani String Biasa (" | ") maupun String HTML ("<span>|</span>").
+          container.innerHTML = separator;
         } else if (separator instanceof Node) {
+          // Menangani jika user mengoper Element DOM asli
           container.appendChild(separator.cloneNode(true));
+        } else {
+          // Fallback untuk tipe lain (misal: Number), ubah jadi string
+          container.textContent = String(separator);
         }
+
+        // Cleanup: Hapus ID dan set tabindex agar tidak mengganggu navigasi keyboard
         container.querySelectorAll('*').forEach((el) => {
           if (el.id) el.removeAttribute('id');
           el.setAttribute('tabindex', '-1');
         });
+
         return container;
       }
       buildCycleContent(forSR = false, addTrailingSeparator = true) {
@@ -1129,7 +1220,7 @@
         gap: '3rem',
         direction: 'left',
         items: DEMO_1_ITEMS,
-        separator: '🎊',
+        separator: ' 🎊 ',
         renderItem: (text) => {
           const span = document.createElement('span');
           span.textContent = text;
@@ -1204,14 +1295,14 @@
         gap: '1.5rem',
       });
 
-      // Demo 4: Stock/Crypto Ticker
+      // Demo 4: Stock/Crypto Ticker (Updated)
       const stocks = [
-        { sym: 'BTC', val: '$94,230', change: '+2.4%', up: true },
-        { sym: 'ETH', val: '$5,120', change: '-0.8%', up: false },
-        { sym: 'JS', val: '$1,337', change: '+12.5%', up: true },
-        { sym: 'CSS', val: '$420', change: '+5.0%', up: true },
-        { sym: 'HTML', val: '$100', change: '+0.1%', up: true },
-        { sym: 'REACT', val: '$850', change: '-2.1%', up: false },
+        { sym: 'BTC', val: '$94,230', change: '2.4%', up: true },
+        { sym: 'ETH', val: '$5,120', change: '0.8%', up: false },
+        { sym: 'SOL', val: '$145', change: '5.2%', up: true },
+        { sym: 'NVDA', val: '$880', change: '3.1%', up: true },
+        { sym: 'TSLA', val: '$175', change: '1.5%', up: false },
+        { sym: 'AAPL', val: '$190', change: '0.2%', up: true },
       ];
 
       new UniversalMarquee('#demo-ticker', {
@@ -1219,18 +1310,25 @@
         renderItem: (item) => {
           const div = document.createElement('div');
           div.className = 'ticker-item';
-          const arrow = item.up ? '▲' : '▼';
-          const colorClass = item.up ? 'ticker-up' : 'ticker-down';
+
+          // Tentukan ikon panah dan class warna
+          const arrow = item.up ? '↗' : '↘'; // Menggunakan panah diagonal agar lebih modern
+          const colorClass = item.up ? 't-up' : 't-down';
+          const sign = item.up ? '+' : '-';
+
           div.innerHTML = `
-          <span class="ticker-symbol">${item.sym}</span>
-          <span class="ticker-val">${item.val}</span>
-          <span class="ticker-change ${colorClass}">${arrow} ${item.change}</span>
-        `;
+            <span class="ticker-sym">${item.sym}</span>
+            <span class="ticker-val">${item.val}</span>
+            <span class="ticker-change ${colorClass}">
+              ${arrow} ${sign}${item.change}
+            </span>
+          `;
           return div;
         },
-        separator: '  |  ',
-        speed: 50,
-        direction: 'left', // Tickers usually go left
+        // Separator menggunakan garis vertikal tipis
+        separator: '<span class="ticker-separator">|</span>',
+        speed: 60, // Sedikit lebih cepat untuk kesan "live"
+        direction: 'left',
       });
     };
 
