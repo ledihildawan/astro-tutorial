@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Universal Marquee - Seamless Infinite Horizontal Marquee JavaScript Library</title>
+    <meta
+      name="description"
+      content="Universal Marquee is a lightweight, accessible, pure vanilla JavaScript library for creating seamless infinite horizontal marquees with text, images, or custom content. Supports speed/duration modes, pause on hover, accessibility, and prefers-reduced-motion."
+    />
+    <meta
+      name="keywords"
+      content="javascript marquee, infinite marquee, horizontal scrolling marquee, accessible marquee, vanilla js marquee, seamless marquee, image marquee, text marquee"
+    />
+    <meta name="author" content="Ledi Hildawan" />
+    <meta property="og:title" content="Universal Marquee - Seamless Infinite Horizontal Marquee" />
+    <meta
+      property="og:description"
+      content="Lightweight vanilla JavaScript library for accessible, responsive infinite marquees with dynamic duplication, lazy loading, and full customization."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://universal-marquee.example.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet" />
+    <style is:global data-label="CORE_STYLES">
+      :root {
+        --um-duration-default: 15s;
+        --um-gap-default: 2rem;
+        --um-color-separator: #9ca3af;
+        --um-separator-height: 1.25em;
+        --um-font-size: clamp(1.2rem, 3vw, 2rem);
+        --um-gallery-item-width: 420px;
+        --um-gallery-item-height: 280px;
+        --um-gallery-border-radius: 24px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --um-color-separator: #6b7280;
+        }
+      }
+      .um-container {
+        display: flex;
+        overflow: hidden;
+        user-select: none;
+        width: 100%;
+        min-width: 0;
+        position: relative;
+        transform: translate3d(0, 0, 0);
+      }
+      .um-container[role='region'] {
+        outline: none;
+      }
+      .um-sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border-width: 0;
+      }
+      .um-container .um-track {
+        display: none;
+      }
+      .um-container.js-enabled .um-track {
+        display: flex;
+      }
+      .um-track {
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: var(--um-gap);
+        will-change: transform;
+        backface-visibility: hidden;
+        perspective: 1000px;
+      }
+      .um-track > div {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+        gap: var(--um-gap);
+      }
+      .um-track > div > * {
+        flex-shrink: 0;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        font-size: var(--um-font-size);
+        font-weight: 700;
+        font-family:
+          'Inter',
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      .um-img-skeleton {
+        position: relative;
+        background-color: #e5e7eb;
+        overflow: hidden;
+        border-radius: var(--um-gallery-border-radius);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition:
+          background-color 0.4s,
+          box-shadow 0.5s;
+        width: var(--um-gallery-item-width);
+        height: var(--um-gallery-item-height);
+        min-width: var(--um-gallery-item-width);
+        min-height: var(--um-gallery-item-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .um-img-skeleton img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: 0;
+        transition: opacity 0.7s ease-out;
+      }
+      .um-img-skeleton img.loaded {
+        opacity: 1;
+      }
+      .um-img-skeleton.loaded {
+        background-color: transparent;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      }
+      .um-item-separator .um-img-skeleton {
+        background-color: transparent;
+        box-shadow: none;
+        height: var(--um-separator-height);
+        width: auto;
+        min-width: var(--um-separator-height);
+        aspect-ratio: 1/1;
+      }
+      .um-container.um-overflow-left::before,
+      .um-container.um-overflow-right::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 120px;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .um-container.um-overflow-left::before {
+        left: 0;
+        background: linear-gradient(to right, var(--bg), transparent);
+      }
+      .um-container.um-overflow-right::after {
+        right: 0;
+        background: linear-gradient(to left, var(--bg), transparent);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .um-container {
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch;
+        }
+        .um-track {
+          width: max-content !important;
+          transform: none !important;
+          animation: none !important;
+          justify-content: flex-start;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        .um-img-skeleton {
+          background-color: #374151;
+        }
+        .um-img-skeleton.loaded {
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+      }
+    </style>
+    <style is:global data-label="ROOT_LAYOUT">
+      :root {
+        --color-bg-page: #fff;
+        --color-text-primary: #111827;
+        --color-gridline: #eef1ee;
+        --um-bg-marquee: #111827;
+        --um-text-marquee: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-bg-page: #0f172a;
+          --color-text-primary: #f3f4f6;
+          --color-gridline: #1e293b;
+          --um-bg-marquee: #f8fafc;
+          --um-text-marquee: #111827;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          'Inter',
+          'Segoe UI',
+          system-ui,
+          -apple-system,
+          sans-serif;
+        display: flex;
+        background-color: var(--color-bg-page);
+        color: var(--color-text-primary);
+        min-height: 100vh;
+      }
+      .root-layout {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 0;
+      }
+      .root-layout::before,
+      .root-layout::after {
+        content: '';
+        border-top: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
+        height: 0;
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        opacity: 1;
+      }
+      .root-layout::before {
+        top: var(--layout-vertical-padding);
+      }
+      .root-layout::after {
+        bottom: var(--layout-vertical-padding);
+        border-bottom: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
+        border-top: none;
+      }
+      .root-layout-container {
+        width: calc(100% - (var(--layout-gutter) * 2));
+        max-width: var(--layout-max-width);
+        min-height: 100%;
+        position: relative;
+        margin-inline: auto;
+        display: flex;
+        flex-direction: column;
+        padding-top: var(--layout-vertical-padding);
+        padding-bottom: var(--layout-vertical-padding);
+        box-sizing: border-box;
+      }
+      .root-layout-header,
+      .root-layout-footer {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: var(--layout-footer-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .root-layout-header {
+        top: 0;
+      }
+      .root-layout-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+      .root-layout-footer {
+        bottom: 0;
+      }
+      :root {
+        --layout-max-width: 1200px;
+        --layout-gutter: 1.25rem;
+        --layout-guide-width: 1px;
+        --layout-guide-style: dashed;
+        --layout-vertical-padding: 4rem;
+        --layout-footer-height: 4rem;
+      }
+      @media (min-width: 64rem) {
+        .root-layout::before,
+        .root-layout::after {
+          opacity: 1;
+          background-color: transparent;
+          height: 0;
+        }
+        .root-layout-container {
+          border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
+          border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
+        }
+      }
+      #marquee-demo-1 {
+        background-color: var(--um-bg-marquee);
+        color: var(--um-text-marquee);
+        padding: 0.8rem 0;
+        --um-gap: 3rem;
+        transform: rotate(-2.68deg);
+        box-sizing: border-box;
+      }
+      #marquee-demo-1 .um-item {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+      #marquee-demo-1 .um-item-separator svg {
+        color: inherit;
+        opacity: 0.6;
+      }
+
+      /* ==== STYLING KHUSUS UNTUK HOW TO USE ==== */
+      .how-to-use-section {
+        margin: 4rem 0;
+        padding: 3rem 0;
+        border-top: 4px solid var(--accent-color);
+        background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+      }
+      @media (prefers-color-scheme: dark) {
+        .how-to-use-section {
+          background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.02) 100%);
+        }
+      }
+      .how-to-use-section h2 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+      .usage-example {
+        background-color: var(--color-bg-page);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      @media (prefers-color-scheme: dark) {
+        .usage-example {
+          border-color: #374151;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+      }
+      .usage-example h3 {
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        color: var(--accent-color);
+      }
+      .usage-example p {
+        margin-bottom: 1.25rem;
+        line-height: 1.6;
+      }
+      .usage-example pre {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+      @media (prefers-color-scheme: dark) {
+        .usage-example pre {
+          background-color: #0f172a;
+          color: #cbd5e1;
+        }
+      }
+      .usage-example code {
+        font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      }
+      /* ==== AKHIR STYLING HOW TO USE ==== */
+
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 5rem;
+        margin-block: 4rem;
+      }
+
+      .intro {
+        font-size: 1.25rem;
+        line-height: 1.7;
+        max-width: 800px;
+        margin: 1.5rem auto 0;
+        text-align: center;
+      }
+
+      .section {
+        scroll-margin-top: 6rem;
+      }
+
+      .section > h2 {
+        font-size: 2.5rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .how-to-use > p {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 3rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="root-layout">
+      <div class="root-layout-container">
+        <header class="root-layout-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="72" fill="none" viewBox="0 0 554 264" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="m136.657 5.657-125.5 125.5 126.5 126.5-5.657 5.656L0 131.314l.158-.158L.001 131 131 0l5.657 5.657Zm51 0-125.5 125.5 126.5 126.5-5.657 5.656L51 131.314l.158-.158-.157-.156L182 0l5.657 5.657ZM502.656 131l-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L366 5.657 371.657 0l130.999 131Zm51 0-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L417 5.657 422.657 0l130.999 131Zm-97.695.327-5.657 5.657-86.271-86.27-.068.068v160.889l.165.165 80.51-80.508 5.657 5.656-82.101 82.1.001.001-4.066 4.065-4.166-4.167v.001l-51-51 5.657-5.656 10.343 10.343v-44.068l-22.534 22.533.002.002-.082.081.033.033-19.005 19.004.002.002-6.367 6.366-26.193-26.192.001-.002-21.826-21.827v44.068l10.343-10.343 5.657 5.656-50.211 50.211.002.002-4.957 4.956-6.371-6.371.001-.002-79.796-79.796 5.657-5.656 80.51 80.508.165-.165V50.782l-.068-.068-86.271 86.27L98 131.327l91.67-91.67 87.31 87.311 87.311-87.31 91.67 91.669Zm-257.965 72.344 22-22v-74.8l9 9v.004l28.191 28.19.001-.001 19.795 19.796 13.047-13.048-13.467-13.467-.001.003-78.566-78.566v144.889Zm85.025-71.945 8.54 8.54v.002l4.503 4.503h.001l.002.001 28.898-28.897v-.004l9-9v74.8l22 22V58.782l-72.944 72.944Z"
+            ></path>
+          </svg>
+        </header>
+
+        <div class="root-layout-content">
+          <main>
+            <h1>Universal Marquee</h1>
+            <p class="intro">
+              Lightweight, accessible vanilla JS library for infinite horizontal marquees. Works with text, images, or
+              custom content. Scrolls continuously left or right.
+            </p>
+
+            <section class="section how-to-use">
+              <h2>Key Features</h2>
+              <div
+                id="marquee-demo-1"
+                role="region"
+                aria-label="List of Universal Marquee key features"
+                aria-live="polite"
+              >
+              </div>
+            </section>
+
+            <section class="how-to-use">
+              <h2>How to Use</h2>
+              <p>
+                Include the library script at the end of <code>&lt;body&gt;</code> (with <code>type="module"</code>),
+                then initialize it using <code>new UniversalMarquee(selector, options)</code>.
+              </p>
+
+              <div class="usage-example">
+                <h3>1. Scrolling Testimonials (Customer Reviews)</h3>
+                <p>Perfect for showcasing customer feedback to build trust without disrupting the main layout.</p>
+                <pre><code>&lt;div id=&quot;testimonials&quot; class=&quot;um-container um-testimonials&quot;&gt;&lt;&#47;div&gt;
+&lt;script type=&quot;module&quot;&gt;
+  new UniversalMarquee&#40;&#39;#testimonials&#39;&#44; &#123;
+    items&#58; &#91;
+      &#123; text&#58; &#39;Amazing product! Highly recommend.&#39;&#44; author&#58; &#39;John Doe&#39; &#125;&#44;
+      &#123; text&#58; &#39;Transformed my workflow.&#39;&#44; author&#58; &#39;Jane Smith&#39; &#125;&#44;
+      &#123; text&#58; &#39;Best decision ever.&#39;&#44; author&#58; &#39;Mike Johnson&#39; &#125;
+    &#93;&#44;
+    renderItem&#58; &#40;item&#41; &#61;&gt; &#123;
+      const div &#61; document&#46;createElement&#40;&#39;div&#39;&#41;&#59;
+      div&#46;className &#61; &#39;testimonial-card&#39;&#59;
+      div&#46;innerHTML &#61; &#96;
+        &lt;p&gt;&quot;$&#123;item&#46;text&#125;&quot;&lt;&#47;p&gt;
+        &lt;cite&gt;— $&#123;item&#46;author&#125;&lt;&#47;cite&gt;
+      &#96;&#59;
+      return div&#59;
+    &#125;&#44;
+    gap&#58; &#39;2.5rem&#39;&#44;
+    speed&#58; 40&#44;
+    direction&#58; &#39;left&#39;&#44;
+    pauseOnHover&#58; true
+  &#125;&#41;;
+&lt;&#47;script&gt;</code></pre>
+              </div>
+
+              <div class="usage-example">
+                <h3>2. Product Showcase (E-commerce Highlights)</h3>
+                <p>Great for highlighting featured or new products on a homepage to encourage further exploration.</p>
+                <pre><code>&lt;div id=&quot;products&quot; class=&quot;um-container um-gallery&quot;&gt;&lt;&#47;div&gt;
+&lt;script type=&quot;module&quot;&gt;
+  new UniversalMarquee&#40;&#39;#products&#39;&#44; &#123;
+    items&#58; &#91;
+      &#123; src&#58; &#39;https&#58;&#47;&#47;example&#46;com&#47;prod1&#46;jpg&#39;&#44; alt&#58; &#39;Sneakers Pro&#39;&#44; price&#58; &#39;$99&#39; &#125;&#44;
+      &#123; src&#58; &#39;https&#58;&#47;&#47;example&#46;com&#47;prod2&#46;jpg&#39;&#44; alt&#58; &#39;T-Shirt Classic&#39;&#44; price&#58; &#39;$29&#39; &#125;&#44;
+      &#123; src&#58; &#39;https&#58;&#47;&#47;example&#46;com&#47;prod3&#46;jpg&#39;&#44; alt&#58; &#39;Backpack Urban&#39;&#44; price&#58; &#39;$149&#39; &#125;
+    &#93;&#44;
+    renderItem&#58; &#40;item&#41; &#61;&gt; &#123;
+      const div &#61; document&#46;createElement&#40;&#39;div&#39;&#41;&#59;
+      div&#46;className &#61; &#39;product-card um-img-skeleton&#39;&#59;
+      div&#46;innerHTML &#61; &#96;
+        &lt;img src=&quot;$&#123;item&#46;src&#125;&quot; alt=&quot;$&#123;item&#46;alt&#125;&quot; loading=&quot;lazy&quot;&gt;
+        &lt;div class=&quot;product-info&quot;&gt;
+          &lt;h4&gt;$&#123;item&#46;alt&#125;&lt;&#47;h4&gt;
+          &lt;span&gt;$&#123;item&#46;price&#125;&lt;&#47;span&gt;
+        &lt;&#47;div&gt;
+      &#96;&#59;
+      return div&#59;
+    &#125;&#44;
+    gap&#58; &#39;1.5rem&#39;&#44;
+    speed&#58; 50&#44;
+    separator&#58; &#39; &bull; &#39;  &#47;&#47; Simple text separator
+  &#125;&#41;;
+&lt;&#47;script&gt;</code></pre>
+              </div>
+
+              <div class="usage-example">
+                <h3>3. News Ticker (Announcements & Alerts)</h3>
+                <p>
+                  Ideal for displaying breaking news, limited-time promotions, or upcoming events with a fast-moving
+                  ticker effect.
+                </p>
+                <pre><code>&lt;div id=&quot;news-ticker&quot; class=&quot;um-container um-news-ticker&quot;&gt;&lt;&#47;div&gt;
+&lt;script type=&quot;module&quot;&gt;
+  const createNewsSeparator &#61; &#40;&#41; &#61;&gt; &#123;
+    const svg &#61; document&#46;createElementNS&#40;&#39;http&#58;&#47;&#47;www&#46;w3&#46;org&#47;2000&#47;svg&#39;&#44; &#39;svg&#39;&#41;&#59;
+    svg&#46;setAttribute&#40;&#39;width&#39;&#44; &#39;16&#39;&#41;&#59;
+    svg&#46;setAttribute&#40;&#39;height&#39;&#44; &#39;16&#39;&#41;&#59;
+    svg&#46;setAttribute&#40;&#39;viewBox&#39;&#44; &#39;0 0 24 24&#39;&#41;&#59;
+    svg&#46;innerHTML &#61; &#39;&lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;8&quot; fill=&quot;currentColor&quot;&#47;&gt;&#39;&#59;
+    return svg&#59;
+  &#125;&#59;
+  new UniversalMarquee&#40;&#39;#news-ticker&#39;&#44; &#123;
+    items&#58; &#91;
+      &#39;New Feature&#58; AI Integration Now Live!&#39;&#44;
+      &#39;Flash Sale&#58; 50% Off Select Items – Ends Today&#39;&#44;
+      &#39;Upcoming Webinar&#58; Web Design Trends 2026&#39;
+    &#93;&#44;
+    separator&#58; createNewsSeparator&#40;&#41;&#44;
+    speed&#58; 80&#44;        &#47;&#47; Faster speed for classic ticker feel
+    direction&#58; &#39;right&#39;&#44; &#47;&#47; Reverse direction for variety
+    gap&#58; &#39;3rem&#39;&#44;
+    screenReaderMode&#58; &#39;plain&#39;
+  &#125;&#41;;
+&lt;&#47;script&gt;</code></pre>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+
+      <footer class="root-layout-footer">
+        <span>© Universal Marquee 2025 by Ledi Hildawan</span>
+      </footer>
+    </div>
+  </body>
+
+  <script type="module">
+    class ContentBuilder {
+      constructor(options) {
+        this._opts = options;
+      }
+      #buildSeparatorNode(separator) {
+        const container = document.createElement('span');
+        container.classList.add('um-item-separator');
+        container.setAttribute('aria-hidden', 'true');
+        if (typeof separator === 'string') {
+          container.textContent = separator;
+        } else if (separator instanceof Node) {
+          container.appendChild(separator.cloneNode(true));
+        }
+        container.querySelectorAll('*').forEach((el) => {
+          if (el.id) el.removeAttribute('id');
+          el.setAttribute('tabindex', '-1');
+        });
+        return container;
+      }
+      buildCycleContent(forSR = false, addTrailingSeparator = true) {
+        const frag = document.createDocumentFragment();
+        const items = this._opts.items;
+        if (!items?.length) return frag;
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (forSR) {
+            const li = document.createElement('li');
+            li.textContent = item.alt || item;
+            frag.appendChild(li);
+          } else {
+            let node = this._opts.renderItem(item);
+            if (!(node instanceof Element)) {
+              const wrapper = document.createElement('span');
+              wrapper.appendChild(node);
+              node = wrapper;
+            }
+            const cloned = node.cloneNode(true);
+            const img = cloned.querySelector('img');
+            if (img) {
+              const markLoaded = () => {
+                img.classList.add('loaded');
+                cloned.classList.add('loaded');
+              };
+              img.onload = markLoaded;
+              img.onerror = markLoaded;
+              if (img.complete && img.naturalWidth > 0) markLoaded();
+            }
+            if (cloned.id) cloned.removeAttribute('id');
+            cloned.querySelectorAll('*').forEach((el) => {
+              if (el.id) el.removeAttribute('id');
+              el.setAttribute('tabindex', '-1');
+            });
+            frag.appendChild(cloned);
+            if (i < items.length - 1 || addTrailingSeparator) {
+              const sep = this.#buildSeparatorNode(this._opts.separator);
+              if (sep) frag.appendChild(sep);
+            }
+          }
+        }
+        return frag;
+      }
+      buildCycleContainer(addTrailingSeparator = true) {
+        const div = document.createElement('div');
+        div.appendChild(this.buildCycleContent(false, addTrailingSeparator));
+        return div;
+      }
+      buildSRList() {
+        const mode = this._opts.screenReaderMode || 'ordered';
+        const items = this._opts.items;
+        if (!items?.length) {
+          const div = document.createElement('div');
+          div.className = 'um-sr-only';
+          return div;
+        }
+        let container;
+        if (mode === 'ordered') {
+          container = document.createElement('ol');
+        } else if (mode === 'unordered') {
+          container = document.createElement('ul');
+        } else {
+          container = document.createElement('div');
+        }
+        container.className = 'um-sr-only';
+        if (mode === 'plain') {
+          items.forEach((item) => {
+            const p = document.createElement('p');
+            p.textContent = item.alt || item;
+            container.appendChild(p);
+          });
+        } else {
+          container.appendChild(this.buildCycleContent(true));
+        }
+        return container;
+      }
+      measureCycleMetrics(root) {
+        if (!this._opts.items?.length) return { width: 0, gap: 0 };
+        const temp = document.createElement('div');
+        temp.className = 'um-track';
+        temp.style.position = 'absolute';
+        temp.style.visibility = 'hidden';
+        let gapVal = this._opts.gap;
+        if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
+        temp.style.setProperty('--um-gap', gapVal);
+        const cycle = this.buildCycleContainer(true);
+        temp.appendChild(cycle);
+        root.appendChild(temp);
+        const width = cycle.offsetWidth || 0;
+        const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
+        root.removeChild(temp);
+        return { width, gap: parsedGap };
+      }
+    }
+    class AnimationController {
+      constructor(track, opts) {
+        this._track = track;
+        this._opts = opts;
+      }
+      start(cycleWidth, gap) {
+        if (this._anim) this._anim.cancel();
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const distance = cycleWidth + gap;
+        if (distance <= 0) return;
+        let duration = this._opts.duration
+          ? this._opts.duration * 1000
+          : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
+        const from = 'translate3d(0,0,0)';
+        const to = `translate3d(-${distance}px,0,0)`;
+        const keyframes =
+          this._opts.direction === 'right'
+            ? [{ transform: to }, { transform: from }]
+            : [{ transform: from }, { transform: to }];
+        this._anim = this._track.animate(keyframes, {
+          duration,
+          iterations: Infinity,
+          easing: 'linear',
+        });
+      }
+      pause() {
+        if (this._anim?.playState === 'running') this._anim.pause();
+      }
+      play() {
+        if (this._anim?.playState !== 'running') this._anim.play();
+      }
+      cancel() {
+        if (this._anim) this._anim.cancel();
+      }
+    }
+    class UniversalMarquee {
+      constructor(selector, opts) {
+        this._root = document.querySelector(selector);
+        if (!this._root) return;
+        this._opts = {
+          speed: 50,
+          duration: null,
+          gap: '2rem',
+          direction: 'left',
+          items: [],
+          separator: '',
+          renderItem: (i) => document.createTextNode(i),
+          pauseOnHover: true,
+          ariaLabel: 'List of items automatically moving in a marquee',
+          screenReader: true,
+          screenReaderMode: 'ordered',
+          ...opts,
+        };
+        this._root.classList.add('um-container', 'js-enabled');
+        this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
+        if (this._opts.screenReader) {
+          this._root.setAttribute('role', 'region');
+          this._root.setAttribute('aria-label', this._opts.ariaLabel);
+        }
+        this._builder = new ContentBuilder(this._opts);
+        this.#setup();
+        this.#initObservers();
+        this.#initInteractivity();
+      }
+      #setup() {
+        this._root.innerHTML = '';
+        this._track = document.createElement('div');
+        this._track.className = 'um-track';
+        this._track.setAttribute('aria-hidden', 'true');
+        if ('inert' in this._track) this._track.inert = true;
+        if (this._opts.screenReader) {
+          this._root.appendChild(this._builder.buildSRList());
+        }
+        this._root.appendChild(this._track);
+        this.#reflow();
+      }
+      #reflow() {
+        const metrics = this._builder.measureCycleMetrics(this._root);
+        if (metrics.width === 0) return;
+        if (this._anim) this._anim.cancel();
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
+        const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
+        this._track.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < cyclesCount; i++) {
+          frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
+        }
+        this._track.appendChild(frag);
+        if (!reducedMotion) {
+          this._anim = new AnimationController(this._track, this._opts);
+          this._anim.start(metrics.width, metrics.gap);
+        } else {
+          const checkOverflow = () => {
+            const hasOverflow = this._track.scrollWidth > this._root.offsetWidth;
+            this._root.classList.toggle('um-overflow-left', hasOverflow);
+            this._root.classList.toggle('um-overflow-right', hasOverflow);
+          };
+          checkOverflow();
+          new ResizeObserver(checkOverflow).observe(this._root);
+        }
+      }
+      #initInteractivity() {
+        if (this._opts.pauseOnHover !== false) {
+          this._root.addEventListener('mouseenter', () => this._anim?.pause());
+          this._root.addEventListener('mouseleave', () => this._anim?.play());
+          this._root.addEventListener('focusin', () => this._anim?.pause());
+          this._root.addEventListener('focusout', () => this._anim?.play());
+        }
+        let touchTimer;
+        this._root.addEventListener('touchstart', () => {
+          this._anim?.pause();
+          clearTimeout(touchTimer);
+        });
+        this._root.addEventListener('touchend', () => {
+          clearTimeout(touchTimer);
+          touchTimer = setTimeout(() => this._anim?.play(), 600);
+        });
+      }
+      #initObservers() {
+        const resizeHandler = () => {
+          clearTimeout(this._resizeTimer);
+          this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
+        };
+        new ResizeObserver(resizeHandler).observe(this._root);
+        if ('IntersectionObserver' in window) {
+          this._observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (!this._anim) return;
+                this._isInViewport = entry.isIntersecting;
+                entry.isIntersecting && !document.hidden ? this._anim.play() : this._anim.pause();
+              });
+            },
+            { rootMargin: '50px 0px' }
+          );
+          this._observer.observe(this._root);
+        }
+        document.addEventListener('visibilitychange', () => {
+          if (!this._anim) return;
+          document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
+        });
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
+      }
+    }
+    window.UniversalMarquee = UniversalMarquee;
+  </script>
+  <script type="module">
+    const createSeparatorSVG = () => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '64');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('viewBox', '0 0 554 264');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('fill', 'currentColor');
+      path.setAttribute(
+        'd',
+        'm136.657 5.657-125.5 125.5 126.5 126.5-5.657 5.656L0 131.314l.158-.158L.001 131 131 0l5.657 5.657Zm51 0-125.5 125.5 126.5 126.5-5.657 5.656L51 131.314l.158-.158-.157-.156L182 0l5.657 5.657ZM502.656 131l-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L366 5.657 371.657 0l130.999 131Zm51 0-.157.156.158.158-132 131.999-5.657-5.656 126.5-126.5L417 5.657 422.657 0l130.999 131Zm-97.695.327-5.657 5.657-86.271-86.27-.068.068v160.889l.165.165 80.51-80.508 5.657 5.656-82.101 82.1.001.001-4.066 4.065-4.166-4.167v.001l-51-51 5.657-5.656 10.343 10.343v-44.068l-22.534 22.533.002.002-.082.081.033.033-19.005 19.004.002.002-6.367 6.366-26.193-26.192.001-.002-21.826-21.827v44.068l10.343-10.343 5.657 5.656-50.211 50.211.002.002-4.957 4.956-6.371-6.371.001-.002-79.796-79.796 5.657-5.656 80.51 80.508.165-.165V50.782l-.068-.068-86.271 86.27L98 131.327l91.67-91.67 87.31 87.311 87.311-87.31 91.67 91.669Zm-257.965 72.344 22-22v-74.8l9 9v.004l28.191 28.19.001-.001 19.795 19.796 13.047-13.048-13.467-13.467-.001.003-78.566-78.566v144.889Zm85.025-71.945 8.54 8.54v.002l4.503 4.503h.001l.002.001 28.898-28.897v-.004l9-9v74.8l22 22V58.782l-72.944 72.944Z'
+      );
+      svg.appendChild(path);
+      return svg;
+    };
+    const DEMO_1_ITEMS = [
+      'Seamless infinite horizontal marquee with automatic dynamic cycle duplication for perfect looping (minimum 3 cycles)',
+      'Dual animation modes: speed-based scrolling (pixels per second) or fixed duration-based cycle time',
+      'Configurable scrolling direction – left to right or right to left',
+      'Customizable gap between items using CSS variable or JavaScript option (default 2rem)',
+      'Flexible separator support: plain text, SVG icons, DOM nodes, or images',
+      'Custom renderItem function to display plain text, images, or complex custom DOM elements',
+      'Built-in lazy loading for images with skeleton placeholder and smooth fade-in effect',
+      'Configurable gallery item dimensions and styling with border radius and shadow',
+      'Dynamic gradient overlay masks on left and right sides based on background color',
+      'Pause animation on hover, focus, and touch interactions for better user control',
+      'Automatic play/pause based on viewport visibility using IntersectionObserver',
+      'Respects prefers-reduced-motion – switches to static horizontal scroll when enabled',
+      'Full accessibility support with screen-reader-only list, proper ARIA attributes, and inert track',
+      'High performance using Web Animations API and GPU-accelerated transforms',
+      'Pure vanilla JavaScript – zero external dependencies',
+      'Fully responsive and mobile-friendly design',
+      'Extensive customization options via CSS variables and JavaScript configuration',
+    ];
+    const initApp = () => {
+      new UniversalMarquee('#marquee-demo-1', {
+        speed: 60,
+        gap: '3rem',
+        direction: 'left',
+        items: DEMO_1_ITEMS,
+        separator: createSeparatorSVG(),
+        renderItem: (text) => {
+          const span = document.createElement('span');
+          span.textContent = text;
+          span.classList.add('um-item');
+          return span;
+        },
+        pauseOnHover: true,
+        ariaLabel: 'List of Universal Marquee key features',
+        screenReader: true,
+        screenReaderMode: 'plain',
+      });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</html>
