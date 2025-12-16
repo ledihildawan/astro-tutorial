@@ -764,62 +764,100 @@
         }
       }
 
-      /* --- DEMO 2: Album Cover Flow --- */
+      /* --- DEMO 2: SINGLE PRODUCT HERO SHOWCASE (Adidas Samba) --- */
       #demo-products {
-        --um-gap: 1.5rem;
-        padding: 2.5rem 0;
-        /* Neutral dark bg for media looks good in both modes usually, but let's adapt */
-        background: #f1f5f9;
-        border-radius: 20px;
+        /* Gap lebih rapat untuk kesan "film strip" yang berkesinambungan */
+        --um-gap: 1rem;
+        /* Padding vertikal lebih besar agar produk bernapas */
+        padding: 4rem 0;
+        /* Background sangat bersih agar sepatu menonjol */
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        /* Menghapus border radius container agar terlihat full-bleed */
+        border-radius: 0;
       }
+
       @media (prefers-color-scheme: dark) {
         #demo-products {
-          background: #111827;
+          background: #0f172a;
+          border-color: #1e293b;
         }
       }
 
-      .album-card {
-        width: 180px;
-        height: 180px;
-        border-radius: 16px;
+      /* Kartu Tampilan Produk */
+      .product-view-card {
+        /* Ukuran Landscape yang lebih besar untuk fotografi detail */
+        width: 400px;
+        height: 300px;
+
+        border-radius: 12px;
         overflow: hidden;
         position: relative;
-        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-      .album-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      }
-      .album-card:hover img {
-        transform: scale(1.15);
+        background: #fff;
+
+        /* Shadow yang sangat halus untuk mengangkat gambar sedikit dari background */
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+        transition:
+          transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+          box-shadow 0.4s ease;
       }
 
-      .album-overlay {
+      @media (prefers-color-scheme: dark) {
+        .product-view-card {
+          background: #1e293b;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      /* Efek Hover: Zoom halus pada gambar & angkat kartu */
+      .product-view-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-view-card img {
+        width: 100%;
+        height: 100%;
+        /* Gunakan 'cover' agar gambar mengisi penuh area tanpa distorsi */
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.6s ease;
+      }
+
+      /* Sedikit zoom pada gambar saat hover */
+      .product-view-card:hover img {
+        transform: scale(1.08);
+      }
+
+      /* Label kecil di pojok untuk menunjukkan angle (opsional) */
+      .view-label {
         position: absolute;
-        inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 60%);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 1rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        bottom: 16px;
+        left: 16px;
+        /* Background semi-transparan blur */
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        padding: 6px 14px;
+        border-radius: 30px;
+
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #111827;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        pointer-events: none; /* Agar tidak mengganggu hover */
       }
-      .album-card:hover .album-overlay {
-        opacity: 1;
-      }
-      .album-overlay span {
-        color: white;
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-      }
-      .album-overlay small {
-        color: #cbd5e1;
-        font-size: 0.75rem;
+
+      @media (prefers-color-scheme: dark) {
+        .view-label {
+          background: rgba(0, 0, 0, 0.6);
+          color: #fff;
+        }
       }
 
       /* --- DEMO 3: Tech Ticker (Modern Financial Terminal Style) --- */
@@ -1520,33 +1558,61 @@
         pauseOnHover: true,
       });
 
-      // Demo 3: Product/Media Flow (Album Covers)
-      // Menggunakan placeholder image yang estetik dari Unsplash Source / Picsum
-      const albums = [
-        { title: 'Neon Nights', artist: 'Cyberwave', img: 'https://picsum.photos/id/10/400/400' },
-        { title: 'Mountain Echo', artist: 'Nature Sounds', img: 'https://picsum.photos/id/28/400/400' },
-        { title: 'Urban Flow', artist: 'City Beats', img: 'https://picsum.photos/id/58/400/400' },
-        { title: 'Coffee House', artist: 'Acoustic', img: 'https://picsum.photos/id/30/400/400' },
-        { title: 'Deep Ocean', artist: 'Ambient', img: 'https://picsum.photos/id/16/400/400' },
-        { title: 'Retro Future', artist: 'Synth', img: 'https://picsum.photos/id/56/400/400' },
+      // --- Demo 2: Adidas Product Photography Hero Loop (BAGIAN INI DIGANTI) ---
+
+      // Data: Berbagai sudut pandang (angles) dari produk yang SAMA
+      // Menggunakan gambar placeholder berkualitas tinggi yang menyerupai style Samba/Classic Trainer
+      const sambaViews = [
+        {
+          view: 'Side Profile',
+          // Gambar sisi klasik
+          img: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp',
+        },
+        {
+          view: 'Top-Down / Lacing',
+          // Tampak atas fokus pada tali
+          img: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp',
+        },
+        {
+          view: 'Toe Box Detail',
+          // Close up bagian depan/suede
+          img: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp',
+        },
+        {
+          view: 'Lifestyle / On-Foot',
+          // Contoh pemakaian
+          img: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp',
+        },
+        {
+          view: 'Heel Tab & Sole',
+          // Bagian belakang dan sol gum
+          img: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp',
+        },
+        {
+          view: 'Perspective View',
+          // Sudut 3/4
+          img: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp',
+        },
       ];
 
       new UniversalMarquee('#demo-products', {
-        items: albums,
+        items: sambaViews,
         renderItem: (item) => {
           const div = document.createElement('div');
-          div.className = 'album-card um-img-skeleton'; // Keep skeleton class for lazy load effect
+          // Gunakan class baru 'product-view-card'
+          // 'um-img-skeleton' tetap penting untuk efek loading yang halus
+          div.className = 'product-view-card um-img-skeleton';
+
+          // Struktur HTML: Gambar + Label kecil di pojok
           div.innerHTML = `
-          <img src="${item.img}" alt="${item.title}" loading="lazy">
-          <div class="album-overlay">
-            <span>${item.title}</span>
-            <small>${item.artist}</small>
-          </div>
-        `;
+            <img src="${item.img}" alt="Adidas Samba View - ${item.view}" loading="lazy">
+            <div class="view-label">${item.view}</div>
+          `;
           return div;
         },
-        speed: 40,
-        gap: '1.5rem',
+        speed: 35, // Kecepatan yang cukup lambat agar user bisa menikmati detailnya
+        gap: '1rem', // Jarak antar foto rapat
+        pauseOnHover: true, // Penting: user pasti ingin hover untuk melihat detail lebih lama
       });
 
       // Demo 4: Stock/Crypto Ticker (Updated)
