@@ -30,7 +30,6 @@
     />
 
     <style is:global data-label="CORE_STYLES">
-      /* (Tetap sama seperti sebelumnya - tidak diubah) */
       :root {
         --um-gap-default: 2rem;
         --um-font-size: clamp(1.2rem, 3vw, 2rem);
@@ -166,7 +165,6 @@
     </style>
 
     <style is:global data-label="ROOT_LAYOUT">
-      /* (Tetap sama seperti sebelumnya) */
       :root {
         --color-bg-page: #fff;
         --color-text-primary: #111827;
@@ -228,8 +226,6 @@
       .root-layout-container {
         width: calc(100% - (var(--layout-gutter) * 2));
         max-width: var(--layout-max-width);
-        min-height: 100%;
-        position: relative;
         margin-inline: auto;
         display: flex;
         flex-direction: column;
@@ -241,7 +237,6 @@
       .root-layout-footer {
         position: absolute;
         right: 0;
-        bottom: 0;
         left: 0;
         height: var(--layout-footer-height);
         display: flex;
@@ -251,151 +246,16 @@
       .root-layout-header {
         top: 0;
       }
-      .root-layout-content {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-      }
       .root-layout-footer {
         bottom: 0;
-      }
-      @media (min-width: 64rem) {
-        .root-layout::before,
-        .root-layout::after {
-          opacity: 1;
-          background-color: transparent;
-          height: 0;
-        }
-        .root-layout-container {
-          border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
-          border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
-        }
-      }
-      main {
-        display: flex;
-        flex-direction: column;
-        gap: 5rem;
-        margin-block: 4rem;
-      }
-      .intro {
-        font-size: 1.25rem;
-        line-height: 1.7;
-        max-width: 800px;
-        margin: 1.5rem auto 0;
-        text-align: center;
-      }
-      .section {
-        scroll-margin-top: 6rem;
-      }
-      .section > h2 {
-        font-size: 2.5rem;
-        font-weight: 900;
-        text-align: center;
-        margin-bottom: 2rem;
-      }
-    </style>
-    <style is:global data-label="ROOT_LAYOUT">
-      :root {
-        --color-bg-page: #fff;
-        --color-text-primary: #111827;
-        --color-gridline: #eef1ee;
-        --layout-max-width: 1200px;
-        --layout-gutter: 1.25rem;
-        --layout-guide-width: 1px;
-        --layout-guide-style: dashed;
-        --layout-vertical-padding: 4rem;
-        --layout-footer-height: 4rem;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --color-bg-page: #0f172a;
-          --color-text-primary: #f3f4f6;
-          --color-gridline: #1e293b;
-        }
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        font-family:
-          'Inter',
-          'Segoe UI',
-          system-ui,
-          -apple-system,
-          sans-serif;
-        display: flex;
-        background-color: var(--color-bg-page);
-        color: var(--color-text-primary);
-        min-height: 100vh;
-      }
-      .root-layout {
-        position: relative;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        z-index: 0;
-      }
-      .root-layout::before,
-      .root-layout::after {
-        content: '';
-        border-top: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
-        height: 0;
-        position: absolute;
-        left: 0;
-        right: 0;
-        z-index: 1;
-        opacity: 1;
-      }
-      .root-layout::before {
-        top: var(--layout-vertical-padding);
-      }
-      .root-layout::after {
-        bottom: var(--layout-vertical-padding);
-        border-bottom: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
-        border-top: none;
-      }
-      .root-layout-container {
-        width: calc(100% - (var(--layout-gutter) * 2));
-        max-width: var(--layout-max-width);
-        min-height: 100%;
-        position: relative;
-        margin-inline: auto;
-        display: flex;
-        flex-direction: column;
-        padding-top: var(--layout-vertical-padding);
-        padding-bottom: var(--layout-vertical-padding);
-        box-sizing: border-box;
-      }
-      .root-layout-header,
-      .root-layout-footer {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        height: var(--layout-footer-height);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .root-layout-header {
-        top: 0;
       }
       .root-layout-content {
+        flex: 1;
         display: flex;
         flex-direction: column;
-        flex: 1;
-      }
-      .root-layout-footer {
-        bottom: 0;
       }
 
       @media (min-width: 64rem) {
-        .root-layout::before,
-        .root-layout::after {
-          opacity: 1;
-          background-color: transparent;
-          height: 0;
-        }
         .root-layout-container {
           border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
           border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
@@ -424,54 +284,60 @@
         text-align: center;
         margin-bottom: 2rem;
       }
+
+      /* How to Use Section Styles */
       .how-to-use p {
         text-align: center;
         max-width: 800px;
         margin: 0 auto 3rem;
         font-size: 1.1rem;
         line-height: 1.6;
+        opacity: 0.9;
       }
       .examples-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: 2.5rem;
         width: 100%;
-        max-width: 900px;
+        max-width: 1000px;
         margin: 0 auto;
       }
       .usage-example {
-        overflow: hidden;
-        background-color: var(--color-bg-page);
+        background: var(--color-bg-page);
         border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
       }
       @media (prefers-color-scheme: dark) {
         .usage-example {
           border-color: #374151;
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .usage-example:hover {
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
       }
       .usage-example h3 {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
         margin: 0 0 1rem;
         font-weight: 800;
       }
       .usage-example p {
-        margin-bottom: 1.5rem;
-        line-height: 1.6;
+        margin-bottom: 2rem;
+        line-height: 1.7;
         opacity: 0.9;
       }
       .usage-example pre {
-        background-color: #0f172a;
+        background: #0f172a;
         color: #e2e8f0;
-        padding: 1.2rem;
+        padding: 1.5rem;
         border-radius: 12px;
         overflow-x: auto;
         font-size: 0.92rem;
         line-height: 1.5;
-        margin: 0;
+        margin: 2rem 0 0;
       }
       .usage-example code {
         font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
@@ -629,6 +495,55 @@
         }
       }
     </style>
+    <style>
+      /* Testimonials */
+      #demo-testimonials {
+        --um-gap: 3rem;
+        padding: 2rem 0;
+        background: linear-gradient(to right, #f8fafc, #f1f5f9);
+        border-radius: 20px;
+        margin: 2rem 0;
+      }
+      @media (prefers-color-scheme: dark) {
+        #demo-testimonials {
+          background: linear-gradient(to right, #1e293b, #0f172a);
+        }
+      }
+      #demo-testimonials .um-item {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        font-size: 1.3rem;
+        font-weight: 600;
+        min-width: 300px;
+      }
+      @media (prefers-color-scheme: dark) {
+        #demo-testimonials .um-item {
+          background: #1e293b;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+      }
+
+      /* Products */
+      #demo-products {
+        --um-gap: 2rem;
+        padding: 3rem 0;
+      }
+
+      /* News Ticker */
+      #demo-ticker {
+        background: #ff6ac1;
+        color: white;
+        padding: 1rem 0;
+        font-weight: 800;
+        font-size: 1.4rem;
+        --um-gap: 4rem;
+      }
+      #demo-ticker .um-item {
+        padding: 0.5rem 1.5rem;
+      }
+    </style>
   </head>
 
   <body>
@@ -759,376 +674,378 @@
             </section>
           </main>
         </div>
-
-        <footer class="root-layout-footer">
-          <span>© Universal Marquee 2025 by Ledi Hildawan</span>
-        </footer>
       </div>
-    </div>
 
-    <!-- Universal Marquee Library (tetap sama) -->
-    <script type="module">
-      /* (Class ContentBuilder, AnimationController, UniversalMarquee - sama persis seperti versi sebelumnya) */
-      class ContentBuilder {
-        constructor(options) {
-          this._opts = options;
+      <footer class="root-layout-footer">
+        <span>© Universal Marquee 2025 by Ledi Hildawan</span>
+      </footer>
+    </div>
+  </body>
+
+  <!-- Universal Marquee Library (tetap sama) -->
+  <script type="module">
+    /* (Class ContentBuilder, AnimationController, UniversalMarquee - sama persis seperti versi sebelumnya) */
+    class ContentBuilder {
+      constructor(options) {
+        this._opts = options;
+      }
+      #buildSeparatorNode(separator) {
+        const container = document.createElement('span');
+        container.classList.add('um-item-separator');
+        container.setAttribute('aria-hidden', 'true');
+        if (typeof separator === 'string') {
+          container.textContent = separator;
+        } else if (separator instanceof Node) {
+          container.appendChild(separator.cloneNode(true));
         }
-        #buildSeparatorNode(separator) {
-          const container = document.createElement('span');
-          container.classList.add('um-item-separator');
-          container.setAttribute('aria-hidden', 'true');
-          if (typeof separator === 'string') {
-            container.textContent = separator;
-          } else if (separator instanceof Node) {
-            container.appendChild(separator.cloneNode(true));
-          }
-          container.querySelectorAll('*').forEach((el) => {
-            if (el.id) el.removeAttribute('id');
-            el.setAttribute('tabindex', '-1');
-          });
-          return container;
-        }
-        buildCycleContent(forSR = false, addTrailingSeparator = true) {
-          const frag = document.createDocumentFragment();
-          const items = this._opts.items;
-          if (!items?.length) return frag;
-          for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (forSR) {
-              const li = document.createElement('li');
-              li.textContent = item.alt || item.text || item;
-              frag.appendChild(li);
-            } else {
-              let node = this._opts.renderItem(item);
-              if (!(node instanceof Element)) {
-                const wrapper = document.createElement('span');
-                wrapper.appendChild(node);
-                node = wrapper;
-              }
-              const cloned = node.cloneNode(true);
-              const img = cloned.querySelector('img');
-              if (img) {
-                const markLoaded = () => {
-                  img.classList.add('loaded');
-                  cloned.classList.add('loaded');
-                };
-                img.onload = markLoaded;
-                img.onerror = markLoaded;
-                if (img.complete && img.naturalWidth > 0) markLoaded();
-              }
-              if (cloned.id) cloned.removeAttribute('id');
-              cloned.querySelectorAll('*').forEach((el) => {
-                if (el.id) el.removeAttribute('id');
-                el.setAttribute('tabindex', '-1');
-              });
-              frag.appendChild(cloned);
-              if (i < items.length - 1 || addTrailingSeparator) {
-                const sep = this.#buildSeparatorNode(this._opts.separator);
-                if (sep) frag.appendChild(sep);
-              }
+        container.querySelectorAll('*').forEach((el) => {
+          if (el.id) el.removeAttribute('id');
+          el.setAttribute('tabindex', '-1');
+        });
+        return container;
+      }
+      buildCycleContent(forSR = false, addTrailingSeparator = true) {
+        const frag = document.createDocumentFragment();
+        const items = this._opts.items;
+        if (!items?.length) return frag;
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (forSR) {
+            const li = document.createElement('li');
+            li.textContent = item.alt || item.text || item;
+            frag.appendChild(li);
+          } else {
+            let node = this._opts.renderItem(item);
+            if (!(node instanceof Element)) {
+              const wrapper = document.createElement('span');
+              wrapper.appendChild(node);
+              node = wrapper;
+            }
+            const cloned = node.cloneNode(true);
+            const img = cloned.querySelector('img');
+            if (img) {
+              const markLoaded = () => {
+                img.classList.add('loaded');
+                cloned.classList.add('loaded');
+              };
+              img.onload = markLoaded;
+              img.onerror = markLoaded;
+              if (img.complete && img.naturalWidth > 0) markLoaded();
+            }
+            if (cloned.id) cloned.removeAttribute('id');
+            cloned.querySelectorAll('*').forEach((el) => {
+              if (el.id) el.removeAttribute('id');
+              el.setAttribute('tabindex', '-1');
+            });
+            frag.appendChild(cloned);
+            if (i < items.length - 1 || addTrailingSeparator) {
+              const sep = this.#buildSeparatorNode(this._opts.separator);
+              if (sep) frag.appendChild(sep);
             }
           }
-          return frag;
         }
-        buildCycleContainer(addTrailingSeparator = true) {
+        return frag;
+      }
+      buildCycleContainer(addTrailingSeparator = true) {
+        const div = document.createElement('div');
+        div.appendChild(this.buildCycleContent(false, addTrailingSeparator));
+        return div;
+      }
+      buildSRList() {
+        const mode = this._opts.screenReaderMode || 'ordered';
+        const items = this._opts.items;
+        if (!items?.length) {
           const div = document.createElement('div');
-          div.appendChild(this.buildCycleContent(false, addTrailingSeparator));
+          div.className = 'um-sr-only';
           return div;
         }
-        buildSRList() {
-          const mode = this._opts.screenReaderMode || 'ordered';
-          const items = this._opts.items;
-          if (!items?.length) {
-            const div = document.createElement('div');
-            div.className = 'um-sr-only';
-            return div;
-          }
-          let container;
-          if (mode === 'ordered') container = document.createElement('ol');
-          else if (mode === 'unordered') container = document.createElement('ul');
-          else container = document.createElement('div');
-          container.className = 'um-sr-only';
-          if (mode === 'plain') {
-            items.forEach((item) => {
-              const p = document.createElement('p');
-              p.textContent = item.alt || item.text || item;
-              container.appendChild(p);
-            });
-          } else {
-            container.appendChild(this.buildCycleContent(true));
-          }
-          return container;
-        }
-        measureCycleMetrics(root) {
-          if (!this._opts.items?.length) return { width: 0, gap: 0 };
-          const temp = document.createElement('div');
-          temp.className = 'um-track';
-          temp.style.position = 'absolute';
-          temp.style.visibility = 'hidden';
-          let gapVal = this._opts.gap;
-          if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
-          temp.style.setProperty('--um-gap', gapVal);
-          const cycle = this.buildCycleContainer(true);
-          temp.appendChild(cycle);
-          root.appendChild(temp);
-          const width = cycle.offsetWidth || 0;
-          const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
-          root.removeChild(temp);
-          return { width, gap: parsedGap };
-        }
-      }
-
-      class AnimationController {
-        constructor(track, opts) {
-          this._track = track;
-          this._opts = opts;
-        }
-        start(cycleWidth, gap) {
-          if (this._anim) this._anim.cancel();
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-          const distance = cycleWidth + gap;
-          if (distance <= 0) return;
-          let duration = this._opts.duration
-            ? this._opts.duration * 1000
-            : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
-          const from = 'translate3d(0,0,0)';
-          const to = `translate3d(-${distance}px,0,0)`;
-          const keyframes =
-            this._opts.direction === 'right'
-              ? [{ transform: to }, { transform: from }]
-              : [{ transform: from }, { transform: to }];
-          this._anim = this._track.animate(keyframes, {
-            duration,
-            iterations: Infinity,
-            easing: 'linear',
+        let container;
+        if (mode === 'ordered') container = document.createElement('ol');
+        else if (mode === 'unordered') container = document.createElement('ul');
+        else container = document.createElement('div');
+        container.className = 'um-sr-only';
+        if (mode === 'plain') {
+          items.forEach((item) => {
+            const p = document.createElement('p');
+            p.textContent = item.alt || item.text || item;
+            container.appendChild(p);
           });
+        } else {
+          container.appendChild(this.buildCycleContent(true));
         }
-        pause() {
-          if (this._anim?.playState === 'running') this._anim.pause();
-        }
-        play() {
-          if (this._anim?.playState !== 'running') this._anim.play();
-        }
-        cancel() {
-          if (this._anim) this._anim.cancel();
-        }
+        return container;
       }
-
-      class UniversalMarquee {
-        constructor(selector, opts) {
-          this._root = document.querySelector(selector);
-          if (!this._root) return;
-          this._opts = {
-            speed: 50,
-            duration: null,
-            gap: '2rem',
-            direction: 'left',
-            items: [],
-            separator: '',
-            renderItem: (i) => document.createTextNode(typeof i === 'object' ? i.text || i.alt || i : i),
-            pauseOnHover: true,
-            ariaLabel: 'Marquee',
-            screenReader: true,
-            screenReaderMode: 'ordered',
-            gradientOverlay: 'auto',
-            gradientColor: null,
-            ...opts,
-          };
-          this._root.classList.add('um-container', 'js-enabled');
-          this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
-          if (this._opts.screenReader) {
-            this._root.setAttribute('role', 'region');
-            this._root.setAttribute('aria-label', this._opts.ariaLabel);
-          }
-          this._builder = new ContentBuilder(this._opts);
-          this.#setup();
-          this.#initObservers();
-          this.#initInteractivity();
-        }
-        #setup() {
-          this._root.innerHTML = '';
-          this._track = document.createElement('div');
-          this._track.className = 'um-track';
-          this._track.setAttribute('aria-hidden', 'true');
-          if ('inert' in this._track) this._track.inert = true;
-          if (this._opts.screenReader) {
-            this._root.appendChild(this._builder.buildSRList());
-          }
-          this._root.appendChild(this._track);
-          this.#reflow();
-        }
-        #reflow() {
-          const metrics = this._builder.measureCycleMetrics(this._root);
-          if (metrics.width === 0) return;
-          if (this._anim) this._anim.cancel();
-          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
-          const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
-          this._track.innerHTML = '';
-          const frag = document.createDocumentFragment();
-          for (let i = 0; i < cyclesCount; i++) {
-            frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
-          }
-          this._track.appendChild(frag);
-
-          let shouldShowOverlay = false;
-          if (this._opts.gradientOverlay === true) shouldShowOverlay = true;
-          else if (this._opts.gradientOverlay === 'auto' && reducedMotion) {
-            shouldShowOverlay = this._track.scrollWidth > this._root.offsetWidth;
-          }
-
-          if (shouldShowOverlay) {
-            this._root.classList.add('um-overflow-left', 'um-overflow-right');
-            let overlayColor = this._opts.gradientColor || getComputedStyle(this._root).backgroundColor;
-            this._root.style.setProperty('--gradient-overlay-color', overlayColor);
-          } else {
-            this._root.classList.remove('um-overflow-left', 'um-overflow-right');
-            this._root.style.removeProperty('--gradient-overlay-color');
-          }
-
-          if (!reducedMotion) {
-            this._anim = new AnimationController(this._track, this._opts);
-            this._anim.start(metrics.width, metrics.gap);
-          }
-        }
-        #initInteractivity() {
-          if (this._opts.pauseOnHover !== false) {
-            this._root.addEventListener('mouseenter', () => this._anim?.pause());
-            this._root.addEventListener('mouseleave', () => this._anim?.play());
-            this._root.addEventListener('focusin', () => this._anim?.pause());
-            this._root.addEventListener('focusout', () => this._anim?.play());
-          }
-        }
-        #initObservers() {
-          const resizeHandler = () => {
-            clearTimeout(this._resizeTimer);
-            this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
-          };
-          new ResizeObserver(resizeHandler).observe(this._root);
-
-          if ('IntersectionObserver' in window) {
-            this._observer = new IntersectionObserver(
-              (entries) => {
-                entries.forEach((entry) => {
-                  if (!this._anim) return;
-                  this._isInViewport = entry.isIntersecting;
-                  entry.isIntersecting && !document.hidden ? this._anim.play() : this._anim.pause();
-                });
-              },
-              { rootMargin: '50px 0px' }
-            );
-            this._observer.observe(this._root);
-          }
-
-          document.addEventListener('visibilitychange', () => {
-            if (!this._anim) return;
-            document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
-          });
-
-          const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-          mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
-        }
+      measureCycleMetrics(root) {
+        if (!this._opts.items?.length) return { width: 0, gap: 0 };
+        const temp = document.createElement('div');
+        temp.className = 'um-track';
+        temp.style.position = 'absolute';
+        temp.style.visibility = 'hidden';
+        let gapVal = this._opts.gap;
+        if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
+        temp.style.setProperty('--um-gap', gapVal);
+        const cycle = this.buildCycleContainer(true);
+        temp.appendChild(cycle);
+        root.appendChild(temp);
+        const width = cycle.offsetWidth || 0;
+        const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
+        root.removeChild(temp);
+        return { width, gap: parsedGap };
       }
+    }
 
-      window.UniversalMarquee = UniversalMarquee;
-    </script>
-
-    <!-- Initialization -->
-    <script type="module">
-      const DEMO_1_ITEMS = [
-        'Seamless infinite horizontal marquee with automatic dynamic cycle duplication for perfect looping',
-        'Dual animation modes: speed-based scrolling or fixed duration-based cycle time',
-        'Configurable scrolling direction – left to right or right to left',
-        'Customizable gap between items using CSS variable or JavaScript option',
-        'Flexible separator support: plain text, SVG icons, DOM nodes, or images',
-        'Custom renderItem function to display plain text, images, or complex custom DOM elements',
-        'Built-in lazy loading for images with skeleton placeholder and smooth fade-in effect',
-        'Dynamic gradient overlay masks on left and right sides',
-        'Pause animation on hover, focus, and touch interactions',
-        'Automatic play/pause based on viewport visibility',
-        'Respects prefers-reduced-motion – switches to static scroll',
-        'Full accessibility support with screen-reader-only list and ARIA',
-        'High performance using Web Animations API',
-        'Pure vanilla JavaScript – zero dependencies',
-        'Fully responsive and mobile-friendly',
-      ];
-
-      const initApp = () => {
-        // Key Features Demo
-        new UniversalMarquee('#marquee-demo-1', {
-          speed: 60,
-          gap: '3rem',
-          direction: 'left',
-          items: DEMO_1_ITEMS,
-          separator: '🎊',
-          renderItem: (text) => {
-            const span = document.createElement('span');
-            span.textContent = text;
-            span.classList.add('um-item');
-            return span;
-          },
-          pauseOnHover: true,
-          ariaLabel: 'List of Universal Marquee key features',
-          screenReader: true,
-          screenReaderMode: 'plain',
-          gradientOverlay: false,
+    class AnimationController {
+      constructor(track, opts) {
+        this._track = track;
+        this._opts = opts;
+      }
+      start(cycleWidth, gap) {
+        if (this._anim) this._anim.cancel();
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const distance = cycleWidth + gap;
+        if (distance <= 0) return;
+        let duration = this._opts.duration
+          ? this._opts.duration * 1000
+          : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
+        const from = 'translate3d(0,0,0)';
+        const to = `translate3d(-${distance}px,0,0)`;
+        const keyframes =
+          this._opts.direction === 'right'
+            ? [{ transform: to }, { transform: from }]
+            : [{ transform: from }, { transform: to }];
+        this._anim = this._track.animate(keyframes, {
+          duration,
+          iterations: Infinity,
+          easing: 'linear',
         });
+      }
+      pause() {
+        if (this._anim?.playState === 'running') this._anim.pause();
+      }
+      play() {
+        if (this._anim?.playState !== 'running') this._anim.play();
+      }
+      cancel() {
+        if (this._anim) this._anim.cancel();
+      }
+    }
 
-        // Demo Testimonials
-        new UniversalMarquee('#demo-testimonials', {
-          items: [
-            { text: 'Amazing product!', author: 'John Doe' },
-            { text: 'Transformed my workflow.', author: 'Jane Smith' },
-            { text: 'Best ever!', author: 'Alex' },
-            { text: 'Highly recommend!', author: 'Sarah' },
-          ],
-          renderItem: (item) => {
-            const div = document.createElement('div');
-            div.className = 'um-item';
-            div.innerHTML = `<strong>"${item.text}"</strong> — ${item.author}`;
-            return div;
-          },
-          speed: 40,
-          pauseOnHover: true,
-        });
-
-        // Demo Products
-        new UniversalMarquee('#demo-products', {
-          items: [
-            { src: 'https://via.placeholder.com/400x300/ff6ac1/ffffff?text=Product+1', alt: 'Cool Sneakers' },
-            { src: 'https://via.placeholder.com/400x300/9b59b6/ffffff?text=Product+2', alt: 'Awesome T-Shirt' },
-            { src: 'https://via.placeholder.com/400x300/3498db/ffffff?text=Product+3', alt: 'Stylish Hat' },
-          ],
-          renderItem: (item) => {
-            const div = document.createElement('div');
-            div.className = 'um-img-skeleton um-item';
-            div.style.width = '300px';
-            div.style.height = '200px';
-            div.innerHTML = `<img src="${item.src}" alt="${item.alt}" loading="lazy">`;
-            return div;
-          },
+    class UniversalMarquee {
+      constructor(selector, opts) {
+        this._root = document.querySelector(selector);
+        if (!this._root) return;
+        this._opts = {
           speed: 50,
-        });
-
-        // Demo News Ticker
-        new UniversalMarquee('#demo-ticker', {
-          items: [
-            'New Feature: AI Integration Now Live! 🎉',
-            'Flash Sale: 50% Off Select Items 🔥',
-            'Update: Version 2.0 Released! 🚀',
-            'Join our community for more fun! ✨',
-          ],
-          separator: ' 🎊 ',
-          speed: 80,
-          direction: 'right',
-        });
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initApp);
-      } else {
-        initApp();
+          duration: null,
+          gap: '2rem',
+          direction: 'left',
+          items: [],
+          separator: '',
+          renderItem: (i) => document.createTextNode(typeof i === 'object' ? i.text || i.alt || i : i),
+          pauseOnHover: true,
+          ariaLabel: 'Marquee',
+          screenReader: true,
+          screenReaderMode: 'ordered',
+          gradientOverlay: 'auto',
+          gradientColor: null,
+          ...opts,
+        };
+        this._root.classList.add('um-container', 'js-enabled');
+        this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
+        if (this._opts.screenReader) {
+          this._root.setAttribute('role', 'region');
+          this._root.setAttribute('aria-label', this._opts.ariaLabel);
+        }
+        this._builder = new ContentBuilder(this._opts);
+        this.#setup();
+        this.#initObservers();
+        this.#initInteractivity();
       }
-    </script>
-  </body>
+      #setup() {
+        this._root.innerHTML = '';
+        this._track = document.createElement('div');
+        this._track.className = 'um-track';
+        this._track.setAttribute('aria-hidden', 'true');
+        if ('inert' in this._track) this._track.inert = true;
+        if (this._opts.screenReader) {
+          this._root.appendChild(this._builder.buildSRList());
+        }
+        this._root.appendChild(this._track);
+        this.#reflow();
+      }
+      #reflow() {
+        const metrics = this._builder.measureCycleMetrics(this._root);
+        if (metrics.width === 0) return;
+        if (this._anim) this._anim.cancel();
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
+        const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
+        this._track.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < cyclesCount; i++) {
+          frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
+        }
+        this._track.appendChild(frag);
+
+        let shouldShowOverlay = false;
+        if (this._opts.gradientOverlay === true) shouldShowOverlay = true;
+        else if (this._opts.gradientOverlay === 'auto' && reducedMotion) {
+          shouldShowOverlay = this._track.scrollWidth > this._root.offsetWidth;
+        }
+
+        if (shouldShowOverlay) {
+          this._root.classList.add('um-overflow-left', 'um-overflow-right');
+          let overlayColor = this._opts.gradientColor || getComputedStyle(this._root).backgroundColor;
+          this._root.style.setProperty('--gradient-overlay-color', overlayColor);
+        } else {
+          this._root.classList.remove('um-overflow-left', 'um-overflow-right');
+          this._root.style.removeProperty('--gradient-overlay-color');
+        }
+
+        if (!reducedMotion) {
+          this._anim = new AnimationController(this._track, this._opts);
+          this._anim.start(metrics.width, metrics.gap);
+        }
+      }
+      #initInteractivity() {
+        if (this._opts.pauseOnHover !== false) {
+          this._root.addEventListener('mouseenter', () => this._anim?.pause());
+          this._root.addEventListener('mouseleave', () => this._anim?.play());
+          this._root.addEventListener('focusin', () => this._anim?.pause());
+          this._root.addEventListener('focusout', () => this._anim?.play());
+        }
+      }
+      #initObservers() {
+        const resizeHandler = () => {
+          clearTimeout(this._resizeTimer);
+          this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
+        };
+        new ResizeObserver(resizeHandler).observe(this._root);
+
+        if ('IntersectionObserver' in window) {
+          this._observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (!this._anim) return;
+                this._isInViewport = entry.isIntersecting;
+                entry.isIntersecting && !document.hidden ? this._anim.play() : this._anim.pause();
+              });
+            },
+            { rootMargin: '50px 0px' }
+          );
+          this._observer.observe(this._root);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+          if (!this._anim) return;
+          document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
+        });
+
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
+      }
+    }
+
+    window.UniversalMarquee = UniversalMarquee;
+  </script>
+
+  <!-- Initialization -->
+  <script type="module">
+    const DEMO_1_ITEMS = [
+      'Seamless infinite horizontal marquee with automatic dynamic cycle duplication for perfect looping',
+      'Dual animation modes: speed-based scrolling or fixed duration-based cycle time',
+      'Configurable scrolling direction – left to right or right to left',
+      'Customizable gap between items using CSS variable or JavaScript option',
+      'Flexible separator support: plain text, SVG icons, DOM nodes, or images',
+      'Custom renderItem function to display plain text, images, or complex custom DOM elements',
+      'Built-in lazy loading for images with skeleton placeholder and smooth fade-in effect',
+      'Dynamic gradient overlay masks on left and right sides',
+      'Pause animation on hover, focus, and touch interactions',
+      'Automatic play/pause based on viewport visibility',
+      'Respects prefers-reduced-motion – switches to static scroll',
+      'Full accessibility support with screen-reader-only list and ARIA',
+      'High performance using Web Animations API',
+      'Pure vanilla JavaScript – zero dependencies',
+      'Fully responsive and mobile-friendly',
+    ];
+
+    const initApp = () => {
+      new UniversalMarquee('#marquee-demo-1', {
+        speed: 60,
+        gap: '3rem',
+        direction: 'left',
+        items: DEMO_1_ITEMS,
+        separator: '🎊',
+        renderItem: (text) => {
+          const span = document.createElement('span');
+          span.textContent = text;
+          span.classList.add('um-item');
+          return span;
+        },
+        pauseOnHover: true,
+        ariaLabel: 'List of Universal Marquee key features',
+        screenReader: true,
+        screenReaderMode: 'plain',
+        gradientOverlay: false,
+      });
+
+      new UniversalMarquee('#demo-testimonials', {
+        items: [
+          { text: 'Amazing product!', author: 'John Doe' },
+          { text: 'Transformed my workflow.', author: 'Jane Smith' },
+          { text: 'Best ever!', author: 'Alex' },
+          { text: 'Highly recommend!', author: 'Sarah' },
+          { text: 'Incredible support team.', author: 'Mike' },
+        ],
+        renderItem: (item) => {
+          const div = document.createElement('div');
+          div.className = 'um-item';
+          div.innerHTML = `<strong>"${item.text}"</strong><br>— ${item.author}`;
+          return div;
+        },
+        speed: 35,
+        pauseOnHover: true,
+      });
+
+      new UniversalMarquee('#demo-products', {
+        items: [
+          { src: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp', alt: 'Cool Sneakers' },
+          { src: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp', alt: 'Awesome T-Shirt' },
+          { src: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp', alt: 'Stylish Hat' },
+          { src: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp', alt: 'Premium Bag' },
+          { src: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp', alt: 'Premium Bag' },
+          { src: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp', alt: 'Premium Bag' },
+        ],
+        renderItem: (item) => {
+          const div = document.createElement('div');
+          div.className = 'um-img-skeleton um-item';
+          div.style.width = '320px';
+          div.style.height = '220px';
+          div.innerHTML = `<img src="${item.src}" alt="${item.alt}" loading="lazy">`;
+          return div;
+        },
+        speed: 45,
+        gap: '0.5rem',
+      });
+
+      new UniversalMarquee('#demo-ticker', {
+        items: [
+          'New Feature: AI Integration Now Live! 🎉',
+          'Flash Sale: 50% Off Select Items 🔥',
+          'Update: Version 2.0 Released! 🚀',
+          'Join our community for more fun! ✨',
+          'Limited time offer ending soon ⏰',
+        ],
+        separator: ' 🎊 ',
+        speed: 80,
+        direction: 'right',
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
 </html>
