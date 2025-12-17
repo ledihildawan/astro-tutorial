@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Fredoka+One&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
       rel="stylesheet"
     />
 
@@ -79,7 +79,7 @@
         align-items: center;
         font-size: var(--um-font-size);
         font-weight: 700;
-        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: var(--font-family-primary)
       }
       .um-img-skeleton {
         position: relative;
@@ -146,7 +146,7 @@
       }
       @media (prefers-color-scheme: dark) {
         .um-img-skeleton {
-          background-color: #374151;
+          background-color: var(--color-border-strong);
         }
         .um-img-skeleton.loaded {
           box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
@@ -156,30 +156,97 @@
 
     <style is:global data-label="ROOT_LAYOUT">
       :root {
-        --color-bg-page: #ffffff;
-        --color-text-primary: #111827;
-        --color-gridline: #f1f5f9;
-        --layout-max-width: 1200px;
-        --layout-gutter: 1.5rem;
-        --layout-guide-width: 1px;
-        --layout-guide-style: solid;
-        --layout-vertical-padding: 4rem;
-        --layout-footer-height: 5rem;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --color-bg-page: #0f172a;
-          --color-text-primary: #f3f4f6;
-          --color-gridline: #1e293b;
-        }
-      }
+  /* --- TYPOGRAPHY --- */
+  /* Body: Outfit (Bersih, modern, geometris, enak dibaca) */
+  --font-family-primary: 'Outfit', system-ui, sans-serif;
+  
+  /* Heading: Space Grotesk (Futuristik dengan detail unik pada huruf g, y, dll) */
+  --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
+  
+  /* Mono: Space Mono (Kesan coding/hacking sci-fi yang kuat) */
+  --font-family-mono: 'Space Mono', monospace;
+  
+  /* Fun: Tetap futuristik tapi decorative */
+  --font-family-fun: 'Space Grotesk', sans-serif;
+
+  /* --- SIZES (Tetap sama, proporsional) --- */
+  --font-size-base: clamp(1rem, 2.5vw, 1.125rem);
+  --font-size-large: clamp(1.5rem, 4vw, 2.5rem);
+  --font-size-xl: clamp(2rem, 5vw, 3.5rem);
+  --font-size-heading: clamp(2.5rem, 6vw, 4rem);
+
+  /* --- WEIGHTS --- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* --- THEME COLORS: "Night City Zen" (Default is Dark) --- */
+  
+  /* Background: Sangat gelap, mendekati hitam tapi ada tint biru/ungu (Calm) */
+  --color-bg-page: #030712; /* Deepest Navy/Black */
+  
+  /* Surface: Sedikit lebih terang untuk kartu/panel */
+  --color-bg-surface: #0f172a; /* Slate 900 */
+  
+  /* Text Primary: Bukan putih murni (menyakitkan mata), tapi Cyan sangat pucat */
+  --color-text-primary: #e0f2fe; 
+  
+  /* Text Secondary: Biru keabuan dingin */
+  --color-text-secondary: #94a3b8; 
+  
+  /* --- NEON ACCENTS (The Cyberpunk Touch) --- */
+  
+  /* Gridline: Tipis, transparan, warna teal */
+  --color-gridline: rgba(45, 212, 191, 0.15); 
+  
+  /* Border: Sedikit menyala */
+  --color-border-strong: #1e293b;
+  
+  /* Accent Utama: Electric Cyan (Tenang tapi pop) */
+  --color-accent-primary: #22d3ee; 
+  
+  /* Accent Kedua: Soft Neon Purple */
+  --color-accent-secondary: #a78bfa; 
+  
+  /* Accent Glow: Efek cahaya untuk box-shadow */
+  --color-glow-primary: rgba(34, 211, 238, 0.4);
+
+  /* --- LAYOUT --- */
+  --layout-max-width: 1200px;
+  --layout-gutter: 1.5rem;
+  --layout-guide-width: 1px;
+  --layout-guide-style: solid; /* Ganti dashed ke solid agar lebih techy */
+  --layout-vertical-padding: 4rem;
+  --layout-footer-height: 5rem;
+}
+
+/* --- LIGHT MODE OVERRIDE (Sci-Fi Laboratory Look) --- */
+/* Jika user memaksa light mode, kita buat seperti lab futuristik yang bersih */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg-page: #f8fafc;        /* Slate 50 */
+    --color-bg-surface: #ffffff;     /* White */
+    --color-text-primary: #0f172a;   /* Slate 900 */
+    --color-text-secondary: #475569; /* Slate 600 */
+    --color-gridline: #cbd5e1;       /* Slate 300 */
+    --color-border-strong: #94a3b8;
+    
+    /* Neon di light mode menjadi warna solid yang tajam */
+    --color-accent-primary: #0891b2; /* Cyan gelap */
+    --color-accent-secondary: #7c3aed; /* Violet gelap */
+  }
+}
       body {
         margin: 0;
         padding: 0;
-        font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: var(--font-family-primary);
         background-color: var(--color-bg-page);
         color: var(--color-text-primary);
         min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
       }
       .root-layout {
         position: relative;
@@ -235,6 +302,7 @@
         bottom: 0;
         font-size: 0.9rem;
         opacity: 0.7;
+        color: var(--color-text-secondary);
       }
       .root-layout-content {
         flex: 1;
@@ -253,13 +321,20 @@
         gap: 6rem;
         margin-block: 4rem;
       }
+
+      h1,
+      h2,
+      h3 {
+        color: var(--color-text-primary);
+      }
+
       .intro {
         font-size: 1.25rem;
         line-height: 1.7;
         max-width: 760px;
         margin: 1.5rem auto 0;
         text-align: center;
-        color: #6b7280;
+        color: var(--color-text-secondary);
       }
       @media (prefers-color-scheme: dark) {
         .intro {
@@ -274,7 +349,7 @@
         font-weight: 800;
         text-align: center;
         margin-bottom: 2.5rem;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
       }
       .how-to-use > p {
         text-align: center;
@@ -282,7 +357,7 @@
         margin: 0 auto 3.5rem;
         font-size: 1.1rem;
         line-height: 1.6;
-        opacity: 0.9;
+        color: var(--color-text-secondary);
       }
       .examples-grid {
         display: flex;
@@ -293,16 +368,18 @@
         margin: 0 auto;
       }
       .usage-example {
-        background: var(--color-bg-page);
+        background: var(--color-bg-surface);
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
+        border-radius: 24px;
         padding: 2.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.02),
+          0 10px 15px -3px rgba(0, 0, 0, 0.04);
         overflow: hidden;
       }
       @media (prefers-color-scheme: dark) {
         .usage-example {
-          border-color: #374151;
+          border-color: var(--color-border-strong);
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .usage-example:hover {
@@ -318,7 +395,7 @@
       .usage-example > p {
         margin-bottom: 2rem;
         line-height: 1.7;
-        opacity: 0.9;
+        color: var(--color-text-secondary);
         font-size: 1.05rem;
       }
       /* --- NEW BEAUTIFIED CODE BLOCK STYLES (No External Libs) --- */
@@ -361,7 +438,7 @@
       }
       .file-name {
         color: #9ca3af;
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-family-primary)
         font-size: 0.85rem;
         font-weight: 500;
         position: absolute;
@@ -400,7 +477,7 @@
         overflow-x: auto;
       }
       .code-content code {
-        font-family: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+        font-family: var(--font-family-mono);
         font-size: 0.9rem;
         line-height: 1.6;
         color: #d4d4d4; /* Base text color */
@@ -466,7 +543,7 @@
         }
       }
       #marquee-demo-1 .um-item {
-        font-family: 'Comic Neue', 'Fredoka One', cursive, sans-serif;
+        font-family: var(--font-family-fun)
         font-weight: 700;
         font-size: clamp(2rem, 5vw, 3.5rem);
         letter-spacing: 2px;
@@ -817,7 +894,7 @@
         border: 1px solid #1e293b;
         border-radius: 12px;
         padding: 1.25rem 0;
-        font-family: 'JetBrains Mono', 'Menlo', monospace;
+        font-family: var(--font-family-mono)
         font-size: 0.9rem;
         box-shadow:
           0 4px 6px -1px rgba(0, 0, 0, 0.1),
