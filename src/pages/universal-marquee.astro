@@ -27,39 +27,38 @@
     <style is:global>
       :root {
         /* === BORDER RADIUS (Global) === */
-        --radius-lg: 24px;
-        --radius-md: 20px;
-        --radius-pill: 60px;
-        --radius-sm: 12px;
-        --radius-xl: 30px;
         --radius-xs: 6px;
+        --radius-sm: 12px;
+        --radius-md: 20px;
+        --radius-lg: 24px;
+        --radius-xl: 30px;
+        --radius-pill: 60px;
 
         /* === TYPOGRAPHY (Global) === */
-        --font-family-fun: 'Space Grotesk', sans-serif;
-        --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
-        --font-family-mono: 'Space Mono', monospace;
         --font-family-primary: 'Outfit', system-ui, sans-serif;
-
+        --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
+        --font-family-fun: 'Space Grotesk', sans-serif;
+        --font-family-mono: 'Space Mono', monospace;
         --font-size-base: clamp(1rem, 2.5vw, 1.125rem);
+        --font-size-xs: 0.8rem;
+        --font-size-sm: 0.85rem;
         --font-size-code: 0.9rem;
+        --font-size-large: clamp(1.5rem, 4vw, 2.5rem);
+        --font-size-xl: clamp(2rem, 5vw, 3.5rem);
         --font-size-h3-card: 1.75rem;
         --font-size-heading: clamp(2.5rem, 6vw, 4rem);
-        --font-size-large: clamp(1.5rem, 4vw, 2.5rem);
-        --font-size-sm: 0.85rem;
-        --font-size-xl: clamp(2rem, 5vw, 3.5rem);
-        --font-size-xs: 0.8rem;
 
         /* === SPACING & SIZES (Global) === */
-        --avatar-size: 48px;
-        --gap-sm: 8px;
         --gap-xs: 6px;
-        --icon-size-md: 18px;
+        --gap-sm: 8px;
         --padding-xs: 6px;
-        --section-spacing: 6rem;
-        --spacing-lg: 2.5rem;
-        --spacing-md: 1.5rem;
         --spacing-sm: 1rem;
+        --spacing-md: 1.5rem;
+        --spacing-lg: 2.5rem;
         --spacing-xl: 4rem;
+        --section-spacing: 6rem;
+        --avatar-size: 48px;
+        --icon-size-md: 18px;
 
         /* === EFFECTS & TRANSITIONS (Global) === */
         --fx-blur-sm: blur(8px);
@@ -72,22 +71,23 @@
         --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.5);
 
         /* === BORDERS (Global) === */
-        --border-dark: #334155;
         --border-light: #e2e8f0;
         --border-medium: #cbd5e1;
+        --border-dark: #334155;
 
         /* === SOCIAL / BRAND COLORS (Global) === */
+        --color-twitter: #1da1f2;
         --color-linkedin: #0a66c2;
         --color-ph: #da552f;
-        --color-stars: #fbbf24;
-        --color-twitter: #1da1f2;
         --color-verified: #3b82f6;
+        --color-stars: #fbbf24;
 
         /* === ACCENT GRADIENTS (Global) === */
         --gradient-accent-1: #6366f1;
         --gradient-accent-2: #a855f7;
+        --gradient-primary: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
 
-        /* === THEME COLORS (Night City Zen - default dark) === */
+        /* === THEME COLORS (Night City Zen - Dark Mode Default) === */
         --color-accent-primary: #22d3ee;
         --color-accent-secondary: #a78bfa;
         --color-bg-page: #030712;
@@ -99,11 +99,11 @@
         --color-text-secondary: #94a3b8;
 
         /* === PAGE LAYOUT (Global) === */
-        --layout-vertical-spacing: 5rem;
-        --layout-guide-style: solid;
-        --layout-guide-width: 1px;
-        --layout-gutter: var(--spacing-md);
         --layout-max-width: 1200px;
+        --layout-gutter: var(--spacing-md);
+        --layout-vertical-spacing: 5rem;
+        --layout-guide-width: 1px;
+        --layout-guide-style: solid;
 
         /* === UNIVERSAL MARQUEE CORE === */
         --um-font-size: clamp(1.2rem, 3vw, 2rem);
@@ -115,12 +115,12 @@
 
         /* === CODE WINDOW COMPONENT === */
         --code-bg: #1e1e1e;
-        --code-dot-green: #27c93f;
-        --code-dot-red: #ff5f56;
-        --code-dot-yellow: #ffbd2e;
         --code-header-bg: #252526;
         --code-scrollbar-thumb: #424242;
         --code-text: #d4d4d4;
+        --code-dot-red: #ff5f56;
+        --code-dot-yellow: #ffbd2e;
+        --code-dot-green: #27c93f;
 
         /* === DEMO 1 - Rainbow Party Marquee === */
         --demo1-border-radius: var(--radius-xl);
@@ -130,11 +130,11 @@
         --demo1-item-padding: var(--spacing-sm) var(--spacing-lg);
         --demo1-padding-v: var(--spacing-lg);
         --demo1-rotate: -3deg;
+        --demo1-skew: -5deg;
         --demo1-separator-margin: 0 var(--spacing-md);
         --demo1-separator-size: 4.5rem;
         --demo1-shadow: 0 15px 40px rgba(255, 105, 180, 0.5);
         --demo1-shadow-dark: 0 15px 40px rgba(255, 20, 147, 0.7);
-        --demo1-skew: -5deg;
 
         /* === DEMO 2 - Testimonials === */
         --demo2-card-border-radius: 20px;
@@ -164,10 +164,14 @@
           --color-bg-surface: #ffffff;
           --color-text-primary: #0f172a;
           --color-text-secondary: #475569;
-          --color-gridline: var(--border-medium);
           --color-border-strong: #94a3b8;
+          --color-gridline: var(--border-medium);
+          --color-glow-primary: rgba(8, 145, 178, 0.2);
           --color-accent-primary: #0891b2;
           --color-accent-secondary: #7c3aed;
+          --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+          --shadow-card-dark: 0 10px 30px rgba(0, 0, 0, 0.15);
+          --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.12);
         }
       }
     </style>
