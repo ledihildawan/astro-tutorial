@@ -16,28 +16,23 @@
     <meta property="og:title" content="Universal Marquee - Seamless Infinite Horizontal Marquee" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://universal-marquee.example.com" />
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Luckiest+Guy&display=swap"
       rel="stylesheet"
     />
-
     <style is:global>
       :root {
-        /* === BORDER RADIUS (Global) === */
         --radius-xs: 6px;
         --radius-sm: 12px;
         --radius-md: 20px;
         --radius-lg: 24px;
         --radius-xl: 30px;
         --radius-pill: 60px;
-
-        /* === TYPOGRAPHY (Global) === */
         --font-family-primary: 'Outfit', system-ui, sans-serif;
         --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
-        --font-family-fun: 'Space Grotesk', sans-serif;
+        --font-family-fun: 'Luckiest Guy', sans-serif;
         --font-family-mono: 'Space Mono', monospace;
         --font-size-base: clamp(1rem, 2.5vw, 1.125rem);
         --font-size-xs: 0.8rem;
@@ -47,8 +42,6 @@
         --font-size-xl: clamp(2rem, 5vw, 3.5rem);
         --font-size-h3-card: 1.75rem;
         --font-size-heading: clamp(2.5rem, 6vw, 4rem);
-
-        /* === SPACING & SIZES (Global) === */
         --gap-xs: 6px;
         --gap-sm: 8px;
         --padding-xs: 6px;
@@ -59,35 +52,22 @@
         --section-spacing: 6rem;
         --avatar-size: 48px;
         --icon-size-md: 18px;
-
-        /* === EFFECTS & TRANSITIONS (Global) === */
         --fx-blur-sm: blur(8px);
         --transition-normal: 0.3s ease;
         --transition-slow: 0.6s ease;
-
-        /* === SHADOWS (Global) === */
         --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         --shadow-card-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
         --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.5);
-
-        /* === BORDERS (Global) === */
         --border-light: #e2e8f0;
         --border-medium: #cbd5e1;
         --border-dark: #334155;
-
-        /* === SOCIAL / BRAND COLORS (Global) === */
         --color-twitter: #1da1f2;
         --color-linkedin: #0a66c2;
         --color-ph: #da552f;
         --color-verified: #3b82f6;
         --color-stars: #fbbf24;
-
-        /* === ACCENT GRADIENTS (Global) === */
         --gradient-accent-1: #6366f1;
         --gradient-accent-2: #a855f7;
-        --gradient-primary: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
-
-        /* === THEME COLORS (Night City Zen - Dark Mode Default) === */
         --color-accent-primary: #22d3ee;
         --color-accent-secondary: #a78bfa;
         --color-bg-page: #030712;
@@ -97,23 +77,17 @@
         --color-gridline: rgba(45, 212, 191, 0.15);
         --color-text-primary: #e0f2fe;
         --color-text-secondary: #94a3b8;
-
-        /* === PAGE LAYOUT (Global) === */
         --layout-max-width: 1200px;
         --layout-gutter: var(--spacing-md);
         --layout-vertical-spacing: 5rem;
         --layout-guide-width: 1px;
         --layout-guide-style: solid;
-
-        /* === UNIVERSAL MARQUEE CORE === */
         --um-font-size: clamp(1.2rem, 3vw, 2rem);
         --um-gallery-border-radius: var(--radius-lg);
         --um-gallery-item-height: 280px;
         --um-gallery-item-width: 420px;
         --um-gap-default: 2rem;
         --um-overlay-width: 120px;
-
-        /* === CODE WINDOW COMPONENT === */
         --code-bg: #1e1e1e;
         --code-header-bg: #252526;
         --code-scrollbar-thumb: #424242;
@@ -121,8 +95,6 @@
         --code-dot-red: #ff5f56;
         --code-dot-yellow: #ffbd2e;
         --code-dot-green: #27c93f;
-
-        /* === DEMO 1 - Rainbow Party Marquee === */
         --demo1-border-radius: var(--radius-xl);
         --demo1-font-size: clamp(2rem, 5vw, 3.5rem);
         --demo1-gap: 5rem;
@@ -135,29 +107,21 @@
         --demo1-separator-size: 4.5rem;
         --demo1-shadow: 0 15px 40px rgba(255, 105, 180, 0.5);
         --demo1-shadow-dark: 0 15px 40px rgba(255, 20, 147, 0.7);
-
-        /* === DEMO 2 - Testimonials === */
         --demo2-card-border-radius: 20px;
         --demo2-card-padding: var(--spacing-md);
         --demo2-card-width: 380px;
         --demo2-gap: 2rem;
         --demo2-padding-v: 3rem;
-
-        /* === DEMO 3 - Product Gallery === */
         --demo3-card-border-radius: 12px;
         --demo3-card-height: 300px;
         --demo3-card-width: 400px;
         --demo3-gap: var(--spacing-sm);
         --demo3-padding-v: var(--spacing-xl);
-
-        /* === DEMO 4 - Ticker === */
         --demo4-border-radius: 12px;
         --demo4-font-size: 0.9rem;
         --demo4-gap: 3rem;
         --demo4-padding-v: 1.25rem;
       }
-
-      /* Light mode overrides */
       @media (prefers-color-scheme: light) {
         :root {
           --color-bg-page: #f8fafc;
@@ -175,7 +139,6 @@
         }
       }
     </style>
-
     <style is:global data-label="CORE_STYLES">
       .um-container {
         display: flex;
@@ -202,7 +165,6 @@
       .um-container.js-enabled .um-track {
         display: flex;
       }
-
       .um-track {
         align-items: center;
         flex-wrap: nowrap;
@@ -227,7 +189,6 @@
         font-weight: 700;
         font-family: var(--font-family-primary);
       }
-
       .um-img-skeleton {
         position: relative;
         background-color: #e5e7eb;
@@ -261,7 +222,6 @@
         background-color: transparent;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
       }
-
       .um-container.um-overflow-left::before,
       .um-container.um-overflow-right::after {
         content: '';
@@ -280,7 +240,6 @@
         right: 0;
         background: linear-gradient(to left, var(--gradient-overlay-color, var(--color-bg-page)), transparent);
       }
-
       @media (prefers-reduced-motion: reduce) {
         .um-container {
           overflow-x: auto !important;
@@ -293,7 +252,6 @@
           justify-content: flex-start;
         }
       }
-
       @media (prefers-color-scheme: dark) {
         .um-img-skeleton {
           background-color: var(--color-border-strong);
@@ -303,7 +261,6 @@
         }
       }
     </style>
-
     <style is:global data-label="ROOT_LAYOUT">
       body {
         margin: 0;
@@ -374,14 +331,12 @@
         display: flex;
         flex-direction: column;
       }
-
       @media (min-width: 64rem) {
         .root-layout-container {
           border-left: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
           border-right: var(--layout-guide-width) var(--layout-guide-style) var(--color-gridline);
         }
       }
-
       main {
         display: flex;
         flex-direction: column;
@@ -458,8 +413,6 @@
         color: var(--color-text-secondary);
         font-size: 1.05rem;
       }
-
-      /* Code window */
       .code-window {
         margin: var(--spacing-lg) 0 0;
         background: var(--code-bg);
@@ -507,7 +460,6 @@
         transform: translateX(-50%);
         opacity: 0.8;
       }
-      /* Copy Button - Icon Based */
       .copy-btn {
         background: transparent;
         border: none;
@@ -559,10 +511,8 @@
         background: #555;
       }
     </style>
-
     <style is:global data-label="MARQUEE_DEMO_1_STYLES">
       #marquee-demo-1 {
-        --um-gap: var(--demo1-gap);
         background: linear-gradient(90deg, #ff6ac1, #9b59b6, #3498db, #2ecc71, #f1c40f, #e67e22, #ff6ac1);
         background-size: 300% 300%;
         animation: rainbowShift 12s ease infinite;
@@ -610,7 +560,6 @@
         text-shadow:
           0 0 5px rgba(255, 255, 255, 0.5),
           3px 3px 0 #000;
-        padding: var(--demo1-item-padding);
         border-radius: var(--demo1-item-border-radius);
         background: rgba(20, 20, 35, 0.85);
         box-shadow:
@@ -620,24 +569,23 @@
         align-items: center;
         text-align: center;
         line-height: 1.3;
-        transition: transform var(--transition-normal);
+        transition: transform 0.4s ease;
         transform: translateZ(0);
+      }
+      #marquee-demo-1 .um-item > span {
+        padding: var(--demo1-item-padding);
       }
       #marquee-demo-1 .um-item:nth-child(odd) {
         color: #ffff00;
-        transform: scale(1.1);
       }
       #marquee-demo-1 .um-item:nth-child(even) {
         color: #00ffff;
-        transform: scale(0.95);
       }
       #marquee-demo-1 .um-item:nth-child(3n) {
         color: #ff00ff;
-        transform: scale(1.2);
       }
       #marquee-demo-1 .um-item:nth-child(4n) {
         color: #00ff00;
-        transform: scale(1.05);
       }
       #marquee-demo-1 .um-item-separator {
         font-size: var(--demo1-separator-size);
@@ -698,8 +646,8 @@
         }
       }
     </style>
-
     <style is:global data-label="MARQUEE_DEMO_2_AND_3_STYLES">
+      /* Testimonials */
       #demo-testimonials {
         --um-gap: var(--demo2-gap);
         padding: var(--demo2-padding-v) 0;
@@ -874,7 +822,7 @@
         }
       }
 
-      /* --- DEMO 2: Adidas Product --- */
+      /* Product Gallery */
       #demo-products {
         --um-gap: var(--demo3-gap);
         padding: var(--demo3-padding-v) 0;
@@ -946,7 +894,7 @@
         }
       }
 
-      /* --- DEMO 3: Tech Ticker --- */
+      /* Ticker */
       #demo-ticker {
         background: #020617;
         border: 1px solid #1e293b;
@@ -1042,7 +990,6 @@
       }
     </style>
   </head>
-
   <body>
     <div class="root-layout">
       <div class="root-layout-container">
@@ -1054,18 +1001,15 @@
             ></path>
           </svg>
         </header>
-
         <div class="root-layout-content">
           <main>
             <h1 style="text-align: center; font-size: clamp(2.5rem, 5vw, 4rem); margin: 0; letter-spacing: -0.03em;">
               Universal Marquee
             </h1>
-
             <p class="intro">
               Lightweight, accessible vanilla JS library for infinite horizontal marquees. Works with text, images, or
               custom content. Scrolls continuously left or right.
             </p>
-
             <section class="section" aria-labelledby="features-heading">
               <h2 id="features-heading">Key Features</h2>
               <div
@@ -1076,7 +1020,6 @@
               >
               </div>
             </section>
-
             <section class="section how-to-use" aria-labelledby="usage-heading">
               <h2 id="usage-heading">How to Use</h2>
               <p>
@@ -1097,7 +1040,6 @@
                     aria-live="polite"
                   >
                   </div>
-
                   <figure class="code-window">
                     <div class="code-header">
                       <div class="window-controls">
@@ -1140,24 +1082,12 @@
   &#125;&#41;;
 &lt;&#47;script&gt;</code></pre>
                   </figure>
-
-                  <div class="um-sr-only" role="region" aria-label="Explanation of how to use Scrolling Testimonials">
-                    <h4>How to create a Scrolling Testimonials marquee:</h4>
-                    <ol>
-                      <li>Create an empty div element with ID "testimonials".</li>
-                      <li>Initialize the library using UniversalMarquee.</li>
-                      <li>Provide an array of review objects.</li>
-                      <li>Use renderItem to return a styled DOM element for each review.</li>
-                    </ol>
-                  </div>
                 </article>
-
                 <article class="usage-example">
                   <h3>Product Showcase</h3>
                   <p>Perfect for highlighting featured or new products on the homepage with high-quality images.</p>
                   <div id="demo-products" role="region" aria-label="Product showcase marquee demo" aria-live="polite">
                   </div>
-
                   <figure class="code-window">
                     <div class="code-header">
                       <div class="window-controls">
@@ -1200,14 +1130,12 @@
 &lt;&#47;script&gt;</code></pre>
                   </figure>
                 </article>
-
                 <article class="usage-example">
                   <h3>News Ticker</h3>
                   <p>
                     Great for displaying latest news, promotions, or notifications with a classic fast ticker effect.
                   </p>
                   <div id="demo-ticker" role="region" aria-label="News ticker marquee demo" aria-live="polite"></div>
-
                   <figure class="code-window">
                     <div class="code-header">
                       <div class="window-controls">
@@ -1251,416 +1179,432 @@
           </main>
         </div>
       </div>
-
       <footer class="root-layout-footer">
         <span>© Universal Marquee 2025 by Ledi Hildawan</span>
       </footer>
     </div>
-  </body>
 
-  <script type="module">
-    class ContentBuilder {
-      constructor(options) {
-        this._opts = options;
-      }
-      #buildSeparatorNode(separator) {
-        if (separator === null || separator === undefined || separator === '') {
-          return null;
+    <!-- Library Core -->
+    <script type="module">
+      class ContentBuilder {
+        constructor(options) {
+          this._opts = options;
         }
+        #buildSeparatorNode(separator) {
+          if (separator === null || separator === undefined || separator === '') {
+            return null;
+          }
 
-        const container = document.createElement('span');
-        container.classList.add('um-item-separator');
-        container.setAttribute('aria-hidden', 'true');
+          const container = document.createElement('span');
+          container.classList.add('um-item-separator');
+          container.setAttribute('aria-hidden', 'true');
 
-        if (typeof separator === 'string') {
-          container.innerHTML = separator;
-        } else if (separator instanceof Node) {
-          container.appendChild(separator.cloneNode(true));
-        } else {
-          container.textContent = String(separator);
-        }
-        container.querySelectorAll('*').forEach((el) => {
-          if (el.id) el.removeAttribute('id');
-          el.setAttribute('tabindex', '-1');
-        });
-
-        return container;
-      }
-      buildCycleContent(forSR = false, addTrailingSeparator = true) {
-        const frag = document.createDocumentFragment();
-        const items = this._opts.items;
-        if (!items?.length) return frag;
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          if (forSR) {
-            const li = document.createElement('li');
-            li.textContent = item.alt || item.text || item;
-            frag.appendChild(li);
+          if (typeof separator === 'string') {
+            container.innerHTML = separator;
+          } else if (separator instanceof Node) {
+            container.appendChild(separator.cloneNode(true));
           } else {
-            let node = this._opts.renderItem(item);
-            if (!(node instanceof Element)) {
-              const wrapper = document.createElement('span');
-              wrapper.appendChild(node);
-              node = wrapper;
-            }
-            const cloned = node.cloneNode(true);
-            const img = cloned.querySelector('img');
-            if (img) {
-              const markLoaded = () => {
-                img.classList.add('loaded');
-                cloned.classList.add('loaded');
-              };
-              img.onload = markLoaded;
-              img.onerror = markLoaded;
-              if (img.complete && img.naturalWidth > 0) markLoaded();
-            }
-            if (cloned.id) cloned.removeAttribute('id');
-            cloned.querySelectorAll('*').forEach((el) => {
-              if (el.id) el.removeAttribute('id');
-              el.setAttribute('tabindex', '-1');
-            });
-            frag.appendChild(cloned);
-            if (i < items.length - 1 || addTrailingSeparator) {
-              const sep = this.#buildSeparatorNode(this._opts.separator);
-              if (sep) frag.appendChild(sep);
+            container.textContent = String(separator);
+          }
+          container.querySelectorAll('*').forEach((el) => {
+            if (el.id) el.removeAttribute('id');
+            el.setAttribute('tabindex', '-1');
+          });
+
+          return container;
+        }
+        buildCycleContent(forSR = false, addTrailingSeparator = true) {
+          const frag = document.createDocumentFragment();
+          const items = this._opts.items;
+          if (!items?.length) return frag;
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (forSR) {
+              const li = document.createElement('li');
+              li.textContent = item.alt || item.text || item;
+              frag.appendChild(li);
+            } else {
+              let node = this._opts.renderItem(item);
+              if (!(node instanceof Element)) {
+                const wrapper = document.createElement('span');
+                wrapper.appendChild(node);
+                node = wrapper;
+              }
+              const cloned = node.cloneNode(true);
+              const img = cloned.querySelector('img');
+              if (img) {
+                const markLoaded = () => {
+                  img.classList.add('loaded');
+                  cloned.classList.add('loaded');
+                };
+                img.onload = markLoaded;
+                img.onerror = markLoaded;
+                if (img.complete && img.naturalWidth > 0) markLoaded();
+              }
+              if (cloned.id) cloned.removeAttribute('id');
+              cloned.querySelectorAll('*').forEach((el) => {
+                if (el.id) el.removeAttribute('id');
+                el.setAttribute('tabindex', '-1');
+              });
+              frag.appendChild(cloned);
+              if (i < items.length - 1 || addTrailingSeparator) {
+                const sep = this.#buildSeparatorNode(this._opts.separator);
+                if (sep) frag.appendChild(sep);
+              }
             }
           }
+          return frag;
         }
-        return frag;
-      }
-      buildCycleContainer(addTrailingSeparator = true) {
-        const div = document.createElement('div');
-        div.appendChild(this.buildCycleContent(false, addTrailingSeparator));
-        return div;
-      }
-      buildSRList() {
-        const mode = this._opts.screenReaderMode || 'ordered';
-        const items = this._opts.items;
-        if (!items?.length) {
+        buildCycleContainer(addTrailingSeparator = true) {
           const div = document.createElement('div');
-          div.className = 'um-sr-only';
+          div.appendChild(this.buildCycleContent(false, addTrailingSeparator));
           return div;
         }
-        let container;
-        if (mode === 'ordered') container = document.createElement('ol');
-        else if (mode === 'unordered') container = document.createElement('ul');
-        else container = document.createElement('div');
-        container.className = 'um-sr-only';
-        if (mode === 'plain') {
-          items.forEach((item) => {
-            const p = document.createElement('p');
-            p.textContent = item.alt || item.text || item;
-            container.appendChild(p);
+        buildSRList() {
+          const mode = this._opts.screenReaderMode || 'ordered';
+          const items = this._opts.items;
+          if (!items?.length) {
+            const div = document.createElement('div');
+            div.className = 'um-sr-only';
+            return div;
+          }
+          let container;
+          if (mode === 'ordered') container = document.createElement('ol');
+          else if (mode === 'unordered') container = document.createElement('ul');
+          else container = document.createElement('div');
+          container.className = 'um-sr-only';
+          if (mode === 'plain') {
+            items.forEach((item) => {
+              const p = document.createElement('p');
+              p.textContent = item.alt || item.text || item;
+              container.appendChild(p);
+            });
+          } else {
+            container.appendChild(this.buildCycleContent(true));
+          }
+          return container;
+        }
+        measureCycleMetrics(root) {
+          if (!this._opts.items?.length) return { width: 0, gap: 0 };
+          const temp = document.createElement('div');
+          temp.className = 'um-track';
+          temp.style.position = 'absolute';
+          temp.style.visibility = 'hidden';
+          let gapVal = this._opts.gap;
+          if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
+          temp.style.setProperty('--um-gap', gapVal);
+          const cycle = this.buildCycleContainer(true);
+          temp.appendChild(cycle);
+          root.appendChild(temp);
+          const width = cycle.offsetWidth || 0;
+          const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
+          root.removeChild(temp);
+          return { width, gap: parsedGap };
+        }
+      }
+
+      class AnimationController {
+        constructor(track, opts) {
+          this._track = track;
+          this._opts = opts;
+        }
+        start(cycleWidth, gap) {
+          if (this._anim) this._anim.cancel();
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          const distance = cycleWidth + gap;
+          if (distance <= 0) return;
+          let duration = this._opts.duration
+            ? this._opts.duration * 1000
+            : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
+          const from = 'translate3d(0,0,0)';
+          const to = `translate3d(-${distance}px,0,0)`;
+          const keyframes =
+            this._opts.direction === 'right'
+              ? [{ transform: to }, { transform: from }]
+              : [{ transform: from }, { transform: to }];
+          this._anim = this._track.animate(keyframes, {
+            duration,
+            iterations: Infinity,
+            easing: 'linear',
           });
-        } else {
-          container.appendChild(this.buildCycleContent(true));
         }
-        return container;
+        pause() {
+          if (this._anim?.playState === 'running') this._anim.pause();
+        }
+        play() {
+          if (this._anim?.playState !== 'running') this._anim.play();
+        }
+        cancel() {
+          if (this._anim) this._anim.cancel();
+        }
       }
-      measureCycleMetrics(root) {
-        if (!this._opts.items?.length) return { width: 0, gap: 0 };
-        const temp = document.createElement('div');
-        temp.className = 'um-track';
-        temp.style.position = 'absolute';
-        temp.style.visibility = 'hidden';
-        let gapVal = this._opts.gap;
-        if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
-        temp.style.setProperty('--um-gap', gapVal);
-        const cycle = this.buildCycleContainer(true);
-        temp.appendChild(cycle);
-        root.appendChild(temp);
-        const width = cycle.offsetWidth || 0;
-        const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
-        root.removeChild(temp);
-        return { width, gap: parsedGap };
-      }
-    }
 
-    class AnimationController {
-      constructor(track, opts) {
-        this._track = track;
-        this._opts = opts;
-      }
-      start(cycleWidth, gap) {
-        if (this._anim) this._anim.cancel();
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const distance = cycleWidth + gap;
-        if (distance <= 0) return;
-        let duration = this._opts.duration
-          ? this._opts.duration * 1000
-          : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
-        const from = 'translate3d(0,0,0)';
-        const to = `translate3d(-${distance}px,0,0)`;
-        const keyframes =
-          this._opts.direction === 'right'
-            ? [{ transform: to }, { transform: from }]
-            : [{ transform: from }, { transform: to }];
-        this._anim = this._track.animate(keyframes, {
-          duration,
-          iterations: Infinity,
-          easing: 'linear',
-        });
-      }
-      pause() {
-        if (this._anim?.playState === 'running') this._anim.pause();
-      }
-      play() {
-        if (this._anim?.playState !== 'running') this._anim.play();
-      }
-      cancel() {
-        if (this._anim) this._anim.cancel();
-      }
-    }
+      class UniversalMarquee {
+        constructor(selector, opts) {
+          this._root = document.querySelector(selector);
+          if (!this._root) return;
+          this._opts = {
+            speed: 50,
+            duration: null,
+            gap: '2rem',
+            direction: 'left',
+            items: [],
+            separator: '',
+            renderItem: (i) => document.createTextNode(typeof i === 'object' ? i.text || i.alt || i : i),
+            pauseOnHover: true,
+            ariaLabel: 'Marquee',
+            screenReader: true,
+            screenReaderMode: 'ordered',
+            gradientOverlay: 'auto',
+            gradientColor: null,
+            ...opts,
+          };
+          this._root.classList.add('um-container', 'js-enabled');
+          this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
+          if (this._opts.screenReader) {
+            this._root.setAttribute('role', 'region');
+            this._root.setAttribute('aria-label', this._opts.ariaLabel);
+          }
+          this._builder = new ContentBuilder(this._opts);
+          this.#setup();
+          this.#initObservers();
+          this.#initInteractivity();
+        }
+        #setup() {
+          this._root.innerHTML = '';
+          this._track = document.createElement('div');
+          this._track.className = 'um-track';
+          this._track.setAttribute('aria-hidden', 'true');
+          if ('inert' in this._track) this._track.inert = true;
+          if (this._opts.screenReader) {
+            this._root.appendChild(this._builder.buildSRList());
+          }
+          this._root.appendChild(this._track);
+          this.#reflow();
+        }
+        #reflow() {
+          const metrics = this._builder.measureCycleMetrics(this._root);
+          if (metrics.width === 0) return;
+          if (this._anim) this._anim.cancel();
+          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
+          const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
+          this._track.innerHTML = '';
+          const frag = document.createDocumentFragment();
+          for (let i = 0; i < cyclesCount; i++) {
+            frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
+          }
+          this._track.appendChild(frag);
 
-    class UniversalMarquee {
-      constructor(selector, opts) {
-        this._root = document.querySelector(selector);
-        if (!this._root) return;
-        this._opts = {
-          speed: 50,
-          duration: null,
-          gap: '2rem',
+          let shouldShowOverlay = false;
+          if (this._opts.gradientOverlay === true) shouldShowOverlay = true;
+          else if (this._opts.gradientOverlay === 'auto' && reducedMotion) {
+            shouldShowOverlay = this._track.scrollWidth > this._root.offsetWidth;
+          }
+
+          if (shouldShowOverlay) {
+            this._root.classList.add('um-overflow-left', 'um-overflow-right');
+            let overlayColor = this._opts.gradientColor || getComputedStyle(this._root).backgroundColor;
+            this._root.style.setProperty('--gradient-overlay-color', overlayColor);
+          } else {
+            this._root.classList.remove('um-overflow-left', 'um-overflow-right');
+            this._root.style.removeProperty('--gradient-overlay-color');
+          }
+
+          if (!reducedMotion) {
+            this._anim = new AnimationController(this._track, this._opts);
+            this._anim.start(metrics.width, metrics.gap);
+          }
+        }
+        #initInteractivity() {
+          if (this._opts.pauseOnHover !== false) {
+            this._root.addEventListener('mouseenter', () => this._anim?.pause());
+            this._root.addEventListener('mouseleave', () => this._anim?.play());
+            this._root.addEventListener('focusin', () => this._anim?.pause());
+            this._root.addEventListener('focusout', () => this._anim?.play());
+          }
+        }
+        #initObservers() {
+          const resizeHandler = () => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
+          };
+          new ResizeObserver(resizeHandler).observe(this._root);
+
+          if ('IntersectionObserver' in window) {
+            this._observer = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((entry) => {
+                  if (!this._anim) return;
+                  this._isInViewport = entry.isIntersecting;
+                  entry.isIntersecting && !document.hidden ? this._anim.play() : this._anim.pause();
+                });
+              },
+              { rootMargin: '50px 0px' }
+            );
+            this._observer.observe(this._root);
+          }
+
+          document.addEventListener('visibilitychange', () => {
+            if (!this._anim) return;
+            document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
+          });
+
+          const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+          mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
+        }
+      }
+
+      window.UniversalMarquee = UniversalMarquee;
+    </script>
+
+    <!-- Demo Initialization -->
+    <script type="module">
+      const initApp = () => {
+        const ICONS = {
+          twitter: `<svg class="t-icon icon-twitter" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>`,
+          linkedin: `<svg class="t-icon icon-linkedin" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
+          ph: `<svg class="t-icon icon-ph" viewBox="0 0 24 24"><path d="M13.6,8.4h-3.4v7.2h3.4c2,0,3.6-1.6,3.6-3.6S15.6,8.4,13.6,8.4z M12,24C5.4,24,0,18.6,0,12S5.4,0,12,0 s12,5.4,12,12S18.6,24,12,24z M13.6,6h-5.8v12h2.4v-2.4h3.4c3.3,0,6-2.7,6-6S16.9,6,13.6,6z"/></svg>`,
+          verified: `<svg class="t-verified" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.083.965.238 1.4-1.272.65-2.147 2.02-2.147 3.6 0 1.435.716 2.696 1.813 3.396-.105.41-.16.837-.16 1.28 0 2.682 2.126 4.87 4.793 4.87.585 0 1.135-.11 1.644-.305.65 1.127 1.875 1.905 3.286 1.905 1.41 0 2.635-.778 3.286-1.9.51.196 1.058.305 1.644.305 2.667 0 4.793-2.19 4.793-4.87 0-.443-.056-.87-.16-1.28C21.784 15.196 22.5 13.935 22.5 12.5zm-5.694-2.11L10.82 16.377l-3.655-3.655.858-.853 2.797 2.797 5.128-5.128.858.853z"/></svg>`,
+        };
+
+        const DEMO_1_ITEMS = [
+          'Seamless infinite horizontal marquee with automatic dynamic cycle duplication for perfect looping',
+          'Dual animation modes: speed-based scrolling or fixed duration-based cycle time',
+          'Configurable scrolling direction – left to right or right to left',
+          'Customizable gap between items using CSS variable or JavaScript option',
+          'Flexible separator support: plain text, SVG icons, DOM nodes, or images',
+          'Custom renderItem function to display plain text, images, or complex custom DOM elements',
+          'Built-in lazy loading for images with skeleton placeholder and smooth fade-in effect',
+          'Dynamic gradient overlay masks on left and right sides',
+          'Pause animation on hover, focus, and touch interactions',
+          'Automatic play/pause based on viewport visibility',
+          'Respects prefers-reduced-motion – switches to static scroll',
+          'Full accessibility support with screen-reader-only list and ARIA',
+          'High performance using Web Animations API',
+          'Pure vanilla JavaScript – zero dependencies',
+          'Fully responsive and mobile-friendly',
+        ];
+
+        new UniversalMarquee('#marquee-demo-1', {
+          speed: 600,
+          gap: 0,
           direction: 'left',
-          items: [],
-          separator: '',
-          renderItem: (i) => document.createTextNode(typeof i === 'object' ? i.text || i.alt || i : i),
+          items: DEMO_1_ITEMS,
+          separator: ' 🎊 ',
+          renderItem: (text, index) => {
+            const wrapper = document.createElement('div');
+
+            wrapper.classList.add('um-item');
+
+            wrapper.style.display = 'inline-flex';
+            wrapper.style.alignItems = 'center';
+
+            let scale = 1;
+            const i = index + 1;
+            if (i % 2 === 1) scale = 1.1;
+            if (i % 2 === 0) scale = 0.95;
+            if (i % 3 === 0) scale = 1.2;
+            if (i % 4 === 0) scale = 1.05;
+
+            const baseHalfGap = 2.5;
+            const dynamicPadding = baseHalfGap * scale;
+            wrapper.style.paddingInline = `${dynamicPadding}rem`;
+
+            wrapper.style.transform = `scale(${scale})`;
+
+            const span = document.createElement('span');
+            span.textContent = text;
+            wrapper.appendChild(span);
+
+            return wrapper;
+          },
           pauseOnHover: true,
-          ariaLabel: 'Marquee',
+          ariaLabel: 'List of Universal Marquee key features',
           screenReader: true,
-          screenReaderMode: 'ordered',
-          gradientOverlay: 'auto',
-          gradientColor: null,
-          ...opts,
-        };
-        this._root.classList.add('um-container', 'js-enabled');
-        this._root.style.setProperty('--bg', getComputedStyle(this._root).backgroundColor);
-        if (this._opts.screenReader) {
-          this._root.setAttribute('role', 'region');
-          this._root.setAttribute('aria-label', this._opts.ariaLabel);
-        }
-        this._builder = new ContentBuilder(this._opts);
-        this.#setup();
-        this.#initObservers();
-        this.#initInteractivity();
-      }
-      #setup() {
-        this._root.innerHTML = '';
-        this._track = document.createElement('div');
-        this._track.className = 'um-track';
-        this._track.setAttribute('aria-hidden', 'true');
-        if ('inert' in this._track) this._track.inert = true;
-        if (this._opts.screenReader) {
-          this._root.appendChild(this._builder.buildSRList());
-        }
-        this._root.appendChild(this._track);
-        this.#reflow();
-      }
-      #reflow() {
-        const metrics = this._builder.measureCycleMetrics(this._root);
-        if (metrics.width === 0) return;
-        if (this._anim) this._anim.cancel();
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const baseCycles = Math.ceil(this._root.offsetWidth / (metrics.width + metrics.gap)) + 2;
-        const cyclesCount = reducedMotion ? 1 : Math.max(3, baseCycles);
-        this._track.innerHTML = '';
-        const frag = document.createDocumentFragment();
-        for (let i = 0; i < cyclesCount; i++) {
-          frag.appendChild(this._builder.buildCycleContainer(!reducedMotion));
-        }
-        this._track.appendChild(frag);
-
-        let shouldShowOverlay = false;
-        if (this._opts.gradientOverlay === true) shouldShowOverlay = true;
-        else if (this._opts.gradientOverlay === 'auto' && reducedMotion) {
-          shouldShowOverlay = this._track.scrollWidth > this._root.offsetWidth;
-        }
-
-        if (shouldShowOverlay) {
-          this._root.classList.add('um-overflow-left', 'um-overflow-right');
-          let overlayColor = this._opts.gradientColor || getComputedStyle(this._root).backgroundColor;
-          this._root.style.setProperty('--gradient-overlay-color', overlayColor);
-        } else {
-          this._root.classList.remove('um-overflow-left', 'um-overflow-right');
-          this._root.style.removeProperty('--gradient-overlay-color');
-        }
-
-        if (!reducedMotion) {
-          this._anim = new AnimationController(this._track, this._opts);
-          this._anim.start(metrics.width, metrics.gap);
-        }
-      }
-      #initInteractivity() {
-        if (this._opts.pauseOnHover !== false) {
-          this._root.addEventListener('mouseenter', () => this._anim?.pause());
-          this._root.addEventListener('mouseleave', () => this._anim?.play());
-          this._root.addEventListener('focusin', () => this._anim?.pause());
-          this._root.addEventListener('focusout', () => this._anim?.play());
-        }
-      }
-      #initObservers() {
-        const resizeHandler = () => {
-          clearTimeout(this._resizeTimer);
-          this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
-        };
-        new ResizeObserver(resizeHandler).observe(this._root);
-
-        if ('IntersectionObserver' in window) {
-          this._observer = new IntersectionObserver(
-            (entries) => {
-              entries.forEach((entry) => {
-                if (!this._anim) return;
-                this._isInViewport = entry.isIntersecting;
-                entry.isIntersecting && !document.hidden ? this._anim.play() : this._anim.pause();
-              });
-            },
-            { rootMargin: '50px 0px' }
-          );
-          this._observer.observe(this._root);
-        }
-
-        document.addEventListener('visibilitychange', () => {
-          if (!this._anim) return;
-          document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
+          screenReaderMode: 'plain',
+          gradientOverlay: false,
         });
 
-        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
-      }
-    }
+        const reviews = [
+          {
+            id: 1,
+            name: 'Sarah Jenkins',
+            handle: '@sarah_dev',
+            role: 'Frontend Lead',
+            company: 'Vercel',
+            companyLogo: 'https://assets.vercel.com/image/upload/v1588805858/repositories/vercel/logo.png',
+            avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
+            text: 'This marquee library is an absolute game-changer. The performance on mobile is silky smooth and the API is incredibly intuitive.',
+            source: 'twitter',
+            stars: 5,
+            date: '2h ago',
+          },
+          {
+            id: 2,
+            name: 'Michael Chen',
+            handle: '@mchen_design',
+            role: 'Product Designer',
+            company: 'Figma',
+            companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg',
+            avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+            text: "Finally, a marquee solution that doesn't break accessibility standards. The reduced-motion support is implemented perfectly.",
+            source: 'linkedin',
+            stars: 5,
+            date: '5h ago',
+          },
+          {
+            id: 3,
+            name: 'Alex Rivera',
+            handle: '@arivera',
+            role: 'CTO',
+            company: 'Stripe',
+            companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg',
+            avatar: 'https://i.pravatar.cc/150?u=a04258114e29026302d',
+            text: 'We implemented this on our landing page and saw a 15% increase in engagement. The "pause on hover" feature is a nice touch.',
+            source: 'ph',
+            stars: 4,
+            date: '1d ago',
+          },
+          {
+            id: 4,
+            name: 'Emily Watson',
+            handle: '@emily_w',
+            role: 'DevRel',
+            company: 'Supabase',
+            companyLogo: 'https://pipedream.com/s.v0/app_1dBhP3/logo/orig',
+            avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d2',
+            text: 'Zero dependencies and just pure Vanilla JS? Sign me up. It fits perfectly into our lightweight tech stack.',
+            source: 'twitter',
+            stars: 5,
+            date: '2d ago',
+          },
+          {
+            id: 5,
+            name: 'David Kim',
+            handle: '@dkim_code',
+            role: 'Senior Eng',
+            company: 'Netflix',
+            companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+            avatar: 'https://i.pravatar.cc/150?u=a04258a2462d826712d',
+            text: 'The dynamic duplication logic is smart. No more awkward jumps when the content loops. Highly recommended!',
+            source: 'linkedin',
+            stars: 5,
+            date: '3d ago',
+          },
+        ];
 
-    window.UniversalMarquee = UniversalMarquee;
-  </script>
+        new UniversalMarquee('#demo-testimonials', {
+          items: reviews,
+          renderItem: (item) => {
+            const div = document.createElement('div');
+            div.className = 'testimonial-card';
+            const sourceIcon = ICONS[item.source] || ICONS.twitter;
+            const companyDisplay = item.companyLogo
+              ? `<img src="${item.companyLogo}" alt="${item.company}" class="t-logo-img" loading="lazy" />`
+              : `<strong>${item.company}</strong>`;
 
-  <script type="module">
-    const DEMO_1_ITEMS = [
-      'Seamless infinite horizontal marquee with automatic dynamic cycle duplication for perfect looping',
-      'Dual animation modes: speed-based scrolling or fixed duration-based cycle time',
-      'Configurable scrolling direction – left to right or right to left',
-      'Customizable gap between items using CSS variable or JavaScript option',
-      'Flexible separator support: plain text, SVG icons, DOM nodes, or images',
-      'Custom renderItem function to display plain text, images, or complex custom DOM elements',
-      'Built-in lazy loading for images with skeleton placeholder and smooth fade-in effect',
-      'Dynamic gradient overlay masks on left and right sides',
-      'Pause animation on hover, focus, and touch interactions',
-      'Automatic play/pause based on viewport visibility',
-      'Respects prefers-reduced-motion – switches to static scroll',
-      'Full accessibility support with screen-reader-only list and ARIA',
-      'High performance using Web Animations API',
-      'Pure vanilla JavaScript – zero dependencies',
-      'Fully responsive and mobile-friendly',
-    ];
-
-    const initApp = () => {
-      // ---------------------------------------------
-      // CONFIGURATION
-      // ---------------------------------------------
-
-      const ICONS = {
-        twitter: `<svg class="t-icon icon-twitter" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>`,
-        linkedin: `<svg class="t-icon icon-linkedin" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
-        ph: `<svg class="t-icon icon-ph" viewBox="0 0 24 24"><path d="M13.6,8.4h-3.4v7.2h3.4c2,0,3.6-1.6,3.6-3.6S15.6,8.4,13.6,8.4z M12,24C5.4,24,0,18.6,0,12S5.4,0,12,0 s12,5.4,12,12S18.6,24,12,24z M13.6,6h-5.8v12h2.4v-2.4h3.4c3.3,0,6-2.7,6-6S16.9,6,13.6,6z"/></svg>`,
-        verified: `<svg class="t-verified" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.083.965.238 1.4-1.272.65-2.147 2.02-2.147 3.6 0 1.435.716 2.696 1.813 3.396-.105.41-.16.837-.16 1.28 0 2.682 2.126 4.87 4.793 4.87.585 0 1.135-.11 1.644-.305.65 1.127 1.875 1.905 3.286 1.905 1.41 0 2.635-.778 3.286-1.9.51.196 1.058.305 1.644.305 2.667 0 4.793-2.19 4.793-4.87 0-.443-.056-.87-.16-1.28C21.784 15.196 22.5 13.935 22.5 12.5zm-5.694-2.11L10.82 16.377l-3.655-3.655.858-.853 2.797 2.797 5.128-5.128.858.853z"/></svg>`,
-      };
-
-      new UniversalMarquee('#marquee-demo-1', {
-        speed: 60,
-        gap: '3rem',
-        direction: 'left',
-        items: DEMO_1_ITEMS,
-        separator: ' 🎊 ',
-        renderItem: (text) => {
-          const span = document.createElement('span');
-          span.textContent = text;
-          span.classList.add('um-item');
-          return span;
-        },
-        pauseOnHover: true,
-        ariaLabel: 'List of Universal Marquee key features',
-        screenReader: true,
-        screenReaderMode: 'plain',
-        gradientOverlay: false,
-      });
-
-      // Demo 2: Testimonials
-      const reviews = [
-        {
-          id: 1,
-          name: 'Sarah Jenkins',
-          handle: '@sarah_dev',
-          role: 'Frontend Lead',
-          company: 'Vercel',
-          companyLogo: 'https://assets.vercel.com/image/upload/v1588805858/repositories/vercel/logo.png',
-          avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
-          text: 'This marquee library is an absolute game-changer. The performance on mobile is silky smooth and the API is incredibly intuitive.',
-          source: 'twitter',
-          stars: 5,
-          date: '2h ago',
-        },
-        {
-          id: 2,
-          name: 'Michael Chen',
-          handle: '@mchen_design',
-          role: 'Product Designer',
-          company: 'Figma',
-          companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg',
-          avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-          text: "Finally, a marquee solution that doesn't break accessibility standards. The reduced-motion support is implemented perfectly.",
-          source: 'linkedin',
-          stars: 5,
-          date: '5h ago',
-        },
-        {
-          id: 3,
-          name: 'Alex Rivera',
-          handle: '@arivera',
-          role: 'CTO',
-          company: 'Stripe',
-          companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg',
-          avatar: 'https://i.pravatar.cc/150?u=a04258114e29026302d',
-          text: 'We implemented this on our landing page and saw a 15% increase in engagement. The "pause on hover" feature is a nice touch.',
-          source: 'ph',
-          stars: 4,
-          date: '1d ago',
-        },
-        {
-          id: 4,
-          name: 'Emily Watson',
-          handle: '@emily_w',
-          role: 'DevRel',
-          company: 'Supabase',
-          companyLogo: 'https://pipedream.com/s.v0/app_1dBhP3/logo/orig',
-          avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d2',
-          text: 'Zero dependencies and just pure Vanilla JS? Sign me up. It fits perfectly into our lightweight tech stack.',
-          source: 'twitter',
-          stars: 5,
-          date: '2d ago',
-        },
-        {
-          id: 5,
-          name: 'David Kim',
-          handle: '@dkim_code',
-          role: 'Senior Eng',
-          company: 'Netflix',
-          companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
-          avatar: 'https://i.pravatar.cc/150?u=a04258a2462d826712d',
-          text: 'The dynamic duplication logic is smart. No more awkward jumps when the content loops. Highly recommended!',
-          source: 'linkedin',
-          stars: 5,
-          date: '3d ago',
-        },
-      ];
-
-      new UniversalMarquee('#demo-testimonials', {
-        items: reviews,
-        renderItem: (item) => {
-          const div = document.createElement('div');
-          div.className = 'testimonial-card';
-          const sourceIcon = ICONS[item.source] || ICONS.twitter;
-          const companyDisplay = item.companyLogo
-            ? `<img src="${item.companyLogo}" alt="${item.company}" class="t-logo-img" loading="lazy" />`
-            : `<strong>${item.company}</strong>`;
-
-          div.innerHTML = `
+            div.innerHTML = `
             <div class="t-header">
               <div class="t-avatar">
                 <img src="${item.avatar}" alt="${item.name}" loading="lazy" />
@@ -1693,166 +1637,154 @@
               </div>
             </div>
           `;
-          return div;
-        },
-        speed: 20,
-        gap: '2rem',
-        pauseOnHover: true,
-      });
+            return div;
+          },
+          speed: 20,
+          gap: '2rem',
+          pauseOnHover: true,
+        });
 
-      // Demo 2: Adidas Product
-      const sambaViews = [
-        {
-          view: 'Side Profile',
-          img: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp',
-          alt: 'Adidas Samba OG - Classic side profile view',
-        },
-        {
-          view: 'Top-Down / Lacing',
-          img: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp',
-          alt: 'Adidas Samba OG - Top-down view highlighting lacing',
-        },
-        {
-          view: 'Toe Box Detail',
-          img: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp',
-          alt: 'Adidas Samba OG - Close-up detail of the suede T-toe',
-        },
-        {
-          view: 'Lifestyle / On-Foot',
-          img: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp',
-          alt: 'Adidas Samba OG - Lifestyle shot worn on foot',
-        },
-        {
-          view: 'Heel Tab & Sole',
-          img: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp',
-          alt: 'Adidas Samba OG - Rear view featuring the heel tab',
-        },
-        {
-          view: 'Perspective View',
-          img: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp',
-          alt: 'Adidas Samba OG - Three-quarter perspective angle',
-        },
-      ];
+        const sambaViews = [
+          {
+            view: 'Side Profile',
+            img: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp',
+            alt: 'Adidas Samba OG - Classic side profile view',
+          },
+          {
+            view: 'Top-Down / Lacing',
+            img: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp',
+            alt: 'Adidas Samba OG - Top-down view highlighting lacing',
+          },
+          {
+            view: 'Toe Box Detail',
+            img: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp',
+            alt: 'Adidas Samba OG - Close-up detail of the suede T-toe',
+          },
+          {
+            view: 'Lifestyle / On-Foot',
+            img: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp',
+            alt: 'Adidas Samba OG - Lifestyle shot worn on foot',
+          },
+          {
+            view: 'Heel Tab & Sole',
+            img: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp',
+            alt: 'Adidas Samba OG - Rear view featuring the heel tab',
+          },
+          {
+            view: 'Perspective View',
+            img: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp',
+            alt: 'Adidas Samba OG - Three-quarter perspective angle',
+          },
+        ];
 
-      new UniversalMarquee('#demo-products', {
-        items: sambaViews,
-        renderItem: (item) => {
-          const div = document.createElement('div');
-          div.className = 'product-view-card um-img-skeleton';
-          div.innerHTML = `
+        new UniversalMarquee('#demo-products', {
+          items: sambaViews,
+          renderItem: (item) => {
+            const div = document.createElement('div');
+            div.className = 'product-view-card um-img-skeleton';
+            div.innerHTML = `
             <img src="${item.img}" alt="${item.alt}" loading="lazy" style="object-fit: cover;">
             <div class="view-label">${item.view}</div>
           `;
-          return div;
-        },
-        speed: 35,
-        gap: '1rem',
-        pauseOnHover: true,
-      });
+            return div;
+          },
+          speed: 35,
+          gap: '1rem',
+          pauseOnHover: true,
+        });
 
-      // Demo 4: Ticker
-      const stocks = [
-        {
-          sym: 'BTC',
-          val: '$86,000',
-          change: '3.0%',
-          up: false, // down karena -3% di beberapa sumber
-          text: 'Bitcoin (BTC) current price $86,000, down 3.0% in the last 24 hours',
-        },
-        {
-          sym: 'ETH',
-          val: '$3,000',
-          change: '5.0%',
-          up: false,
-          text: 'Ethereum (ETH) current price $3,000, down 5.0% in the last 24 hours',
-        },
-        {
-          sym: 'SOL',
-          val: '$127',
-          change: '3.8%',
-          up: false,
-          text: 'Solana (SOL) current price $127, down 3.8% in the last 24 hours',
-        },
-        {
-          sym: 'NVDA',
-          val: '$177',
-          change: '1.2%',
-          up: true,
-          text: 'NVIDIA (NVDA) stock price $177, up 1.2%',
-        },
-        {
-          sym: 'TSLA',
-          val: '$475',
-          change: '3.6%',
-          up: true,
-          text: 'Tesla (TSLA) stock price $475, up 3.6%',
-        },
-        {
-          sym: 'AAPL',
-          val: '$274',
-          change: '1.5%',
-          up: false,
-          text: 'Apple (AAPL) stock price $274, down 1.5%',
-        },
-      ];
+        const stocks = [
+          {
+            sym: 'BTC',
+            val: '$86,000',
+            change: '3.0%',
+            up: false, // down karena -3% di beberapa sumber
+            text: 'Bitcoin (BTC) current price $86,000, down 3.0% in the last 24 hours',
+          },
+          {
+            sym: 'ETH',
+            val: '$3,000',
+            change: '5.0%',
+            up: false,
+            text: 'Ethereum (ETH) current price $3,000, down 5.0% in the last 24 hours',
+          },
+          {
+            sym: 'SOL',
+            val: '$127',
+            change: '3.8%',
+            up: false,
+            text: 'Solana (SOL) current price $127, down 3.8% in the last 24 hours',
+          },
+          {
+            sym: 'NVDA',
+            val: '$177',
+            change: '1.2%',
+            up: true,
+            text: 'NVIDIA (NVDA) stock price $177, up 1.2%',
+          },
+          {
+            sym: 'TSLA',
+            val: '$475',
+            change: '3.6%',
+            up: true,
+            text: 'Tesla (TSLA) stock price $475, up 3.6%',
+          },
+          {
+            sym: 'AAPL',
+            val: '$274',
+            change: '1.5%',
+            up: false,
+            text: 'Apple (AAPL) stock price $274, down 1.5%',
+          },
+        ];
 
-      new UniversalMarquee('#demo-ticker', {
-        items: stocks,
-        renderItem: (item) => {
-          const div = document.createElement('div');
-          div.className = 'ticker-item';
-          const arrow = item.up ? '↗' : '↘';
-          const colorClass = item.up ? 't-up' : 't-down';
-          const sign = item.up ? '+' : '-';
-          div.innerHTML = `
+        new UniversalMarquee('#demo-ticker', {
+          items: stocks,
+          renderItem: (item) => {
+            const div = document.createElement('div');
+            div.className = 'ticker-item';
+            const arrow = item.up ? '↗' : '↘';
+            const colorClass = item.up ? 't-up' : 't-down';
+            const sign = item.up ? '+' : '-';
+            div.innerHTML = `
             <span class="ticker-sym">${item.sym}</span>
             <span class="ticker-val">${item.val}</span>
             <span class="ticker-change ${colorClass}">
               ${arrow} ${sign}${item.change}
             </span>
           `;
-          return div;
-        },
-        separator: '<span class="ticker-separator">|</span>',
-        speed: 60,
-        direction: 'left',
+            return div;
+          },
+          separator: '<span class="ticker-separator">|</span>',
+          speed: 60,
+          direction: 'left',
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+      } else {
+        initApp();
+      }
+
+      // Copy button functionality
+      document.querySelectorAll('.copy-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const codeWindow = btn.closest('.code-window');
+          const codeElement = codeWindow.querySelector('pre code');
+          const codeText = codeElement.textContent;
+          const originalIcon = btn.innerHTML;
+          try {
+            await navigator.clipboard.writeText(codeText);
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#27c93f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            setTimeout(() => {
+              btn.innerHTML = originalIcon;
+            }, 2000);
+          } catch (err) {
+            console.error('Copy failed', err);
+          }
+        });
       });
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-      initApp();
-    }
-
-    // Logic Copy Code - Enhanced
-    document.querySelectorAll('.copy-btn').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        // Find the code element inside the closest .code-window
-        const codeWindow = btn.closest('.code-window');
-        const codeElement = codeWindow.querySelector('pre code');
-        const codeText = codeElement.textContent;
-
-        // Store original icon
-        const originalIcon = btn.innerHTML;
-
-        try {
-          await navigator.clipboard.writeText(codeText);
-
-          // Success State (Checkmark)
-          btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#27c93f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          `;
-
-          setTimeout(() => {
-            btn.innerHTML = originalIcon;
-          }, 2000);
-        } catch (err) {
-          console.error('Copy failed', err);
-        }
-      });
-    });
-  </script>
+    </script>
+  </body>
 </html>
