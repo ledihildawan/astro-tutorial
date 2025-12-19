@@ -1,28 +1,67 @@
-const DEFAULT_PROFILE = {
-  id: 'default',
-  name: 'Bootstrap XXL',
-  items: [
-    {
-      type: 'columns',
-      count: 12,
-      gutter: 24,
-      margin: 0,
-      width: 80,
-      color: '#ef4444',
-      opacity: 0.1,
-      visible: true,
-      typeMode: 'center',
-      maxWidth: 1320,
-    },
-  ],
+// --- GOLDEN STANDARD DEFAULTS ---
+const DEFAULT_PROFILES = {
+  desktop: {
+    id: 'desktop',
+    name: '💻 Desktop (12 Col)',
+    items: [
+      {
+        type: 'columns',
+        count: 12,
+        gutter: 24, // Standar umum (bisa juga 32px)
+        margin: 0,
+        width: 80,
+        color: '#ef4444', // Merah
+        opacity: 0.1,
+        visible: true,
+        typeMode: 'center', // Grid berada di tengah (container)
+        maxWidth: 1140, // Lebar container standar (Bootstrap LG/XL)
+      },
+    ],
+  },
+  tablet: {
+    id: 'tablet',
+    name: '📱 Tablet (8 Col)',
+    items: [
+      {
+        type: 'columns',
+        count: 8,
+        gutter: 20, // Sedikit lebih rapat dari desktop
+        margin: 32, // Margin kiri-kanan aman untuk tablet
+        width: 0,
+        color: '#3b82f6', // Biru
+        opacity: 0.1,
+        visible: true,
+        typeMode: 'stretch', // Fluid width
+        maxWidth: null,
+      },
+    ],
+  },
+  mobile: {
+    id: 'mobile',
+    name: '📱 Mobile (4 Col)',
+    items: [
+      {
+        type: 'columns',
+        count: 4,
+        gutter: 16, // Standar absolut untuk mobile
+        margin: 16, // Margin kiri-kanan standar iOS/Android
+        width: 0,
+        color: '#10b981', // Hijau
+        opacity: 0.1,
+        visible: true,
+        typeMode: 'stretch', // Fluid width
+        maxWidth: null,
+      },
+    ],
+  },
 };
 
 class App {
   constructor() {
     this.state = {
-      enabled: false,
-      activeProfileId: 'default',
-      profiles: { default: JSON.parse(JSON.stringify(DEFAULT_PROFILE)) },
+      // Kita tidak menyimpan 'enabled' di sini lagi (karena per-tab)
+      activeProfileId: 'desktop',
+      profiles: JSON.parse(JSON.stringify(DEFAULT_PROFILES)), // Load default awal
       editingIndex: null,
     };
 
@@ -45,6 +84,8 @@ class App {
 
   async init() {
     await this.loadFromStorage();
+    // Sinkronisasi status toggle dengan Tab yang sedang aktif
+    await this.syncToggleWithTab();
     this.setupListeners();
     this.render();
   }
@@ -52,24 +93,54 @@ class App {
   async loadFromStorage() {
     const data = await chrome.storage.sync.get(['store']);
     if (data.store) {
-      this.state = { ...this.state, ...data.store };
+      // Ambil profiles & activeProfileId dari storage
+      // Abaikan 'enabled' dari storage global karena kita pakai session per tab
+      const { enabled, ...rest } = data.store;
+
+      // Merge dengan state saat ini (jika storage kosong, default tetap dipakai)
+      if (rest.profiles && Object.keys(rest.profiles).length > 0) {
+        this.state = { ...this.state, ...rest };
+      }
+
+      // Validasi activeProfileId
       if (!this.state.profiles[this.state.activeProfileId]) {
-        this.state.activeProfileId = Object.keys(this.state.profiles)[0] || 'default';
+        this.state.activeProfileId = Object.keys(this.state.profiles)[0] || 'desktop';
       }
     }
-    this.els.toggle.checked = this.state.enabled;
+  }
+
+  // Cek apakah overlay aktif di tab ini
+  syncToggleWithTab() {
+    return new Promise((resolve) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'GET_STATUS' }, (res) => {
+            // Jika ada respon status, update checkbox UI
+            if (res && res.enabled !== undefined) {
+              this.els.toggle.checked = res.enabled;
+            } else {
+              this.els.toggle.checked = false;
+            }
+            resolve();
+          });
+        } else {
+          resolve();
+        }
+      });
+    });
   }
 
   save() {
+    // Simpan konfigurasi profil ke storage global
+    // Tapi JANGAN simpan status 'enabled' agar tidak menimpa tab lain
     chrome.storage.sync.set({ store: this.state });
-    this.broadcast();
+    this.broadcastUpdate();
   }
 
-  broadcast() {
+  broadcastUpdate() {
     const profile = this.state.profiles[this.state.activeProfileId];
     const payload = {
-      action: 'UPDATE',
-      enabled: this.state.enabled,
+      action: 'UPDATE_PROFILE', // Action khusus update data (bukan toggle)
       items: profile ? profile.items : [],
     };
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -78,9 +149,14 @@ class App {
   }
 
   setupListeners() {
+    // Listener Toggle: Kirim perintah langsung ke Tab Aktif
     this.els.toggle.addEventListener('change', (e) => {
-      this.state.enabled = e.target.checked;
-      this.save();
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          // Kirim sinyal TOGGLE ke content script di tab ini
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'TOGGLE' });
+        }
+      });
     });
 
     this.els.profileSelect.addEventListener('change', (e) => {
@@ -92,10 +168,15 @@ class App {
     });
 
     this.els.btnAddProfile.addEventListener('click', () => {
-      const name = prompt('Profile Name:', 'New Layout');
+      const name = prompt('Profile Name:', 'Custom Layout');
       if (!name) return;
       const id = 'p_' + Date.now();
-      this.state.profiles[id] = { id, name, items: [] };
+      // Default item saat buat profil baru (mirip desktop)
+      this.state.profiles[id] = {
+        id,
+        name,
+        items: JSON.parse(JSON.stringify(DEFAULT_PROFILES.desktop.items)),
+      };
       this.state.activeProfileId = id;
       this.save();
       this.render();
@@ -206,6 +287,7 @@ class App {
   }
 
   render() {
+    // Render dropdown profil
     this.els.profileSelect.innerHTML = Object.values(this.state.profiles)
       .map((p) => `<option value="${p.id}" ${p.id === this.state.activeProfileId ? 'selected' : ''}>${p.name}</option>`)
       .join('');
@@ -214,7 +296,7 @@ class App {
 
   renderLayers() {
     const profile = this.getCurrentProfile();
-    if (!profile.items.length) {
+    if (!profile || !profile.items.length) {
       this.els.layersList.innerHTML = '<div class="empty-state">No layers yet</div>';
       return;
     }

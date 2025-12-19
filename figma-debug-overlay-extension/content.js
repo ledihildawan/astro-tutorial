@@ -1,40 +1,59 @@
 (function () {
   const HOST_ID = 'figma-overlay-host-v2';
+  const SESSION_KEY = 'FIGMA_OVERLAY_ENABLED'; // Key untuk sessionStorage
 
   class Overlay {
     constructor() {
-      this.state = { enabled: false, items: [] };
+      // 1. Cek sessionStorage saat inisialisasi (agar persist saat refresh)
+      const isEnabled = sessionStorage.getItem(SESSION_KEY) === 'true';
 
-      // Listener Messages dari Background/Popup
+      this.state = { enabled: isEnabled, items: [] };
+
+      // 2. Listener Pesan
       chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        if (msg.action === 'UPDATE') {
-          this.state = { enabled: msg.enabled, items: msg.items };
+        if (msg.action === 'TOGGLE') {
+          // Toggle state lokal
+          this.state.enabled = !this.state.enabled;
+          // Simpan ke session agar persist saat refresh
+          sessionStorage.setItem(SESSION_KEY, this.state.enabled);
           this.render();
-        } else if (msg.action === 'TOGGLE') {
-          this.state.enabled = msg.enabled; // Pakai state dari background
+          // Kirim respons balik jika perlu (misal ke popup)
+          sendResponse({ enabled: this.state.enabled });
+        } else if (msg.action === 'UPDATE_PROFILE') {
+          // Update data layout tanpa mengubah status enabled
+          this.state.items = msg.items;
           this.render();
+        } else if (msg.action === 'GET_STATUS') {
+          // Popup meminta status saat dibuka
+          sendResponse({ enabled: this.state.enabled });
         }
       });
 
-      // Load Initial State
+      // 3. Load Profil Global (Layout tetap global, Status enabled lokal)
       chrome.storage.sync.get(['store'], (data) => {
         if (data.store) {
           const profile = data.store.profiles[data.store.activeProfileId];
-          this.state.enabled = data.store.enabled;
           this.state.items = profile ? profile.items : [];
-          this.render();
+          this.render(); // Render ulang berdasarkan status session awal
         }
       });
 
-      // === SHORTCUT LISTENER MANUAL (Figma Style) ===
+      // 4. Shortcut Manual (Ctrl + ')
       document.addEventListener('keydown', (e) => {
-        // Cek apakah tombol yang ditekan adalah Ctrl (atau Cmd) + ' (Tanda kutip)
         if ((e.ctrlKey || e.metaKey) && e.key === "'") {
-          e.preventDefault(); // Mencegah action default browser (jika ada)
-          // Minta background untuk melakukan toggle
-          chrome.runtime.sendMessage({ action: 'TOGGLE_REQUEST' });
+          e.preventDefault();
+          // Langsung toggle internal tanpa perlu ke background
+          this.toggleLocal();
         }
       });
+    }
+
+    // Helper untuk toggle internal
+    toggleLocal() {
+      this.state.enabled = !this.state.enabled;
+      sessionStorage.setItem(SESSION_KEY, this.state.enabled);
+      this.render();
+      // Opsional: Beritahu popup jika sedang terbuka (biasanya tidak perlu)
     }
 
     createHost() {

@@ -1,41 +1,22 @@
-// Fungsi utama untuk toggle
-function runToggle() {
-  chrome.storage.sync.get(['store'], (data) => {
-    const store = data.store || {};
-    if (store.enabled === undefined) store.enabled = false;
-
-    const newState = !store.enabled;
-    store.enabled = newState;
-
-    // Simpan & Broadcast ke semua tab
-    chrome.storage.sync.set({ store: store }, () => {
-      chrome.tabs.query({}, (tabs) => {
-        for (const tab of tabs) {
-          // Kirim hanya ke halaman web yang valid
-          if (tab.url && (tab.url.startsWith('http') || tab.url.startsWith('file'))) {
-            chrome.tabs
-              .sendMessage(tab.id, {
-                action: 'TOGGLE',
-                enabled: newState,
-              })
-              .catch(() => {});
-          }
-        }
-      });
-    });
-  });
-}
-
-// 1. Listener untuk Shortcut Manifest (Alt+G)
+// 1. Handle Shortcut dari Manifest (Alt+G)
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'toggle-overlay') {
-    runToggle();
+    // Kirim pesan HANYA ke tab yang sedang aktif
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'TOGGLE' }).catch(() => {
+          // Ignore error jika content script belum load (misal halaman kosong/chrome://)
+        });
+      }
+    });
   }
 });
 
-// 2. Listener untuk Shortcut Manual dari Content Script (Ctrl+')
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === 'TOGGLE_REQUEST') {
-    runToggle();
+// 2. Listener untuk request manual dari content script (Opsional, tapi bagus untuk fallback)
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (msg.action === 'TOGGLE_REQUEST' && sender.tab) {
+    // Jika content script minta toggle, kita kirim balik perintah toggle
+    // (Sebenarnya bisa ditangani langsung di content.js, tapi ini menjaga alur lama)
+    chrome.tabs.sendMessage(sender.tab.id, { action: 'TOGGLE' });
   }
 });
