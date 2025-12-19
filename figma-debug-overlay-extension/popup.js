@@ -1,55 +1,87 @@
-// --- GOLDEN STANDARD DEFAULTS ---
+// --- MODERN FRAMEWORK DEFAULTS (2025 Standards) ---
 const DEFAULT_PROFILES = {
-  desktop: {
-    id: 'desktop',
-    name: '💻 Desktop (12 Col)',
+  desktop_xl: {
+    id: 'desktop_xl',
+    name: '🖥️ Desktop XL (Tailwind)',
     items: [
       {
         type: 'columns',
         count: 12,
-        gutter: 24, // Standar umum (bisa juga 32px)
+        gutter: 24, // gap-6 (Standar Tailwind)
         margin: 0,
-        width: 80,
-        color: '#ef4444', // Merah
+        width: 0,
+        color: '#06b6d4', // Cyan-500 (Tailwind Brand Identity)
         opacity: 0.1,
         visible: true,
-        typeMode: 'center', // Grid berada di tengah (container)
-        maxWidth: 1140, // Lebar container standar (Bootstrap LG/XL)
+        typeMode: 'center', // Fixed Container
+        maxWidth: 1280, // max-w-7xl (Resolusi paling aman untuk Laptop modern)
+      },
+    ],
+  },
+  laptop: {
+    id: 'laptop',
+    name: '💻 Laptop (1440px)',
+    items: [
+      {
+        type: 'columns',
+        count: 12,
+        gutter: 20, // Sedikit lebih rapat
+        margin: 48, // Margin kiri-kanan besar agar nafas
+        width: 0,
+        color: '#8b5cf6', // Violet-500
+        opacity: 0.1,
+        visible: true,
+        typeMode: 'stretch', // Fluid tapi dengan margin besar
+        maxWidth: null,
       },
     ],
   },
   tablet: {
     id: 'tablet',
-    name: '📱 Tablet (8 Col)',
+    name: '📱 Tablet (iPad Mini/Pro)',
     items: [
       {
         type: 'columns',
-        count: 8,
-        gutter: 20, // Sedikit lebih rapat dari desktop
-        margin: 32, // Margin kiri-kanan aman untuk tablet
+        count: 8, // Standar Tablet Portrait
+        gutter: 24,
+        margin: 32, // Safe area untuk jempol
         width: 0,
-        color: '#3b82f6', // Biru
+        color: '#f59e0b', // Amber-500
         opacity: 0.1,
         visible: true,
-        typeMode: 'stretch', // Fluid width
+        typeMode: 'stretch',
         maxWidth: null,
       },
     ],
   },
   mobile: {
     id: 'mobile',
-    name: '📱 Mobile (4 Col)',
+    name: '📱 Mobile (iPhone 15/16)',
     items: [
       {
         type: 'columns',
-        count: 4,
-        gutter: 16, // Standar absolut untuk mobile
-        margin: 16, // Margin kiri-kanan standar iOS/Android
+        count: 4, // Jangan pernah pakai 12 col di mobile, terlalu berisik
+        gutter: 16, // gap-4 (4 x 4px)
+        margin: 20, // Modern safe area (sedikit lebih lebar dari 16px lama)
         width: 0,
-        color: '#10b981', // Hijau
+        color: '#ec4899', // Pink-500
         opacity: 0.1,
         visible: true,
-        typeMode: 'stretch', // Fluid width
+        typeMode: 'stretch',
+        maxWidth: null,
+      },
+    ],
+  },
+  pixel_check: {
+    id: 'pixel_check',
+    name: '📐 8-Point Grid (Precision)',
+    items: [
+      {
+        type: 'grid', // Mode Kotak-kotak
+        size: 8, // Holy Grail of UI Design
+        color: '#ef4444', // Merah tajam untuk checking
+        opacity: 0.15,
+        visible: true,
         maxWidth: null,
       },
     ],
@@ -59,9 +91,8 @@ const DEFAULT_PROFILES = {
 class App {
   constructor() {
     this.state = {
-      // Kita tidak menyimpan 'enabled' di sini lagi (karena per-tab)
-      activeProfileId: 'desktop',
-      profiles: JSON.parse(JSON.stringify(DEFAULT_PROFILES)), // Load default awal
+      activeProfileId: 'tailwind', // Default ke modern web standard
+      profiles: JSON.parse(JSON.stringify(DEFAULT_PROFILES)),
       editingIndex: null,
     };
 
@@ -78,13 +109,14 @@ class App {
       segments: document.querySelectorAll('.segment'),
     };
 
-    this.handleInput = this.debounce(this.handleInput.bind(this), 200);
+    // Debounce saving to storage to prevent API limits
+    this.saveToStorage = this.debounce(this._saveToStorage.bind(this), 400);
+
     this.init();
   }
 
   async init() {
     await this.loadFromStorage();
-    // Sinkronisasi status toggle dengan Tab yang sedang aktif
     await this.syncToggleWithTab();
     this.setupListeners();
     this.render();
@@ -93,193 +125,218 @@ class App {
   async loadFromStorage() {
     const data = await chrome.storage.sync.get(['store']);
     if (data.store) {
-      // Ambil profiles & activeProfileId dari storage
-      // Abaikan 'enabled' dari storage global karena kita pakai session per tab
-      const { enabled, ...rest } = data.store;
+      const { profiles, activeProfileId } = data.store;
 
-      // Merge dengan state saat ini (jika storage kosong, default tetap dipakai)
-      if (rest.profiles && Object.keys(rest.profiles).length > 0) {
-        this.state = { ...this.state, ...rest };
+      // Merge saved profiles, but if empty use defaults
+      if (profiles && Object.keys(profiles).length > 0) {
+        this.state.profiles = profiles;
       }
 
-      // Validasi activeProfileId
-      if (!this.state.profiles[this.state.activeProfileId]) {
-        this.state.activeProfileId = Object.keys(this.state.profiles)[0] || 'desktop';
+      if (activeProfileId && this.state.profiles[activeProfileId]) {
+        this.state.activeProfileId = activeProfileId;
       }
     }
   }
 
-  // Cek apakah overlay aktif di tab ini
   syncToggleWithTab() {
     return new Promise((resolve) => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: 'GET_STATUS' }, (res) => {
-            // Jika ada respon status, update checkbox UI
-            if (res && res.enabled !== undefined) {
-              this.els.toggle.checked = res.enabled;
-            } else {
+        const tab = tabs[0];
+        if (tab && tab.id && !tab.url.startsWith('chrome://')) {
+          chrome.tabs.sendMessage(tab.id, { action: 'GET_STATUS' }, (res) => {
+            if (chrome.runtime.lastError) {
               this.els.toggle.checked = false;
+            } else if (res) {
+              this.els.toggle.checked = !!res.enabled;
             }
             resolve();
           });
         } else {
+          this.els.toggle.disabled = true;
           resolve();
         }
       });
     });
   }
 
-  save() {
-    // Simpan konfigurasi profil ke storage global
-    // Tapi JANGAN simpan status 'enabled' agar tidak menimpa tab lain
-    chrome.storage.sync.set({ store: this.state });
-    this.broadcastUpdate();
-  }
-
+  // Called when data changes
   broadcastUpdate() {
-    const profile = this.state.profiles[this.state.activeProfileId];
+    const profile = this.getCurrentProfile();
     const payload = {
-      action: 'UPDATE_PROFILE', // Action khusus update data (bukan toggle)
+      action: 'UPDATE_PROFILE',
       items: profile ? profile.items : [],
     };
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) chrome.tabs.sendMessage(tabs[0].id, payload).catch(() => {});
+      if (tabs[0]?.id && !tabs[0].url.startsWith('chrome://')) {
+        chrome.tabs.sendMessage(tabs[0].id, payload).catch(() => {});
+      }
     });
   }
 
+  // Internal Save logic
+  _saveToStorage() {
+    chrome.storage.sync.set({
+      store: {
+        activeProfileId: this.state.activeProfileId,
+        profiles: this.state.profiles,
+      },
+    });
+    this.broadcastUpdate();
+  }
+
   setupListeners() {
-    // Listener Toggle: Kirim perintah langsung ke Tab Aktif
-    this.els.toggle.addEventListener('change', (e) => {
+    // 1. Toggle Switch
+    this.els.toggle.addEventListener('change', () => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]?.id) {
-          // Kirim sinyal TOGGLE ke content script di tab ini
-          chrome.tabs.sendMessage(tabs[0].id, { action: 'TOGGLE' });
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'TOGGLE' }).catch(() => {
+            alert('Cannot inject overlay on this page. Try refreshing.');
+            this.els.toggle.checked = !this.els.toggle.checked;
+          });
         }
       });
     });
 
+    // 2. Profile Selection
     this.els.profileSelect.addEventListener('change', (e) => {
       this.state.activeProfileId = e.target.value;
-      this.state.editingIndex = null;
       this.closeEditor();
       this.render();
-      this.save();
+      this.saveToStorage();
     });
 
+    // 3. Add Profile
     this.els.btnAddProfile.addEventListener('click', () => {
-      const name = prompt('Profile Name:', 'Custom Layout');
+      const name = prompt('New Profile Name:', 'Custom Layout');
       if (!name) return;
       const id = 'p_' + Date.now();
-      // Default item saat buat profil baru (mirip desktop)
+      // Default template for new profile (Generic Desktop)
       this.state.profiles[id] = {
         id,
         name,
-        items: JSON.parse(JSON.stringify(DEFAULT_PROFILES.desktop.items)),
+        items: [
+          {
+            type: 'columns',
+            count: 12,
+            gutter: 20,
+            width: 60,
+            color: '#94a3b8',
+            opacity: 0.1,
+            visible: true,
+            typeMode: 'center',
+            maxWidth: 1140,
+          },
+        ],
       };
       this.state.activeProfileId = id;
-      this.save();
       this.render();
+      this.saveToStorage();
     });
 
+    // 4. Delete Profile
     this.els.btnDelProfile.addEventListener('click', () => {
       const ids = Object.keys(this.state.profiles);
-      if (ids.length <= 1) return alert('Keep at least one profile.');
-      if (confirm('Delete this profile?')) {
+      if (ids.length <= 1) return alert('Cannot delete the last profile.');
+      if (confirm('Delete current profile?')) {
         delete this.state.profiles[this.state.activeProfileId];
         this.state.activeProfileId = Object.keys(this.state.profiles)[0];
-        this.save();
+        this.closeEditor();
         this.render();
+        this.saveToStorage();
       }
     });
 
+    // 5. Add Layer
     this.els.btnAddLayer.addEventListener('click', () => {
       const profile = this.getCurrentProfile();
       profile.items.push({
         type: 'columns',
         count: 12,
-        gutter: 20,
-        margin: 20,
-        color: '#3b82f6',
+        gutter: 24,
+        margin: 0,
+        color: '#6366f1',
         opacity: 0.1,
         visible: true,
         typeMode: 'stretch',
       });
-      this.save();
       this.renderLayers();
       this.openEditor(profile.items.length - 1);
+      this.saveToStorage();
     });
 
+    // 6. Layer Interactions (Click/Delete/Vis)
     this.els.layersList.addEventListener('click', (e) => {
       const card = e.target.closest('.layer-card');
       const btnVis = e.target.closest('.btn-vis');
       const btnDel = e.target.closest('.btn-del');
-
       if (!card) return;
+
       const index = parseInt(card.dataset.index);
       const profile = this.getCurrentProfile();
 
       if (btnDel) {
         e.stopPropagation();
         profile.items.splice(index, 1);
-        this.state.editingIndex = null;
         this.closeEditor();
-        this.save();
         this.renderLayers();
+        this.saveToStorage();
         return;
       }
 
       if (btnVis) {
         e.stopPropagation();
         profile.items[index].visible = !profile.items[index].visible;
-        this.save();
         this.renderLayers();
+        this.saveToStorage();
         return;
       }
+
       this.openEditor(index);
     });
 
+    // 7. Editor Controls
     this.els.btnCloseEditor.addEventListener('click', () => this.closeEditor());
 
     this.els.segments.forEach((btn) => {
       btn.addEventListener('click', () => {
+        if (this.state.editingIndex === null) return;
         const type = btn.dataset.type;
         const profile = this.getCurrentProfile();
         const item = profile.items[this.state.editingIndex];
-        item.type = type;
 
+        item.type = type;
+        // Smart Defaults
         if (type === 'grid') {
           item.size = 8;
         } else {
-          item.count = 12;
-          item.gutter = 20;
+          item.count = item.count || 12;
+          item.gutter = item.gutter || 24;
         }
 
-        this.save();
-        this.openEditor(this.state.editingIndex);
+        this.openEditor(this.state.editingIndex); // Re-render editor
         this.renderLayers();
+        this.saveToStorage();
       });
     });
 
-    this.els.editorFields.addEventListener('input', this.handleInput);
-  }
+    // 8. Live Input Handling
+    this.els.editorFields.addEventListener('input', (e) => {
+      if (this.state.editingIndex === null) return;
+      const target = e.target;
+      const field = target.dataset.field;
+      const profile = this.getCurrentProfile();
+      const item = profile.items[this.state.editingIndex];
 
-  handleInput(e) {
-    if (this.state.editingIndex === null) return;
-    const target = e.target;
-    const field = target.dataset.field;
-    const profile = this.getCurrentProfile();
-    const item = profile.items[this.state.editingIndex];
+      if (target.type === 'number' || target.type === 'range') {
+        const val = parseFloat(target.value);
+        item[field] = isNaN(val) ? 0 : val;
+      } else {
+        item[field] = target.value;
+      }
 
-    if (target.type === 'number' || target.type === 'range') {
-      const val = parseFloat(target.value);
-      item[field] = isNaN(val) ? '' : val;
-    } else {
-      item[field] = target.value;
-    }
-
-    this.save();
-    this.renderLayers();
+      this.renderLayers(); // Update list preview
+      this.saveToStorage(); // Save and broadcast
+    });
   }
 
   getCurrentProfile() {
@@ -287,7 +344,7 @@ class App {
   }
 
   render() {
-    // Render dropdown profil
+    // Render dropdown
     this.els.profileSelect.innerHTML = Object.values(this.state.profiles)
       .map((p) => `<option value="${p.id}" ${p.id === this.state.activeProfileId ? 'selected' : ''}>${p.name}</option>`)
       .join('');
@@ -297,7 +354,7 @@ class App {
   renderLayers() {
     const profile = this.getCurrentProfile();
     if (!profile || !profile.items.length) {
-      this.els.layersList.innerHTML = '<div class="empty-state">No layers yet</div>';
+      this.els.layersList.innerHTML = '<div class="empty-state">No layers added</div>';
       return;
     }
 
@@ -306,7 +363,9 @@ class App {
         const active = this.state.editingIndex === i ? 'active' : '';
         const opacity = item.visible ? 1 : 0.4;
         let desc =
-          item.type === 'grid' ? `${item.size}px Grid` : `${item.count} ${item.type} • ${item.typeMode || 'stretch'}`;
+          item.type === 'grid'
+            ? `${item.size}px Pixel Grid`
+            : `${item.count} ${item.type} • ${item.typeMode || 'stretch'}`;
 
         return `
         <div class="layer-card ${active}" data-index="${i}" style="opacity:${opacity}">
@@ -316,8 +375,8 @@ class App {
             <span class="layer-meta">${desc}</span>
           </div>
           <div class="layer-actions">
-            <button class="btn-vis" title="Toggle">${item.visible ? '👁' : '✕'}</button>
-            <button class="btn-del" title="Delete">🗑</button>
+            <button class="btn-vis" title="Toggle Visibility">${item.visible ? '👁️' : '🚫'}</button>
+            <button class="btn-del" title="Delete Layer">🗑️</button>
           </div>
         </div>
       `;
@@ -328,7 +387,7 @@ class App {
   openEditor(index) {
     this.state.editingIndex = index;
     this.els.editorPanel.classList.add('open');
-    this.renderLayers();
+    this.renderLayers(); // Highlight active card
 
     const item = this.getCurrentProfile().items[index];
     this.els.segments.forEach((s) => s.classList.toggle('active', s.dataset.type === item.type));
@@ -336,7 +395,7 @@ class App {
     const input = (label, field, type = 'number', placeholder = '', step = '1') => `
       <div class="field-group">
         <label>${label}</label>
-        <input type="${type}" data-field="${field}" value="${item[field] ?? ''}" placeholder="${placeholder}" step="${step}">
+        <input class="input-theme" type="${type}" data-field="${field}" value="${item[field] ?? ''}" placeholder="${placeholder}" step="${step}">
       </div>`;
 
     let html = '';
@@ -347,12 +406,12 @@ class App {
       html += input('Opacity', 'opacity', 'number', '0.1', '0.1');
       html += input('Max Width (px)', 'maxWidth', 'number', 'None');
     } else {
-      html += input('Count', 'count');
+      html += input('Column/Row Count', 'count');
       html += input('Gutter (px)', 'gutter');
 
       html += `
         <div class="field-group">
-          <label>Mode</label>
+          <label>Alignment Mode</label>
           <select class="input-select" data-field="typeMode">
             <option value="stretch" ${item.typeMode === 'stretch' ? 'selected' : ''}>Stretch (Fluid)</option>
             <option value="center" ${item.typeMode === 'center' ? 'selected' : ''}>Center (Fixed)</option>
@@ -364,15 +423,22 @@ class App {
         item.typeMode === 'stretch' ? 'Margin (px)' : 'Offset (px)',
         item.typeMode === 'stretch' ? 'margin' : 'offset'
       );
-      if (item.typeMode !== 'stretch') html += input('Item Width/Height', 'width');
+
+      if (item.typeMode !== 'stretch') {
+        html += input(`${item.type === 'columns' ? 'Col Width' : 'Row Height'} (px)`, 'width');
+      }
+
       html += input('Max Width (Container)', 'maxWidth', 'number', 'None');
       html += input('Color', 'color', 'color');
-      html += input('Opacity', 'opacity', 'number', '0.1', '0.1');
+      html += input('Opacity (0-1)', 'opacity', 'number', '0.1', '0.1');
     }
 
     this.els.editorFields.innerHTML = html;
+
     this.els.editorFields.querySelectorAll('select').forEach((sel) => {
-      sel.addEventListener('change', (e) => this.handleInput(e));
+      sel.addEventListener('change', (e) => {
+        this.els.editorFields.dispatchEvent(new Event('input', { bubbles: true }));
+      });
     });
   }
 
@@ -386,7 +452,7 @@ class App {
     let timeout;
     return function (...args) {
       clearTimeout(timeout);
-      timeout = setTimeout(() => func(...args), wait);
+      timeout = setTimeout(() => func.apply(this, args), wait);
     };
   }
 }

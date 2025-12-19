@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Figma Layout Overlay",
-  "version": "2.1.1",
-  "description": "Pixel-perfect layout grid overlay with Shadow DOM isolation.",
+  "version": "2.2.0",
+  "description": "Professional pixel-perfect layout grid overlay for web development.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -13,9 +13,9 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Layout Config"
+    "default_title": "Layout Configuration"
   },
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "tabs"],
   "host_permissions": ["<all_urls>"],
   "commands": {
     "toggle-overlay": {
@@ -23,7 +23,7 @@
         "default": "Alt+G",
         "mac": "Alt+G"
       },
-      "description": "Toggle Visibility (Fallback)"
+      "description": "Toggle Layout Overlay"
     }
   },
   "content_scripts": [

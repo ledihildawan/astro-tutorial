@@ -1,11 +1,17 @@
-// 1. Handle Shortcut dari Manifest (Alt+G)
+// background.js
+
+// 1. Handle Global Shortcut (Alt+G defined in manifest)
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'toggle-overlay') {
-    // Kirim pesan HANYA ke tab yang sedang aktif
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'TOGGLE' }).catch(() => {
-          // Ignore error jika content script belum load (misal halaman kosong/chrome://)
+      const activeTab = tabs[0];
+      if (activeTab && activeTab.id) {
+        // Prevent errors on restricted pages (chrome://, etc.)
+        if (activeTab.url.startsWith('chrome://') || activeTab.url.startsWith('edge://')) return;
+
+        chrome.tabs.sendMessage(activeTab.id, { action: 'TOGGLE' }).catch((err) => {
+          // Silent catch: Content script might not be loaded yet or unsupported page
+          console.debug('Overlay not ready on this tab:', err);
         });
       }
     });
