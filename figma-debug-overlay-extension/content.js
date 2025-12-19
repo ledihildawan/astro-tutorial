@@ -5,7 +5,9 @@
 
   // --- Utility Functions ---
 
-  function parseColor(color = '#000000', alpha = 0.1) {
+  function parseColor(color, alpha = 0.1) {
+    if (!color) return `rgba(255, 0, 0, ${alpha})`; // Safety guard
+
     if (typeof color === 'string' && color.match(/^rgb|a/)) {
       return color.replace(/[\d.]+(?=\)$)/, alpha);
     }
@@ -27,20 +29,20 @@
     overlay.id = 'figma-debug-overlay';
     overlay.style.cssText =
       'position:fixed;inset:0;pointer-events:none;z-index:2147483647;display:flex;flex-direction:column;';
-    document.body.appendChild(overlay);
+
+    // Append ke documentElement agar aman dari filter CSS di body
+    document.documentElement.appendChild(overlay);
     return overlay;
   }
 
-  // --- Render Logic: Grid (Hard Grid 8px) ---
+  // --- Render Logic ---
   function renderGrid(item) {
     const wrapper = document.createElement('div');
-    // CSS dasar wrapper
     wrapper.style.cssText = 'position:absolute;inset:0;pointer-events:none;display:flex;width:100%;height:100%;';
 
-    // Logic Center & MaxWidth untuk Grid
     if (item.maxWidth && item.maxWidth > 0) {
       wrapper.style.maxWidth = `${item.maxWidth}px`;
-      wrapper.style.marginInline = 'auto'; // Center container
+      wrapper.style.marginInline = 'auto';
       wrapper.style.borderLeft = '1px dashed rgba(0,0,0,0.1)';
       wrapper.style.borderRight = '1px dashed rgba(0,0,0,0.1)';
       wrapper.style.backgroundPosition = 'center top';
@@ -53,55 +55,37 @@
     return wrapper;
   }
 
-  // --- Render Logic: Layout (Columns / Rows) ---
   function renderLayout(item, isColumns = true) {
     const bg = parseColor(item.color || (isColumns ? '#ff0000' : '#0000ff'), item.opacity || 0.1);
 
-    // Config Extraction
-    const mode = item.typeMode || 'stretch'; // stretch, center, left, right
+    const mode = item.typeMode || 'stretch';
     const isStretchMode = mode === 'stretch';
 
-    const count = item.count || 12;
+    const count = item.count ?? 12;
     const gutter = item.gutter ?? 20;
     const offset = item.offset ?? 0;
     const margin = item.margin ?? 0;
     const fixedSize = item.width ?? (isColumns ? 80 : 60);
 
-    // Validasi Max Width
     let maxWidth = item.maxWidth && !isNaN(item.maxWidth) && item.maxWidth > 0 ? item.maxWidth : null;
-    // Jika mode stretch, pastikan maxwidth cukup untuk margin
     if (isStretchMode && maxWidth && maxWidth <= margin * 2) maxWidth = null;
 
-    // -----------------------------------------------------------------------
-    // LEVEL 1: WRAPPER (Parent Container)
-    // -----------------------------------------------------------------------
     const wrapper = document.createElement('div');
-
-    // Base Styles (Sesuai temuan Anda)
     wrapper.style.position = 'absolute';
     wrapper.style.inset = '0';
     wrapper.style.pointerEvents = 'none';
     wrapper.style.display = 'flex';
     wrapper.style.width = '100%';
 
-    // --- PENERAPAN GLOBAL MAX-WIDTH & CENTER ---
-    // Ini sekarang diterapkan UNTUK SEMUA MODE jika maxWidth diisi.
     if (maxWidth) {
       wrapper.style.maxWidth = `${maxWidth}px`;
-      wrapper.style.marginInline = 'auto'; // Kunci: Ini membuat container selalu di tengah layar
+      wrapper.style.marginInline = 'auto';
     }
 
-    // -----------------------------------------------------------------------
-    // LEVEL 2: ALIGNMENT (Flexbox Justify)
-    // Mengatur posisi konten Grid DI DALAM Wrapper yang sudah di-center tadi.
-    // -----------------------------------------------------------------------
-
-    let justify = 'center'; // Default center
-
+    let justify = 'center';
     if (isStretchMode) {
       justify = 'stretch';
     } else {
-      // Mode Fixed: Left/Right/Center
       if (mode === 'left' || (!isColumns && mode === 'top')) {
         justify = 'flex-start';
       } else if (mode === 'right' || (!isColumns && mode === 'bottom')) {
@@ -113,29 +97,21 @@
 
     if (isColumns) {
       wrapper.style.justifyContent = justify;
-      wrapper.style.alignItems = 'stretch'; // Full Height
+      wrapper.style.alignItems = 'stretch';
     } else {
-      // Rows
-      wrapper.style.alignItems = justify; // Posisi vertikal (Top/Bottom)
-      wrapper.style.justifyContent = 'stretch'; // Full Width
+      wrapper.style.alignItems = justify;
+      wrapper.style.justifyContent = 'stretch';
     }
 
-    // -----------------------------------------------------------------------
-    // LEVEL 3: GRID CONTENT
-    // -----------------------------------------------------------------------
     const grid = document.createElement('div');
     grid.style.display = 'grid';
     grid.style.gap = `${gutter}px`;
 
-    // Template Columns:
-    // Stretch -> 1fr (Fluid)
-    // Fixed -> px (Fixed size, agar tidak melar)
     const templateUnit = isStretchMode ? '1fr' : `${fixedSize}px`;
 
     if (isColumns) {
       grid.style.gridTemplateColumns = `repeat(${count}, ${templateUnit})`;
       grid.style.height = '100%';
-      // Penting: Width Auto untuk Fixed agar tidak dipaksa stretch oleh Flexbox parent
       grid.style.width = isStretchMode ? '100%' : 'auto';
     } else {
       grid.style.gridTemplateRows = `repeat(${count}, ${templateUnit})`;
@@ -143,13 +119,10 @@
       grid.style.height = isStretchMode ? '100%' : 'auto';
     }
 
-    // Spacing (Margin / Offset)
     if (isStretchMode) {
-      // Margin sebagai padding wrapper
       const marginStyle = `${margin}px`;
       grid.style[isColumns ? 'paddingInline' : 'paddingBlock'] = marginStyle;
     } else {
-      // Offset sebagai margin elemen grid
       if (mode === 'left' || mode === 'top') {
         grid.style[isColumns ? 'marginLeft' : 'marginTop'] = `${offset}px`;
       } else if (mode === 'right' || mode === 'bottom') {
@@ -160,7 +133,6 @@
       }
     }
 
-    // Render Cells
     for (let i = 0; i < count; i++) {
       const cell = document.createElement('div');
       cell.style.background = bg;
@@ -187,24 +159,58 @@
     });
   }
 
+  // --- MAIN FIX IS HERE ---
   function toggleOverlay() {
     isEnabled = !isEnabled;
+
+    // Simpan status terbaru ke Storage agar diingat saat Refresh
+    chrome.storage.sync.set({ isOverlayEnabled: isEnabled });
+
     if (isEnabled) renderAll();
     else if (overlay) overlay.innerHTML = '';
   }
 
   // --- Initialization ---
 
-  chrome.storage.sync.get('figmaOverlayData', (data) => {
+  const defaultFallbackItems = [
+    {
+      type: 'columns',
+      count: 12,
+      typeMode: 'center',
+      width: 80,
+      gutter: 24,
+      offset: 0,
+      color: '#dc3545',
+      opacity: 0.08,
+      visible: true,
+      collapsed: false,
+    },
+  ];
+
+  chrome.storage.sync.get(['figmaOverlayData', 'isOverlayEnabled'], (data) => {
     const store = data.figmaOverlayData;
+
+    // 1. Load Status Global (On/Off)
+    if (data.isOverlayEnabled) {
+      isEnabled = true;
+    }
+
+    // 2. Load Data Profil
     if (store && store.activeId && store.profiles[store.activeId]) {
       currentItems = store.profiles[store.activeId].items;
+    } else {
+      // Jika kosong, gunakan default fallback
+      currentItems = defaultFallbackItems;
     }
+
+    // 3. Render jika statusnya aktif
+    if (isEnabled) renderAll();
   });
 
   document.addEventListener('keydown', (e) => {
     const tag = e.target.tagName.toUpperCase();
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
     if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       toggleOverlay();
@@ -218,7 +224,14 @@
       if (isEnabled) renderAll();
       else if (overlay) overlay.innerHTML = '';
     } else if (msg.action === 'toggle') {
-      toggleOverlay();
+      if (typeof msg.forceState !== 'undefined') {
+        isEnabled = msg.forceState;
+      } else {
+        isEnabled = !isEnabled;
+      }
+
+      if (isEnabled) renderAll();
+      else if (overlay) overlay.innerHTML = '';
     }
     sendResponse({ status: 'ok' });
     return true;

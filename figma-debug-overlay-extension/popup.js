@@ -89,9 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function loadData() {
-  chrome.storage.sync.get('figmaOverlayData', (data) => {
+  chrome.storage.sync.get(['figmaOverlayData', 'isOverlayEnabled'], (data) => {
     if (data.figmaOverlayData && data.figmaOverlayData.profiles) {
       storageData = data.figmaOverlayData;
+      // Revert locked profiles to default to ensure updates
       Object.keys(defaultData.profiles).forEach((key) => {
         if (!storageData.profiles[key]) {
           storageData.profiles[key] = defaultData.profiles[key];
@@ -107,8 +108,13 @@ function loadData() {
       storageData.activeId = Object.keys(storageData.profiles)[0];
     }
 
+    // Load global toggle state
+    if (data.isOverlayEnabled) {
+      updateStatusUI(true);
+    }
+
     renderMainView();
-    checkOverlayStatus();
+    // Don't disable immediately, let content script decide based on storage
   });
 }
 
@@ -174,7 +180,7 @@ function updateStatusUI(active) {
   }
 }
 
-// --- Editor Logic (MODERNIZED) ---
+// --- Editor Logic ---
 
 function openEditor(items) {
   currentItems = JSON.parse(JSON.stringify(items));
@@ -185,35 +191,23 @@ function openEditor(items) {
 
 function getSmartLayerName(item) {
   if (item.type === 'grid') {
-    // Tampilkan ukuran kotak grid
     return `Grid • ${item.size || 8}px`;
   }
-
   if (item.type === 'rows') {
-    // Tampilkan jumlah baris + Gutter
     return `Row ${item.count || 12} • ${item.gutter || 0}px Gut`;
   }
-
-  // Logic untuk Columns (paling sering dipakai)
   const count = item.count || 12;
   const mode = item.typeMode || 'stretch';
   const modeCap = mode.charAt(0).toUpperCase() + mode.slice(1);
-  const gutter = item.gutter || 0;
-
-  // Jika mode Stretch, Margin itu penting. Jika Center, Width itu penting.
   let extraInfo = '';
   if (mode === 'stretch') {
     extraInfo = ` • ${item.margin || 0}px Mar`;
   } else {
-    // Untuk Center/Left/Right, lebar kolom (Width) itu pembeda utama
     extraInfo = ` • ${item.width || 'Auto'}px`;
   }
-
-  // Format Akhir: "8 Cols • Stretch • 20px Mar"
   return `${count} Cols • ${modeCap}${extraInfo}`;
 }
 
-// 2. Update renderEditorItems dengan logika Header baru
 function renderEditorItems() {
   els.itemsList.innerHTML = '';
 
@@ -223,8 +217,20 @@ function renderEditorItems() {
     return;
   }
 
+  // --- Hugeicons Collection (Stroke 1.5) ---
+  const icons = {
+    eyeOpen: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M21.544 11.045C21.848 11.4713 22 11.7345 22 12C22 12.2655 21.848 12.5287 21.544 12.955C20.1779 14.8706 16.6892 19 12 19C7.31078 19 3.8221 14.8706 2.45604 12.955C2.15201 12.5287 2 12.2655 2 12C2 11.7345 2.15201 11.4713 2.45604 11.045C3.8221 9.12944 7.31078 5 12 5C16.6892 5 20.1779 9.12944 21.544 11.045Z"/><path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"/></svg>`,
+    eyeClosed: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12C22 12.2655 21.848 12.5287 21.544 12.955C20.1779 14.8706 16.6892 19 12 19C9.16035 19 6.74609 17.5028 4.96509 15.5M2.45604 11.045C2.15201 11.4713 2 11.7345 2 12C2 12.0837 2.01509 12.1648 2.04396 12.243M12 5C13.5657 5 14.9912 5.4607 16.2238 6.22559M9.89748 6.30752C7.30925 5.56708 4.67812 6.7562 2.45604 11.045"/><path d="M3 3L21 21"/><path d="M14.1213 14.1213C13.5587 14.6839 12.7929 15 12 15C10.3431 15 9 13.6569 9 12C9 11.2071 9.31607 10.4413 9.87868 9.87868"/></svg>`,
+    chevronDown: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"/></svg>`,
+    chevronRight: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18C9 18 15 13.5812 15 12C15 10.4188 9 6 9 6"/></svg>`,
+    trash: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M19.5 5.5L18.8803 15.5251C18.7219 18.0864 18.6428 19.3671 17.788 20.1835C16.9333 21 15.6502 21 13.084 21H10.916C8.3498 21 7.06669 21 6.21195 20.1835C5.3572 19.3671 5.27806 18.0864 5.11971 15.5251L4.5 5.5"/><path d="M3 5.5H21M16.0557 5.5L15.3731 4.09173C14.9196 3.15626 14.6928 2.68852 14.3017 2.39681C13.9106 2.1051 13.3915 2.1051 12.3533 2.1051H11.6467C10.6085 2.1051 10.0894 2.1051 9.69833 2.39681C9.30724 2.68852 9.08045 3.15626 8.6269 4.09173L7.94432 5.5"/></svg>`,
+    col: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4H9V20Z"/><path d="M15 20H20C21.1046 20 22 19.1046 22 18V6C22 4.89543 21.1046 4 20 4H15V20Z"/><path d="M9 4H15V20H9V4Z"/></svg>`,
+    row: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2 18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V6C22 4.89543 21.1046 4 20 4H4C2.89543 4 2 4.89543 2 6V18Z"/><path d="M2 10H22"/><path d="M2 15H22"/></svg>`,
+    grid: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2 9V6C2 4.89543 2.89543 4 4 4H9V9H2Z"/><path d="M2 15V18C2 19.1046 2.89543 20 4 20H9V15H2Z"/><path d="M15 20H20C21.1046 20 22 19.1046 22 18V15H15V20Z"/><path d="M22 9V6C22 4.89543 21.1046 4 20 4H15V9H22Z"/></svg>`,
+    plus: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4V20M20 12H4"/></svg>`,
+  };
+
   currentItems.forEach((item, index) => {
-    // ... (kode definisi variabel seperti isGrid, isRow tetap sama) ...
     if (item.visible === undefined) item.visible = true;
     if (item.collapsed === undefined) item.collapsed = false;
 
@@ -235,66 +241,53 @@ function renderEditorItems() {
     const sizeLabel = isRow ? 'Height' : 'Width';
     const spacingLabel = isStretch ? 'Margin' : 'Offset';
 
-    // Icons (Tetap sama)
-    const eyeIcon = item.visible
-      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
-      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M1 1l22 22"></path></svg>`;
-
-    const chevronIcon = item.collapsed
-      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`
-      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
-
-    // --- PERUBAHAN UTAMA DI SINI (HEADER UI) ---
-    // Kita gunakan Smart Name dan Color Swatch
+    const eyeIcon = item.visible ? icons.eyeOpen : icons.eyeClosed;
+    const chevronIcon = item.collapsed ? icons.chevronRight : icons.chevronDown;
 
     const div = document.createElement('div');
     div.className = 'layer-item';
 
-    // Generate Smart Name
     const smartTitle = getSmartLayerName(item);
-
-    // Nomor urut (Layer 1, Layer 2, dst)
     const layerIndex = index + 1;
 
     let html = `
       <div class="layer-header">
-        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+        <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
           <button class="btn-icon btn-collapse" data-idx="${index}" title="${item.collapsed ? 'Expand' : 'Collapse'}" style="flex-shrink:0;">
             ${chevronIcon}
           </button>
           
-          <div style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          <div style="display:flex; align-items:center; gap:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+             <span class="layer-index">#${layerIndex}</span>
              
-             <span style="font-size:10px; color:#666; font-family:monospace; background:#252525; padding:2px 5px; border-radius:4px; border:1px solid #333;">
-               #${layerIndex}
-             </span>
-
-             <div style="width:8px; height:8px; border-radius:50%; background:${item.color || '#ff0000'}; box-shadow:0 0 4px ${item.color}40; flex-shrink:0;"></div>
-             
-             <span class="layer-title" style="color:#e0e0e0; font-size:12px; font-weight:500;">${smartTitle}</span>
+             <div style="width:10px; height:10px; border-radius:3px; background:${item.color || '#ff0000'}; box-shadow:0 0 5px ${item.color}30; flex-shrink:0;"></div>
+             <span class="layer-title">${smartTitle}</span>
           </div>
-
         </div>
         
         <div style="display:flex; align-items:center; gap:2px; flex-shrink:0;">
-           <button class="btn-icon btn-visible" data-idx="${index}" title="Toggle Visibility" style="${!item.visible ? 'opacity:0.6;' : ''}">${eyeIcon}</button>
-           <button class="btn-remove" data-idx="${index}">✕</button>
+           <button class="btn-icon btn-visible" data-idx="${index}" title="Toggle Visibility" style="${!item.visible ? 'color:#666;' : 'color:#e0e0e0;'}">${eyeIcon}</button>
+           <button class="btn-icon btn-remove" data-idx="${index}" title="Remove Layer">${icons.trash}</button>
         </div>
       </div>
       
       <div class="layer-body ${item.collapsed ? 'hidden' : ''}">
     `;
 
-    // ... (SISA KODE INPUT / EDITOR GRID DI BAWAHNYA SAMA PERSIS DENGAN SEBELUMNYA) ...
-    // Pastikan Anda menyalin bagian Type Selector dan Grid Inputs dari jawaban sebelumnya
-    // ke sini.
-
-    // --- CONTOH LANJUTAN KODE (Supaya tidak error saat copy paste) ---
     html += `
         <div class="type-selector">
-          <div class="type-option ${item.type === 'columns' || !item.type ? 'selected' : ''}" data-action="set-type" data-val="columns" data-idx="${index}">Columns</div>
-          <div class="type-option ${item.type === 'rows' ? 'selected' : ''}" data-action="set-type" data-val="rows" data-idx="${index}">Rows</div>
-          <div class="type-option ${item.type === 'grid' ? 'selected' : ''}" data-action="set-type" data-val="grid" data-idx="${index}">Grid</div>
+          <div class="type-option ${item.type === 'columns' || !item.type ? 'selected' : ''}" 
+               data-action="set-type" data-val="columns" data-idx="${index}" title="Columns">
+               ${icons.col} <span>Cols</span>
+          </div>
+          <div class="type-option ${item.type === 'rows' ? 'selected' : ''}" 
+               data-action="set-type" data-val="rows" data-idx="${index}" title="Rows">
+               ${icons.row} <span>Rows</span>
+          </div>
+          <div class="type-option ${item.type === 'grid' ? 'selected' : ''}" 
+               data-action="set-type" data-val="grid" data-idx="${index}" title="Hard Grid">
+               ${icons.grid} <span>Grid</span>
+          </div>
         </div>
     `;
 
@@ -394,10 +387,9 @@ function renderEditorItems() {
       </div>
     `;
 
-    html += `</div>`; // Close layer-body
+    html += `</div>`;
     div.innerHTML = html;
 
-    // Set selected value manually
     if (!isGrid) {
       const selectEl = div.querySelector('select[data-field="typeMode"]');
       if (selectEl) selectEl.value = item.typeMode || 'stretch';
@@ -410,31 +402,31 @@ function renderEditorItems() {
 }
 
 function attachEditorEvents() {
-  // 1. Input Changes
   els.itemsList.querySelectorAll('input, select').forEach((input) => {
+    // FIX 2: Validasi input & currentTarget
     input.addEventListener('change', (e) => handleItemChange(e));
   });
 
-  // 2. Type Selector Click
   els.itemsList.querySelectorAll('.type-option').forEach((opt) => {
     opt.addEventListener('click', (e) => {
-      const idx = parseInt(e.target.dataset.idx);
-      const newType = e.target.dataset.val;
+      // FIX 1: Gunakan currentTarget agar tidak error saat klik icon/text
+      const idx = parseInt(e.currentTarget.dataset.idx);
+      const newType = e.currentTarget.dataset.val;
       const item = currentItems[idx];
+
+      if (!item) return; // Safety check
 
       if (item.type === newType) return;
 
       item.type = newType;
       if (newType === 'grid') {
         item.size = 8;
-        // Clean up column props
         delete item.count;
         delete item.margin;
         delete item.offset;
         delete item.gutter;
         delete item.typeMode;
       } else {
-        // Defaults for col/row
         if (!item.count) item.count = 12;
         if (!item.typeMode) item.typeMode = 'stretch';
       }
@@ -442,27 +434,25 @@ function attachEditorEvents() {
     });
   });
 
-  // 3. Remove Button
   els.itemsList.querySelectorAll('.btn-remove').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      currentItems.splice(e.target.dataset.idx, 1);
+      const idx = parseInt(e.currentTarget.dataset.idx);
+      currentItems.splice(idx, 1);
       renderEditorItems();
     });
   });
 
-  // 4. Collapse Button
   els.itemsList.querySelectorAll('.btn-collapse').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const idx = e.currentTarget.dataset.idx;
+      const idx = parseInt(e.currentTarget.dataset.idx);
       currentItems[idx].collapsed = !currentItems[idx].collapsed;
       renderEditorItems();
     });
   });
 
-  // 5. Visible Button
   els.itemsList.querySelectorAll('.btn-visible').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      const idx = e.currentTarget.dataset.idx;
+      const idx = parseInt(e.currentTarget.dataset.idx);
       currentItems[idx].visible = !currentItems[idx].visible;
       renderEditorItems();
     });
@@ -470,18 +460,22 @@ function attachEditorEvents() {
 }
 
 function handleItemChange(e) {
-  const idx = e.target.dataset.idx;
-  const field = e.target.dataset.field;
-  const val = e.target.value;
+  // FIX 2: Validasi angka agar tidak NaN
+  const idx = e.currentTarget.dataset.idx;
+  const field = e.currentTarget.dataset.field;
+  const val = e.currentTarget.value;
   const item = currentItems[idx];
 
   if (['count', 'width', 'gutter', 'margin', 'offset', 'size', 'opacity', 'maxWidth'].includes(field)) {
-    item[field] = val === '' ? null : parseFloat(val);
+    if (val === '') {
+      item[field] = null;
+    } else {
+      const parsed = parseFloat(val);
+      item[field] = isNaN(parsed) ? 0 : parsed;
+    }
   } else {
     item[field] = val;
   }
-
-  // If changing mode to stretch/center, we need to re-render to enable/disable fields correctly
   if (field === 'typeMode') renderEditorItems();
 }
 
@@ -514,7 +508,7 @@ function applyConfigToTab(forceActive = false) {
 }
 
 function checkOverlayStatus() {
-  updateStatusUI(false);
+  updateStatusUI(isOverlayActive);
 }
 
 // --- Event Listeners Setup ---
@@ -527,9 +521,15 @@ function setupEventListeners() {
   });
 
   els.toggleBtn.addEventListener('click', () => {
+    // FIX UX: Simpan state global agar persist saat refresh
+    const isCurrentlyActive = els.statusText.classList.contains('active');
+    const newState = !isCurrentlyActive;
+
+    chrome.storage.sync.set({ isOverlayEnabled: newState });
+
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggle' }, () => updateStatusUI(!isOverlayActive));
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggle', forceState: newState }, () => updateStatusUI(newState));
       }
     });
   });

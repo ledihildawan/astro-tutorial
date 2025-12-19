@@ -2,46 +2,63 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       /* --- Base Styles --- */
       body {
         width: 400px;
-        min-height: 200px; /* Tinggi minimal saat kosong agar tidak aneh */
-        max-height: 600px; /* Batas tinggi maksimal (Chrome Ext limit) */
-        height: fit-content; /* KUNCI: Tinggi menyesuaikan konten */
+        min-height: 200px;
+        max-height: 600px;
+        height: fit-content;
         padding: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* MENGGUNAKAN FONT INTER */
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
         background: #121212;
         color: #e0e0e0;
         margin: 0;
         box-sizing: border-box;
-        /* Tambahan penting untuk Firefox/beberapa versi Chrome agar transisi halus */
         overflow-x: hidden;
-        overflow-y: auto; /* Scroll body jika konten melebihi max-height */
+        overflow-y: auto;
+        -webkit-font-smoothing: antialiased;
       }
 
       h1,
       h2 {
         margin: 0;
         color: #ffffff;
+        letter-spacing: -0.02em;
       }
       h1 {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
         margin-bottom: 4px;
       }
       p.subtitle {
         font-size: 12px;
         color: #888;
-        margin: 0 0 20px 0;
+        margin: 0 0 24px 0;
+        font-weight: 400;
       }
 
       /* --- Components --- */
       button {
-        padding: 10px 16px;
+        padding: 8px 16px;
         border: none;
         border-radius: 6px;
-        font-size: 13px;
+        font-size: 12px;
+        font-family: 'Inter', sans-serif;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -50,6 +67,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        height: 36px;
       }
       button:hover {
         filter: brightness(1.1);
@@ -84,7 +102,7 @@
       /* --- Modern Input Styles --- */
       .editor-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr; /* 3 Kolom Presisi */
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 10px;
         margin-bottom: 12px;
       }
@@ -95,9 +113,10 @@
       .section-label {
         font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.05em;
+        font-weight: 600;
         color: #666;
-        margin: 12px 0 6px 0;
+        margin: 16px 0 8px 0;
         grid-column: 1 / -1;
         display: flex;
         align-items: center;
@@ -113,8 +132,8 @@
       .input-wrapper label {
         display: block;
         font-size: 10px;
-        color: #888;
-        margin-bottom: 4px;
+        color: #999;
+        margin-bottom: 5px;
         font-weight: 500;
       }
 
@@ -127,35 +146,42 @@
       /* Input & Select */
       input,
       select {
-        background: #252525;
-        border: 1px solid #3a3a3a;
+        background: #1e1e1e;
+        border: 1px solid #333;
         color: #fff;
-        padding: 6px 8px;
-        padding-right: 24px; /* Space untuk suffix */
+        padding: 0 8px;
+        padding-right: 24px;
         border-radius: 4px;
         width: 100%;
+        font-family: 'Inter', sans-serif;
         font-size: 12px;
         height: 32px;
         outline: none;
         box-sizing: border-box;
-        transition: border-color 0.2s;
+        transition: all 0.2s;
       }
       input:focus,
       select:focus {
         border-color: #bb86fc;
-        background: #2a2a2a;
+        background: #252525;
+        box-shadow: 0 0 0 1px rgba(187, 134, 252, 0.2);
       }
 
-      /* Suffix 'px' di dalam input */
+      /* Agar angka terlihat rapi (monospaced width tapi font Inter) */
+      input[type='number'] {
+        font-variant-numeric: tabular-nums;
+      }
+
       .suffix {
         position: absolute;
         right: 8px;
         font-size: 10px;
-        color: #666;
+        color: #555;
         pointer-events: none;
+        font-weight: 500;
       }
 
-      /* Segmented Control (Type Selector) */
+      /* --- Type Selector --- */
       .type-selector {
         display: flex;
         background: #1a1a1a;
@@ -166,16 +192,24 @@
       }
       .type-option {
         flex: 1;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
         padding: 6px;
         font-size: 11px;
+        font-weight: 500;
         cursor: pointer;
         border-radius: 4px;
         color: #777;
         transition: all 0.2s;
       }
+      .type-option svg {
+        opacity: 0.7;
+      }
       .type-option:hover {
         color: #ccc;
+        background: rgba(255, 255, 255, 0.05);
       }
       .type-option.selected {
         background: #333;
@@ -183,20 +217,23 @@
         font-weight: 600;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
+      .type-option.selected svg {
+        opacity: 1;
+        stroke: #bb86fc;
+      }
 
-      /* Color Picker override */
       input[type='color'] {
         padding: 2px;
         width: 100%;
         cursor: pointer;
-        padding-right: 2px; /* Reset padding right */
+        height: 32px;
       }
 
       /* --- Status Card --- */
       .status-card {
         background: #1e1e1e;
         border-radius: 8px;
-        padding: 16px;
+        padding: 12px 16px;
         margin-bottom: 20px;
         display: flex;
         align-items: center;
@@ -206,7 +243,7 @@
       .status-indicator {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         font-size: 13px;
         font-weight: 500;
       }
@@ -218,7 +255,7 @@
       }
       .active .dot {
         background: #03dac6;
-        box-shadow: 0 0 8px #03dac6;
+        box-shadow: 0 0 8px rgba(3, 218, 198, 0.4);
       }
       .active {
         color: #03dac6;
@@ -227,8 +264,6 @@
       /* --- Views & Editor Structure --- */
       .view-section {
         display: none;
-        display: none;
-        height: 100%;
         flex-direction: column;
       }
       .view-section.visible {
@@ -257,7 +292,7 @@
         width: 4px;
       }
       #items-list::-webkit-scrollbar-thumb {
-        background: #444;
+        background: #333;
         border-radius: 2px;
       }
 
@@ -274,7 +309,7 @@
         align-items: center;
         padding-bottom: 8px;
         margin-bottom: 8px;
-        border-bottom: 1px solid #333;
+        border-bottom: 1px solid #2a2a2a;
       }
       .layer-item:has(.hidden) .layer-header {
         border-bottom: none;
@@ -283,37 +318,44 @@
       }
 
       .layer-title {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
         color: #e0e0e0;
+        letter-spacing: 0.01em;
+      }
+
+      /* Index Number Style (Updated) */
+      .layer-index {
+        font-size: 10px;
+        color: #777;
+        font-family: 'JetBrains Mono', monospace; /* FONT KHUSUS ANGKA */
+        background: #151515;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #2a2a2a;
       }
 
       .btn-icon {
         background: transparent;
         border: none;
-        color: #e0e0e0;
+        color: #666;
         cursor: pointer;
         padding: 0;
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 4px;
+        transition: all 0.2s;
       }
       .btn-icon:hover {
         background: #333;
+        color: #fff;
       }
-      .btn-remove {
-        width: auto;
-        padding: 2px 8px;
-        font-size: 11px;
-        background: transparent;
+      .btn-remove:hover {
         color: #cf6679;
-        border: 1px solid #cf6679;
-        cursor: pointer;
-        margin-left: 4px;
-        height: 24px;
+        background: #333;
       }
 
       .layer-body {
@@ -343,8 +385,6 @@
         margin-top: 10px;
       }
 
-      /* --- Custom Scrollbar Styling --- */
-
       body::-webkit-scrollbar {
         width: 8px;
       }
@@ -357,18 +397,13 @@
         border: 2px solid #121212;
       }
 
-      /* --- SPACING KHUSUS EDITOR --- */
-
-      /* Memberi jarak lebih lega pada tombol aksi di halaman Edit/Add */
       #editor-view .action-row {
-        margin-bottom: 24px; /* Sedikit jarak ekstra ke bawah agar tidak terlalu mepet ujung window */
+        margin-bottom: 24px;
       }
-
-      /* Opsional: Jika ingin garis separatornya juga lebih renggang dari tombol 'Add Layer' */
       #editor-view .separator {
         margin-top: 24px !important;
-        margin-bottom: 0 !important; /* Kita atur jarak bawah lewat margin-top si .action-row saja */
-        opacity: 0.3; /* Membuat garis lebih halus/tidak terlalu tebal */
+        margin-bottom: 0 !important;
+        opacity: 0.3;
       }
     </style>
   </head>
@@ -415,8 +450,32 @@
 
       <div id="items-list"></div>
 
-      <button id="add-layer-btn" class="btn-secondary" style="border-style: dashed; margin-bottom: 16px; color: #bbb">
-        + Add Grid Layer
+      <button
+        id="add-layer-btn"
+        class="btn-secondary"
+        style="
+          border-style: dashed;
+          margin-bottom: 16px;
+          color: #bbb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        "
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 4V20M20 12H4" />
+        </svg>
+        Add Grid Layer
       </button>
 
       <div class="separator" style="margin: 16px 0"></div>
