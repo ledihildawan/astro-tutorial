@@ -1,0 +1,191 @@
+<script type="text/javascript">
+  (function () {
+    let overlay = null;
+    let isEnabled = false;
+    let items = [];
+
+    function hexToRgba(color = '#000000', alpha = 0.1) {
+      let hex = color.replace('#', '');
+      if (hex.length === 3)
+        hex = hex
+          .split('')
+          .map((x) => x + x)
+          .join('');
+      if (hex.length !== 6) return `rgba(0,0,0,${alpha})`;
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function createOverlay() {
+      if (overlay) return;
+      overlay = document.createElement('div');
+      overlay.id = 'figma-debug-overlay';
+      overlay.style.cssText = `
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 2147483647;
+    `;
+      document.body.appendChild(overlay);
+    }
+
+    function renderItem(item) {
+      if (!item.enabled) return null;
+
+      const itemDiv = document.createElement('div');
+      itemDiv.style.cssText = `
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    `;
+
+      if (item.type === 'grid') {
+        const col = hexToRgba(item.color || '#00ff00', item.opacity || 0.05);
+        itemDiv.style.background = `
+        linear-gradient(to right, ${col} 1px, transparent 1px),
+        linear-gradient(to bottom, ${col} 1px, transparent 1px)
+      `;
+        itemDiv.style.backgroundSize = `${item.size || 8}px ${item.size || 8}px`;
+        return itemDiv;
+      }
+
+      const bg = hexToRgba(item.color || (item.type === 'columns' ? '#ff0000' : '#0000ff'), item.opacity || 0.1);
+      const isStretch = item.typeMode === 'stretch' || !item.typeMode; // default stretch
+
+      if (item.type === 'columns') {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.justifyContent = 'center';
+        wrapper.style.alignItems = 'stretch';
+        wrapper.style.height = '100%';
+        wrapper.style.width = '100%';
+
+        const colDiv = document.createElement('div');
+        colDiv.style.display = 'grid';
+        colDiv.style.gridTemplateColumns = isStretch
+          ? `repeat(${item.count}, 1fr)`
+          : `repeat(${item.count}, ${item.width || 80}px)`;
+        colDiv.style.columnGap = `${item.gutter || 20}px`;
+        colDiv.style.height = '100%';
+
+        if (isStretch) {
+          colDiv.style.width = '100%';
+          colDiv.style.paddingInline = `${item.margin || 40}px`;
+        } else {
+          const contentW = item.count * (item.width || 80) + (item.count - 1) * (item.gutter || 20);
+          const totalW = contentW + 2 * (item.margin || 0);
+
+          colDiv.style.width = `${contentW}px`;
+          colDiv.style.paddingInline = `${item.margin || 0}px`;
+
+          if (item.typeMode === 'center') {
+            wrapper.style.justifyContent = 'center';
+          } else if (item.typeMode === 'left') {
+            wrapper.style.justifyContent = 'start';
+          } else if (item.typeMode === 'right') {
+            wrapper.style.justifyContent = 'end';
+          }
+        }
+
+        for (let i = 0; i < item.count; i++) {
+          const cell = document.createElement('div');
+          cell.style.background = bg;
+          colDiv.appendChild(cell);
+        }
+
+        wrapper.appendChild(colDiv);
+        itemDiv.appendChild(wrapper);
+        return itemDiv;
+      }
+
+      if (item.type === 'rows') {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.flexDirection = 'column';
+        wrapper.style.justifyContent = 'center';
+        wrapper.style.alignItems = 'stretch';
+        wrapper.style.width = '100%';
+        wrapper.style.height = '100%';
+
+        const rowDiv = document.createElement('div');
+        rowDiv.style.display = 'grid';
+        rowDiv.style.gridTemplateRows = isStretch
+          ? `repeat(${item.count}, 1fr)`
+          : `repeat(${item.count}, ${item.width || 60}px)`;
+        rowDiv.style.rowGap = `${item.gutter || 20}px`;
+        rowDiv.style.width = '100%';
+
+        if (isStretch) {
+          rowDiv.style.height = '100%';
+          rowDiv.style.paddingBlock = `${item.margin || 40}px`;
+        } else {
+          const contentH = item.count * (item.width || 60) + (item.count - 1) * (item.gutter || 20);
+          rowDiv.style.height = `${contentH}px`;
+          rowDiv.style.paddingBlock = `${item.margin || 0}px`;
+
+          if (item.typeMode === 'center') {
+            wrapper.style.justifyContent = 'center';
+          } else if (item.typeMode === 'left' || item.typeMode === 'top') {
+            wrapper.style.justifyContent = 'start';
+          } else if (item.typeMode === 'right' || item.typeMode === 'bottom') {
+            wrapper.style.justifyContent = 'end';
+          }
+        }
+
+        for (let i = 0; i < item.count; i++) {
+          const cell = document.createElement('div');
+          cell.style.background = bg;
+          rowDiv.appendChild(cell);
+        }
+
+        wrapper.appendChild(rowDiv);
+        itemDiv.appendChild(wrapper);
+        return itemDiv;
+      }
+
+      return null;
+    }
+
+    function updateOverlay() {
+      if (!overlay) createOverlay();
+      overlay.innerHTML = '';
+      items.forEach((item) => {
+        const el = renderItem(item);
+        if (el) overlay.appendChild(el);
+      });
+    }
+
+    function toggle() {
+      isEnabled = !isEnabled;
+      if (isEnabled) updateOverlay();
+      else if (overlay) overlay.innerHTML = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        toggle();
+      }
+    });
+
+    window.initLayoutGuide = function (config = { enabled: true, items: [] }) {
+      items = config.items.map((it) => ({
+        enabled: true,
+        typeMode: 'stretch', // default
+        margin: 40,
+        gutter: 20,
+        width: 80, // untuk non-stretch
+        opacity: 0.1,
+        ...it,
+      }));
+      if (config.enabled !== false && !isEnabled) toggle();
+      else if (isEnabled) updateOverlay();
+    };
+
+    console.log('Figma Debug Overlay v4 loaded & fixed! Tekan G untuk toggle. Panggil initLayoutGuide({items: [...]})');
+  })();
+</script>
