@@ -4,10 +4,8 @@
   let currentItems = [];
 
   // --- Utility Functions ---
-
   function parseColor(color, alpha = 0.1) {
-    if (!color) return `rgba(255, 0, 0, ${alpha})`; // Safety guard
-
+    if (!color) return `rgba(255, 0, 0, ${alpha})`;
     if (typeof color === 'string' && color.match(/^rgb|a/)) {
       return color.replace(/[\d.]+(?=\)$)/, alpha);
     }
@@ -29,8 +27,6 @@
     overlay.id = 'figma-debug-overlay';
     overlay.style.cssText =
       'position:fixed;inset:0;pointer-events:none;z-index:2147483647;display:flex;flex-direction:column;';
-
-    // Append ke documentElement agar aman dari filter CSS di body
     document.documentElement.appendChild(overlay);
     return overlay;
   }
@@ -159,19 +155,15 @@
     });
   }
 
-  // --- MAIN FIX IS HERE ---
-  function toggleOverlay() {
-    isEnabled = !isEnabled;
-
-    // Simpan status terbaru ke Storage agar diingat saat Refresh
+  function toggleOverlay(forceState = null) {
+    isEnabled = forceState !== null ? forceState : !isEnabled;
     chrome.storage.sync.set({ isOverlayEnabled: isEnabled });
 
     if (isEnabled) renderAll();
     else if (overlay) overlay.innerHTML = '';
   }
 
-  // --- Initialization ---
-
+  // --- Default fallback (sinkron dengan popup.js) ---
   const defaultFallbackItems = [
     {
       type: 'columns',
@@ -187,36 +179,34 @@
     },
   ];
 
+  // --- Initialization ---
   chrome.storage.sync.get(['figmaOverlayData', 'isOverlayEnabled'], (data) => {
-    const store = data.figmaOverlayData;
-
-    // 1. Load Status Global (On/Off)
-    if (data.isOverlayEnabled) {
-      isEnabled = true;
+    if (data.isOverlayEnabled !== undefined) {
+      isEnabled = data.isOverlayEnabled;
     }
 
-    // 2. Load Data Profil
+    const store = data.figmaOverlayData;
     if (store && store.activeId && store.profiles[store.activeId]) {
       currentItems = store.profiles[store.activeId].items;
     } else {
-      // Jika kosong, gunakan default fallback
       currentItems = defaultFallbackItems;
     }
 
-    // 3. Render jika statusnya aktif
     if (isEnabled) renderAll();
   });
 
+  // Shortcut: Ctrl+Shift+G
   document.addEventListener('keydown', (e) => {
     const tag = e.target.tagName.toUpperCase();
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
 
-    if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (e.key === 'G' && e.ctrlKey && e.shiftKey) {
       e.preventDefault();
       toggleOverlay();
     }
   });
 
+  // Listener untuk broadcast dari background
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'apply') {
       currentItems = msg.items || [];
@@ -224,14 +214,7 @@
       if (isEnabled) renderAll();
       else if (overlay) overlay.innerHTML = '';
     } else if (msg.action === 'toggle') {
-      if (typeof msg.forceState !== 'undefined') {
-        isEnabled = msg.forceState;
-      } else {
-        isEnabled = !isEnabled;
-      }
-
-      if (isEnabled) renderAll();
-      else if (overlay) overlay.innerHTML = '';
+      toggleOverlay(msg.forceState);
     }
     sendResponse({ status: 'ok' });
     return true;

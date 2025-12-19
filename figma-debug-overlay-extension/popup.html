@@ -10,63 +10,47 @@
     />
 
     <style>
-      /* --- 1. Design Tokens (Figma-like Dark Theme) --- */
       :root {
-        /* Colors: Backgrounds */
-        --bg-app: #1e1e1e; /* Warna dasar aplikasi */
-        --bg-panel: #2c2c2c; /* Warna container/item */
-        --bg-input: #121212; /* Warna dalam input (lebih gelap) */
+        --bg-app: #1e1e1e;
+        --bg-panel: #2c2c2c;
+        --bg-input: #121212;
         --bg-hover: rgba(255, 255, 255, 0.04);
-        --bg-active: rgba(255, 255, 255, 0.08);
-
-        /* Colors: Text */
         --text-main: #e0e0e0;
         --text-muted: #a0a0a0;
         --text-disabled: #555555;
-
-        /* Colors: Accents */
-        --accent-primary: #bb86fc; /* Purple */
-        --accent-success: #03dac6; /* Teal */
-        --accent-danger: #cf6679; /* Red */
-
-        /* Borders & Separators */
+        --accent-primary: #bb86fc;
+        --accent-success: #03dac6;
+        --accent-danger: #cf6679;
         --border-subtle: #383838;
         --border-focus: #555555;
-
-        /* Dimensions */
+        --font-base: 12px;
+        --font-sm: 11px;
         --radius-sm: 4px;
         --radius-md: 6px;
         --radius-lg: 8px;
-
-        --space-xs: 4px;
-        --space-sm: 8px;
         --space-md: 12px;
-        --space-lg: 16px;
         --space-xl: 20px;
-
-        --input-h: 30px; /* Sedikit lebih compact */
+        --input-h: 30px;
       }
 
-      /* --- 2. Base Reset --- */
       body {
-        width: 360px; /* Lebar standar plugin sidebar */
+        width: 360px;
         min-height: 250px;
         max-height: 600px;
-        padding: var(--space-lg);
+        padding: 16px;
         background: var(--bg-app);
         color: var(--text-main);
         font-family: 'Inter', sans-serif;
         font-size: 12px;
         margin: 0;
         box-sizing: border-box;
-        overflow-x: hidden; /* Mencegah geser kiri-kanan */
+        overflow-x: hidden;
       }
 
       * {
         box-sizing: border-box;
       }
 
-      /* Typography Helpers */
       h1 {
         font-size: 15px;
         font-weight: 600;
@@ -84,7 +68,6 @@
         margin: 0 0 20px 0;
       }
 
-      /* --- 3. Interactive Elements: Buttons --- */
       button {
         display: inline-flex;
         align-items: center;
@@ -100,9 +83,14 @@
         cursor: pointer;
         transition: all 0.15s ease-out;
         user-select: none;
+        white-space: nowrap;
       }
       button:active {
         transform: translateY(1px);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--accent-primary);
+        outline-offset: 2px;
       }
 
       .btn-primary {
@@ -113,7 +101,6 @@
       .btn-primary:hover {
         filter: brightness(1.1);
       }
-
       .btn-secondary {
         background: transparent;
         border: 1px solid var(--border-subtle);
@@ -123,22 +110,11 @@
         border-color: var(--text-muted);
         background: var(--bg-hover);
       }
-
       .btn-success {
         background: var(--accent-success);
         color: #000;
         font-weight: 600;
       }
-      .btn-danger {
-        color: var(--accent-danger);
-        border-color: var(--border-subtle);
-      }
-      .btn-danger:hover {
-        border-color: var(--accent-danger);
-        background: rgba(207, 102, 121, 0.1);
-      }
-
-      /* Icon Buttons (Square) */
       .btn-icon {
         width: 26px;
         height: 26px;
@@ -146,24 +122,18 @@
         background: transparent;
         color: var(--text-muted);
         border: none;
-        border-radius: var(--radius-sm);
       }
       .btn-icon:hover {
         background: var(--bg-hover);
         color: var(--text-main);
       }
-      .btn-icon svg {
-        width: 16px;
-        height: 16px;
-      }
 
-      /* --- 4. Inputs & Forms (Figma Style) --- */
       input,
       select {
         width: 100%;
         height: var(--input-h);
         background: var(--bg-input);
-        border: 1px solid transparent; /* Borderless look by default */
+        border: 1px solid transparent;
         border-radius: var(--radius-sm);
         color: var(--text-main);
         font-family: 'Inter', sans-serif;
@@ -172,7 +142,6 @@
         transition: 0.2s;
         outline: none;
       }
-      /* Efek saat input aktif/hover: Border muncul halus */
       input:hover,
       select:hover {
         border-color: var(--border-subtle);
@@ -180,38 +149,33 @@
       input:focus,
       select:focus {
         border-color: var(--accent-primary);
-        background: #000; /* Sedikit lebih gelap saat fokus */
+        background: #000;
       }
-      input[type='number'] {
-        font-variant-numeric: tabular-nums;
-      }
-
-      /* Color Picker Override */
       input[type='color'] {
         padding: 0;
         border: none;
         cursor: pointer;
         height: var(--input-h);
-        border-radius: var(--radius-sm);
         overflow: hidden;
-      }
-      input[type='color']::-webkit-color-swatch-wrapper {
-        padding: 0;
       }
       input[type='color']::-webkit-color-swatch {
         border: none;
       }
-
-      /* Label & Wrappers */
-      .input-wrapper {
-        margin-bottom: 0;
+      input::placeholder {
+        color: var(--text-disabled);
+        opacity: 0.7;
+        font-style: italic;
       }
+
       .input-wrapper label {
         display: block;
         font-size: 10px;
         color: var(--text-muted);
         margin-bottom: 4px;
         font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .input-container {
         position: relative;
@@ -225,7 +189,7 @@
         color: var(--text-disabled);
         pointer-events: none;
       }
-      /* Grid Layout untuk Form */
+
       .editor-grid {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -239,40 +203,57 @@
         margin-bottom: 0 !important;
       }
 
-      /* --- 5. Custom Components --- */
-
-      /* Status Card */
       .status-card {
+        position: relative;
         display: flex;
         justify-content: space-between;
         align-items: center;
         background: var(--bg-panel);
-        padding: 10px 12px;
-        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        border-radius: var(--radius-lg);
         border: 1px solid var(--border-subtle);
-        margin-bottom: 20px;
+        margin-bottom: var(--space-xl);
+        transition: all 0.3s ease;
+      }
+      .status-card:has(.active) {
+        border-color: rgba(3, 218, 198, 0.4);
+        background: linear-gradient(to right, rgba(3, 218, 198, 0.08), rgba(30, 30, 30, 0));
+        box-shadow: 0 4px 12px rgba(3, 218, 198, 0.1);
       }
       .status-indicator {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        font-size: 13px;
         font-weight: 500;
+        color: var(--text-muted);
+      }
+      .status-indicator.active {
+        color: #ffffff;
       }
       .dot {
-        width: 6px;
-        height: 6px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        background: #555;
+        background: var(--border-focus);
+        transition: all 0.4s;
       }
-      .active .dot {
+      .status-indicator.active .dot {
         background: var(--accent-success);
-        box-shadow: 0 0 6px var(--accent-success);
+        box-shadow: 0 0 10px var(--accent-success);
+        transform: scale(1.2);
       }
-      .active span {
-        color: var(--accent-success);
+      .status-action {
+        width: 80px;
+        flex-shrink: 0;
+      }
+      .status-card button {
+        height: 28px;
+        font-size: 11px;
+        width: 100%;
+        padding: 0;
       }
 
-      /* Type Selector (Segmented Control) */
       .type-selector {
         display: flex;
         background: var(--bg-input);
@@ -298,48 +279,33 @@
         color: var(--text-main);
       }
       .type-option.selected {
-        background: var(--border-subtle); /* Highlight selection */
+        background: var(--border-subtle);
         color: #fff;
         font-weight: 600;
       }
 
-      /* Section Separator */
       .section-label {
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--text-disabled);
-        margin: 16px 0 8px 0;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .section-label::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--border-subtle);
+        display: block;
+        margin-bottom: 6px;
+        font-size: var(--font-sm);
+        color: var(--text-muted);
+        user-select: none;
       }
       .separator {
         border-top: 1px solid var(--border-subtle);
         margin: 16px 0;
       }
 
-      /* --- 6. Layer Item List (The Core UI) --- */
       #items-list {
-        max-height: 320px;
-        overflow-y: auto;
+        min-height: 100px;
+        max-height: calc(100vh - 180px);
+        overflow-y: overlay;
+        overflow-x: hidden;
         padding-right: 4px;
         margin-bottom: 16px;
       }
-
-      /* Scrollbar Styling */
       ::-webkit-scrollbar {
         width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
       }
       ::-webkit-scrollbar-thumb {
         background: #333;
@@ -360,15 +326,13 @@
       .layer-item:hover {
         border-color: var(--border-focus);
       }
-
       .layer-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        /* Jika expanded, kasih margin bawah agar tidak nempel content */
         margin-bottom: 4px;
+        user-select: none;
       }
-      /* Trik CSS: Jika layer collapsed (body hidden), hilangkan margin header */
       .layer-item:has(.layer-body.hidden) .layer-header {
         margin-bottom: 0;
       }
@@ -378,19 +342,16 @@
         align-items: center;
         gap: 4px;
         flex: 1;
+        min-width: 0;
         overflow: hidden;
       }
-      .layer-header-right {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-      }
-
       .layer-info-group {
         display: flex;
         align-items: center;
         gap: 8px;
         overflow: hidden;
+        flex: 1;
+        min-width: 0;
       }
       .layer-index {
         font-family: 'JetBrains Mono', monospace;
@@ -410,19 +371,14 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 140px; /* Cegah teks panjang merusak layout */
+        flex: 1;
+        color: var(--text-main);
+        max-width: 140px;
       }
 
-      /* Visibility Toggle States */
       .btn-visible.is-hidden {
         opacity: 0.3;
       }
-      .btn-visible:not(.is-hidden) {
-        opacity: 1;
-        color: var(--text-main);
-      }
-
-      /* Empty State */
       .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -430,10 +386,8 @@
         border-radius: var(--radius-md);
         color: var(--text-disabled);
         font-size: 11px;
-        background: rgba(255, 255, 255, 0.02);
       }
 
-      /* View Transitions */
       .view-section {
         display: none;
         flex-direction: column;
@@ -442,7 +396,6 @@
         display: flex;
         animation: fadeIn 0.2s ease;
       }
-
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -454,12 +407,41 @@
         }
       }
 
+      .layer-body {
+        animation: slideDown 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        transform-origin: top center;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-8px) scaleY(0.95);
+          max-height: 0;
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scaleY(1);
+          max-height: 500px;
+        }
+      }
+
       .action-row {
         display: flex;
         gap: 8px;
       }
       .action-row button {
         flex: 1;
+      }
+      #editing-profile-name {
+        font-size: var(--font-base);
+        color: var(--accent-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        text-align: right;
       }
     </style>
   </head>
@@ -475,14 +457,12 @@
           <div class="dot"></div>
           <span>Overlay Hidden</span>
         </div>
-        <div style="width: 100px">
-          <button id="toggle-btn" class="btn-primary" style="padding: 6px">Show (G)</button>
+        <div class="status-action">
+          <button id="toggle-btn" class="btn-primary" aria-pressed="false">Show (Ctrl+Shift+G)</button>
         </div>
       </div>
 
-      <label style="display: block; margin-bottom: 6px; font-size: var(--font-sm); color: var(--text-secondary)"
-        >Current Layout System</label
-      >
+      <label class="section-label">Current Layout System</label>
       <select id="profile-select" style="margin-bottom: var(--space-md); font-size: 13px; height: 36px"></select>
 
       <div class="action-row">
@@ -490,24 +470,18 @@
         <button id="btn-create" class="btn-secondary">New Layout</button>
       </div>
 
-      <div class="separator"></div>
+      <div class="separator" style="margin: var(--space-xl) 0"></div>
 
       <div class="action-row">
-        <button id="btn-rename" class="btn-secondary" style="font-size: var(--font-base); padding: 8px">Rename</button>
-        <button
-          id="btn-delete"
-          class="btn-secondary"
-          style="font-size: var(--font-base); padding: 8px; color: var(--color-danger)"
-        >
-          Delete Layout
-        </button>
+        <button id="btn-rename" class="btn-secondary">Rename</button>
+        <button id="btn-delete" class="btn-secondary" style="color: var(--accent-danger)">Delete Layout</button>
       </div>
     </div>
 
     <div id="editor-view" class="view-section">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px">
         <h2 style="font-size: 16px">Configure Layout</h2>
-        <span id="editing-profile-name" style="font-size: var(--font-base); color: var(--color-primary)"></span>
+        <span id="editing-profile-name"></span>
       </div>
 
       <div id="items-list"></div>
@@ -515,29 +489,9 @@
       <button
         id="add-layer-btn"
         class="btn-secondary"
-        style="
-          border-style: dashed;
-          margin-bottom: 16px;
-          color: var(--text-secondary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        "
+        style="border-style: dashed; margin-bottom: 16px; color: var(--text-muted); width: 100%"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M12 4V20M20 12H4" />
-        </svg>
-        Add Grid Layer
+        + Add Grid Layer
       </button>
 
       <div class="separator" style="margin: 16px 0"></div>
