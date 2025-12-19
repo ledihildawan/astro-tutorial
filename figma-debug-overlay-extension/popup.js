@@ -1,37 +1,61 @@
-// --- Real World Use Case Presets ---
 const defaultData = {
-  activeId: 'bootstrap_desk',
+  activeId: 'bootstrap_xxl',
   profiles: {
-    'bootstrap_desk': {
-      name: 'Desktop: Bootstrap (1320px)',
-      locked: false, // Sekarang bisa diedit/hapus
+    bootstrap_xxl: {
+      name: 'Bootstrap 5 (XXL - 1400px)',
+      locked: true,
       items: [
-        { type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 24, margin: 0, color: '#ff0000', opacity: 0.1 },
-      ]
+        // Container 1320px max-width, Centered, 12 Cols
+        {
+          type: 'columns',
+          count: 12,
+          typeMode: 'center',
+          width: 80,
+          gutter: 24,
+          margin: 0,
+          color: '#dc3545',
+          opacity: 0.08,
+        },
+      ],
     },
-    'tailwind_fixed': {
-      name: 'Desktop: Tailwind (Full Width)',
-      locked: false, // Sekarang bisa diedit/hapus
+    tailwind_container: {
+      name: 'Tailwind (Container Centered)',
+      locked: true,
       items: [
-        { type: 'columns', count: 12, typeMode: 'stretch', gutter: 32, margin: 40, color: '#38bdf8', opacity: 0.15 }
-      ]
+        // Generic Tailwind Container behavior (often 12 cols, 2rem/32px gap)
+        {
+          type: 'columns',
+          count: 12,
+          typeMode: 'center',
+          width: 64,
+          gutter: 32,
+          margin: 0,
+          color: '#38bdf8',
+          opacity: 0.1,
+        },
+      ],
     },
-    'mobile_std': {
-      name: 'Mobile: iOS/Android (360-390px)',
-      locked: false, // Sekarang bisa diedit/hapus
+    mobile_ios: {
+      name: 'Mobile (iOS/Android - 390px)',
+      locked: true,
       items: [
-        { type: 'columns', count: 4, typeMode: 'stretch', gutter: 16, margin: 20, color: '#ff0000', opacity: 0.1 },
-        { type: 'grid', size: 8, color: '#00ff00', opacity: 0.05 }
-      ]
+        // Standard Mobile: 4 Cols, Stretch, 16px Gutter, 20px Margin
+        { type: 'columns', count: 4, typeMode: 'stretch', gutter: 16, margin: 20, color: '#ff4500', opacity: 0.1 },
+        // Hard Grid 8px overlay
+        { type: 'grid', size: 8, color: '#00ff00', opacity: 0.05 },
+      ],
     },
-    'pixel_grid': {
-      name: 'Utility: 8pt Baseline Grid',
-      locked: false, // Sekarang bisa diedit/hapus
-      items: [
-        { type: 'grid', size: 8, color: '#666666', opacity: 0.15 }
-      ]
-    }
-  }
+    baseline_8: {
+      name: '8pt Hard Grid System',
+      locked: true,
+      items: [{ type: 'grid', size: 8, color: '#e83e8c', opacity: 0.1 }],
+    },
+    baseline_4: {
+      name: '4pt Detailed Grid',
+      locked: true,
+      items: [{ type: 'grid', size: 4, color: '#6f42c1', opacity: 0.1 }],
+    },
+  },
 };
 
 // --- State Management ---
@@ -49,7 +73,8 @@ const els = {
   toggleBtn: document.getElementById('toggle-btn'),
   btnDelete: document.getElementById('btn-delete'),
   btnRename: document.getElementById('btn-rename'),
-  editingName: document.getElementById('editing-profile-name')
+  btnEdit: document.getElementById('btn-edit'),
+  editingName: document.getElementById('editing-profile-name'),
 };
 
 // --- Initialization ---
@@ -63,26 +88,27 @@ function loadData() {
   chrome.storage.sync.get('figmaOverlayData', (data) => {
     if (data.figmaOverlayData && data.figmaOverlayData.profiles) {
       storageData = data.figmaOverlayData;
-      
-      // Migration: Ensure presets exist but unlock them if they were previously locked
-      // Ini memaksa unlock jika user sudah pernah menginstall versi sebelumnya
-      Object.keys(storageData.profiles).forEach(key => {
-        storageData.profiles[key].locked = false;
-      });
 
-      // Jika data lama tidak punya bootstrap (baru install), gabungkan dengan default
-      if (!storageData.profiles['bootstrap_desk'] && !storageData.profiles[storageData.activeId]) {
-         storageData = { ...defaultData, ...storageData };
-      }
+      // Merge defaults if they are missing (for updates)
+      // Note: We don't overwrite user data, just ensure defaults exist
+      Object.keys(defaultData.profiles).forEach((key) => {
+        if (!storageData.profiles[key]) {
+          storageData.profiles[key] = defaultData.profiles[key];
+        } else {
+          // Optional: Force update default profiles logic if you want to push updates to users
+          // removing this else block preserves old default state if user had it
+          if (storageData.profiles[key].locked) {
+            storageData.profiles[key] = defaultData.profiles[key];
+          }
+        }
+      });
     } else {
       storageData = JSON.parse(JSON.stringify(defaultData));
     }
 
-    // Safety check
+    // Safety check: ensure activeId exists
     if (!storageData.profiles[storageData.activeId]) {
-      const keys = Object.keys(storageData.profiles);
-      if (keys.length > 0) storageData.activeId = keys[0];
-      else storageData = JSON.parse(JSON.stringify(defaultData)); // Reset total jika kosong
+      storageData.activeId = Object.keys(storageData.profiles)[0];
     }
 
     renderMainView();
@@ -105,29 +131,48 @@ function switchView(viewName) {
 function renderMainView() {
   // 1. Render Select Options
   els.profileSelect.innerHTML = '';
-  const profileKeys = Object.keys(storageData.profiles);
-  
-  profileKeys.forEach(key => {
+
+  // Sort: Locked (Defaults) first, then Custom
+  const keys = Object.keys(storageData.profiles).sort((a, b) => {
+    const pA = storageData.profiles[a];
+    const pB = storageData.profiles[b];
+    if (pA.locked && !pB.locked) return -1;
+    if (!pA.locked && pB.locked) return 1;
+    return 0;
+  });
+
+  keys.forEach((key) => {
     const p = storageData.profiles[key];
     const option = document.createElement('option');
     option.value = key;
-    option.textContent = p.name;
+    option.textContent = p.name + (p.locked ? ' (System)' : '');
     if (key === storageData.activeId) option.selected = true;
     els.profileSelect.appendChild(option);
   });
 
-  // 2. Handle Delete Button State
-  // Kita izinkan hapus APA SAJA, asalkan bukan profile terakhir.
-  if (profileKeys.length <= 1) {
+  // 2. Handle Locked Profiles UI
+  const activeProfile = storageData.profiles[storageData.activeId];
+
+  if (activeProfile.locked) {
+    // Read Only Mode
     els.btnDelete.disabled = true;
-    els.btnDelete.title = "Harus menyisakan minimal satu layout.";
+    els.btnDelete.style.opacity = '0.5';
+    els.btnRename.disabled = true;
+    els.btnRename.style.opacity = '0.5';
+
+    // Edit button behaves as "Clone & Edit"
+    els.btnEdit.textContent = 'Clone & Edit';
+    els.btnEdit.title = 'Cannot edit system presets directly. This will create a copy.';
   } else {
+    // Editable Mode
     els.btnDelete.disabled = false;
-    els.btnDelete.title = "Hapus layout ini";
+    els.btnDelete.style.opacity = '1';
+    els.btnRename.disabled = false;
+    els.btnRename.style.opacity = '1';
+
+    els.btnEdit.textContent = 'Edit Layout';
+    els.btnEdit.title = '';
   }
-  
-  // Rename selalu aktif sekarang
-  els.btnRename.disabled = false;
 }
 
 function updateStatusUI(active) {
@@ -157,9 +202,10 @@ function openEditor(items) {
 
 function renderEditorItems() {
   els.itemsList.innerHTML = '';
-  
+
   if (currentItems.length === 0) {
-    els.itemsList.innerHTML = '<div style="text-align:center; padding:20px; color:#666; font-size:12px;">No grid layers yet.</div>';
+    els.itemsList.innerHTML =
+      '<div style="text-align:center; padding:20px; color:#666; font-size:12px;">No grid layers yet.</div>';
   }
 
   currentItems.forEach((item, index) => {
@@ -169,7 +215,6 @@ function renderEditorItems() {
     const isGrid = item.type === 'grid';
     const isStretch = item.typeMode === 'stretch' || !item.typeMode;
 
-    // --- Template String for Layer ---
     let html = `
       <div class="layer-header">
         <select class="input-type" data-idx="${index}" style="width: 120px;">
@@ -177,7 +222,7 @@ function renderEditorItems() {
           <option value="rows">Rows</option>
           <option value="grid">Pixel Grid</option>
         </select>
-        <button class="btn-remove" data-idx="${index}" style="width:auto; padding:4px 8px; font-size:11px; background:transparent; color:#CF6679; border:1px solid #CF6679;">Remove</button>
+        <button class="btn-remove" data-idx="${index}" style="width:auto; padding:4px 8px; font-size:11px; background:transparent; color:#CF6679; border:1px solid #CF6679; cursor:pointer;">Remove</button>
       </div>
     `;
 
@@ -216,20 +261,20 @@ function renderEditorItems() {
     }
 
     div.innerHTML = html;
-    
+
     // Set selects values
     div.querySelector('.input-type').value = item.type || 'columns';
-    if(!isGrid) div.querySelector('[data-field="typeMode"]').value = item.typeMode || 'stretch';
+    if (!isGrid) div.querySelector('[data-field="typeMode"]').value = item.typeMode || 'stretch';
 
     els.itemsList.appendChild(div);
   });
 
-  // Attach Listeners for Inputs
-  els.itemsList.querySelectorAll('input, select').forEach(input => {
+  // Attach Listeners
+  els.itemsList.querySelectorAll('input, select').forEach((input) => {
     input.addEventListener('change', (e) => handleItemChange(e));
   });
 
-  els.itemsList.querySelectorAll('.btn-remove').forEach(btn => {
+  els.itemsList.querySelectorAll('.btn-remove').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       currentItems.splice(e.target.dataset.idx, 1);
       renderEditorItems();
@@ -244,32 +289,34 @@ function handleItemChange(e) {
   const item = currentItems[idx];
 
   if (e.target.classList.contains('input-type')) {
-    // Changing layer type resets settings
     item.type = val;
     if (val === 'grid') {
       item.size = 8;
-      delete item.count; delete item.margin; delete item.gutter; delete item.typeMode;
+      delete item.count;
+      delete item.margin;
+      delete item.gutter;
+      delete item.typeMode;
     } else {
-      item.count = 12; item.typeMode = 'stretch';
+      item.count = 12;
+      item.typeMode = 'stretch';
     }
     renderEditorItems();
     return;
   }
 
-  // Handle numeric fields
   if (['count', 'width', 'gutter', 'margin', 'size', 'opacity'].includes(field)) {
     item[field] = parseFloat(val);
   } else {
     item[field] = val;
   }
-  
-  if (field === 'typeMode') renderEditorItems(); // Re-render to toggle disable state
+
+  if (field === 'typeMode') renderEditorItems();
 }
 
 // --- Communication & Persistence ---
 
 function saveToStorage(applyNow = true) {
-  chrome.storage.sync.set({ 'figmaOverlayData': storageData }, () => {
+  chrome.storage.sync.set({ figmaOverlayData: storageData }, () => {
     if (applyNow) {
       applyConfigToTab(true);
     }
@@ -277,66 +324,101 @@ function saveToStorage(applyNow = true) {
 }
 
 function applyConfigToTab(forceActive = false) {
-  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, { 
-        action: 'apply', 
-        items: storageData.profiles[storageData.activeId].items, 
-        forceActive: forceActive 
-      }, (response) => {
-        if (chrome.runtime.lastError) { /* ignore */ }
-        else if(forceActive) updateStatusUI(true);
-      });
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          action: 'apply',
+          items: storageData.profiles[storageData.activeId].items,
+          forceActive: forceActive,
+        },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            /* ignore */
+          } else if (forceActive) updateStatusUI(true);
+        }
+      );
     }
   });
 }
 
 function checkOverlayStatus() {
-  updateStatusUI(false); 
+  updateStatusUI(false);
 }
 
 // --- Event Listeners Setup ---
 
 function setupEventListeners() {
-  
   // 1. Profile Select Change
   els.profileSelect.addEventListener('change', (e) => {
     storageData.activeId = e.target.value;
-    renderMainView(); // Update buttons state
-    saveToStorage(true); // Auto apply when switching
+    renderMainView(); // Update buttons state based on locking
+    saveToStorage(true);
   });
 
   // 2. Toggle Overlay
   els.toggleBtn.addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         chrome.tabs.sendMessage(tabs[0].id, { action: 'toggle' }, () => {
-           updateStatusUI(!isOverlayActive);
+          updateStatusUI(!isOverlayActive);
         });
       }
     });
   });
 
-  // 3. Edit Button
-  document.getElementById('btn-edit').addEventListener('click', () => {
-    const items = storageData.profiles[storageData.activeId].items;
-    openEditor(items);
+  // 3. Edit Button (Modified for Clone Logic)
+  els.btnEdit.addEventListener('click', () => {
+    const current = storageData.profiles[storageData.activeId];
+
+    if (current.locked) {
+      // Logic: Clone & Edit
+      const confirmClone = confirm(
+        `"${current.name}" is a System Preset.\n\nCreate a customizable copy of this layout?`
+      );
+      if (!confirmClone) return;
+
+      const newId = 'custom_' + Date.now();
+      const newName = current.name + ' (Copy)';
+
+      // Create clone in storage
+      storageData.profiles[newId] = {
+        name: newName,
+        locked: false,
+        items: JSON.parse(JSON.stringify(current.items)),
+      };
+
+      // Switch to new ID
+      storageData.activeId = newId;
+
+      // Save and Refresh UI
+      saveToStorage(true);
+      renderMainView(); // Will unlock the UI since activeId is now unlocked
+
+      // Open Editor immediately
+      openEditor(storageData.profiles[newId].items);
+    } else {
+      // Normal Edit
+      openEditor(current.items);
+    }
   });
 
   // 4. Create New Button
   document.getElementById('btn-create').addEventListener('click', () => {
-    const name = prompt("Beri nama layout baru (contoh: Tablet Landscape):");
+    const name = prompt("Name your new layout (e.g., 'Landing Page 1440'):");
     if (!name) return;
 
     const newId = 'custom_' + Date.now();
     storageData.profiles[newId] = {
       name: name,
       locked: false,
-      items: [{ type: 'columns', count: 12, typeMode: 'stretch', gutter: 20, margin: 20, color: '#ff0000', opacity: 0.1 }]
+      items: [
+        { type: 'columns', count: 12, typeMode: 'stretch', gutter: 20, margin: 20, color: '#ff0000', opacity: 0.1 },
+      ],
     };
     storageData.activeId = newId;
-    
-    // Auto switch and open editor
+
     saveToStorage(true);
     renderMainView();
     openEditor(storageData.profiles[newId].items);
@@ -344,15 +426,10 @@ function setupEventListeners() {
 
   // 5. Delete Button
   els.btnDelete.addEventListener('click', () => {
-    // Safety check: Don't delete if it's the last one
-    if (Object.keys(storageData.profiles).length <= 1) {
-      alert("Anda harus menyisakan setidaknya satu layout.");
-      return;
-    }
-    
     const p = storageData.profiles[storageData.activeId];
-    
-    if (confirm(`Hapus layout "${p.name}"? Ini tidak bisa dikembalikan.`)) {
+    if (p.locked) return; // Guard
+
+    if (confirm(`Delete layout "${p.name}"? This cannot be undone.`)) {
       delete storageData.profiles[storageData.activeId];
       // Fallback to first available
       storageData.activeId = Object.keys(storageData.profiles)[0];
@@ -364,11 +441,12 @@ function setupEventListeners() {
   // 6. Rename Button
   els.btnRename.addEventListener('click', () => {
     const p = storageData.profiles[storageData.activeId];
-    
-    const newName = prompt("Ganti nama layout:", p.name);
-    if (newName && newName.trim() !== "") {
+    if (p.locked) return;
+
+    const newName = prompt('Rename layout:', p.name);
+    if (newName && newName.trim() !== '') {
       p.name = newName;
-      saveToStorage(false); // Just save name, no need to re-inject grid
+      saveToStorage(false);
       renderMainView();
     }
   });
@@ -376,7 +454,15 @@ function setupEventListeners() {
   // --- Editor Buttons ---
 
   document.getElementById('add-layer-btn').addEventListener('click', () => {
-    currentItems.push({ type: 'columns', count: 12, typeMode: 'stretch', gutter: 20, margin: 20, color: '#ff0000', opacity: 0.1 });
+    currentItems.push({
+      type: 'columns',
+      count: 12,
+      typeMode: 'stretch',
+      gutter: 20,
+      margin: 20,
+      color: '#ff0000',
+      opacity: 0.1,
+    });
     renderEditorItems();
   });
 
@@ -385,7 +471,13 @@ function setupEventListeners() {
   });
 
   document.getElementById('btn-save').addEventListener('click', () => {
-    // Commit changes to main storage
+    // Check lock one last time (sanity check)
+    if (storageData.profiles[storageData.activeId].locked) {
+      alert('Error: Cannot save to a locked profile.');
+      switchView('main');
+      return;
+    }
+
     storageData.profiles[storageData.activeId].items = currentItems;
     saveToStorage(true);
     switchView('main');
