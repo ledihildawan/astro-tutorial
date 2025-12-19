@@ -8,13 +8,12 @@ const defaultData = {
         {
           type: 'columns',
           count: 12,
-          typeMode: 'center', // Center mode
+          typeMode: 'center',
           width: 80,
           gutter: 24,
           margin: 0,
           color: '#dc3545',
           opacity: 0.08,
-          // Note: Bootstrap default usually centered fixed width, but lets add a max-width example
         },
       ],
     },
@@ -25,10 +24,10 @@ const defaultData = {
         {
           type: 'columns',
           count: 12,
-          typeMode: 'stretch', // Fluid columns
-          maxWidth: 1280, // NEW: Stops at 1280px
+          typeMode: 'stretch',
+          maxWidth: 1280,
           gutter: 32,
-          margin: 32, // Padding horizontal
+          margin: 32,
           color: '#38bdf8',
           opacity: 0.1,
         },
@@ -79,12 +78,10 @@ function loadData() {
   chrome.storage.sync.get('figmaOverlayData', (data) => {
     if (data.figmaOverlayData && data.figmaOverlayData.profiles) {
       storageData = data.figmaOverlayData;
-      // Merge defaults if missing (preserves user data)
       Object.keys(defaultData.profiles).forEach((key) => {
         if (!storageData.profiles[key]) {
           storageData.profiles[key] = defaultData.profiles[key];
         } else if (storageData.profiles[key].locked) {
-          // Force update system profiles logic
           storageData.profiles[key] = defaultData.profiles[key];
         }
       });
@@ -216,9 +213,9 @@ function renderEditorItems() {
         <div class="row">
            <div class="col">
             <label>Max Width (Container)</label>
-            <input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="None">
+            <input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="None" min="1">
           </div>
-           <div class="col"><label>Margin</label><input type="number" data-idx="${index}" data-field="margin" value="${item.margin ?? 0}"></div>
+           <div class="col"><label>Margin (Side)</label><input type="number" data-idx="${index}" data-field="margin" value="${item.margin ?? 0}" min="0"></div>
         </div>
         <div class="row">
           <div class="col">
@@ -278,8 +275,8 @@ function handleItemChange(e) {
     return;
   }
 
-  // Tambahkan 'maxWidth' ke daftar field numerik
   if (['count', 'width', 'gutter', 'margin', 'size', 'opacity', 'maxWidth'].includes(field)) {
+    // Convert empty strings to null for optional fields like maxWidth
     item[field] = val === '' ? null : parseFloat(val);
   } else {
     item[field] = val;
@@ -417,8 +414,36 @@ function setupEventListeners() {
   });
 
   document.getElementById('btn-cancel').addEventListener('click', () => switchView('main'));
+
+  // --- UPDATED SAVE HANDLER WITH VALIDATION ---
   document.getElementById('btn-save').addEventListener('click', () => {
     if (storageData.profiles[storageData.activeId].locked) return;
+
+    // VALIDATION LOOP
+    for (let i = 0; i < currentItems.length; i++) {
+      const item = currentItems[i];
+      if (item.type !== 'grid') {
+        // Hanya validasi layout columns/rows
+        const mw = item.maxWidth;
+        const mg = item.margin || 0;
+
+        // Cek 1: Max width tidak boleh negatif atau 0
+        if (mw !== null && mw !== undefined && mw <= 0) {
+          alert(`Layer ${i + 1}: Max Width must be greater than 0.`);
+          return;
+        }
+
+        // Cek 2: Max Width HARUS lebih besar dari total Margin (Kiri + Kanan)
+        // Jika tidak, content area menjadi negatif dan grid akan geser/rusak
+        if (mw !== null && mw !== undefined && mw <= mg * 2) {
+          alert(
+            `Layer ${i + 1} Error:\nMax Width (${mw}px) is too small for the set Margins (${mg}px * 2 = ${mg * 2}px).\n\nPlease increase Max Width or decrease Margins.`
+          );
+          return;
+        }
+      }
+    }
+
     storageData.profiles[storageData.activeId].items = currentItems;
     saveToStorage(true);
     switchView('main');

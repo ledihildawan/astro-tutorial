@@ -37,7 +37,6 @@
     const div = document.createElement('div');
     div.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
     const col = parseColor(item.color || '#00ff00', item.opacity || 0.05);
-    // Membuat pola grid kotak-kotak
     div.style.background = `linear-gradient(to right, ${col} 1px, transparent 1px), linear-gradient(to bottom, ${col} 1px, transparent 1px)`;
     div.style.backgroundSize = `${item.size || 8}px ${item.size || 8}px`;
     return div;
@@ -48,10 +47,20 @@
     const isStretch = item.typeMode === 'stretch' || !item.typeMode;
     const count = item.count || 12;
     const gutter = item.gutter ?? 20;
-    const margin = item.margin ?? 0; // Margin default 0 agar tidak konflik dengan max-width alignment
+    const margin = item.margin ?? 0;
     const fixedSize = item.width ?? (isColumns ? 80 : 60);
     const typeMode = item.typeMode || 'stretch';
-    const maxWidth = item.maxWidth || null; // NEW: Max Width property
+
+    // VALIDASI FAIL-SAFE DI RENDERER
+    // Pastikan maxWidth valid (angka > 0). Jika corrupt, anggap null (disable max-width)
+    let maxWidth = item.maxWidth && !isNaN(item.maxWidth) && item.maxWidth > 0 ? item.maxWidth : null;
+
+    // FAIL-SAFE 2: Jika maxWidth lebih kecil dari total margin, disable maxWidth
+    // Ini mencegah grid rendering menjadi aneh/negatif
+    if (maxWidth && maxWidth <= margin * 2) {
+      console.warn('Figma Overlay: MaxWidth is smaller than total margins. Ignoring MaxWidth to prevent layout break.');
+      maxWidth = null;
+    }
 
     let align = 'center';
     let marginStart = margin;
@@ -67,10 +76,8 @@
       marginStart = 0;
     }
 
-    // Hitung ukuran konten jika fixed
     const contentSize = count * fixedSize + (count > 1 ? (count - 1) * gutter : 0);
 
-    // Total size logic
     let totalSize;
     if (isStretch) {
       totalSize = '100%';
@@ -78,16 +85,15 @@
       totalSize = `${contentSize + marginStart + marginEnd}px`;
     }
 
-    // 1. Outer Container (Flexbox untuk alignment global)
+    // Container Utama (Flex)
     const container = document.createElement('div');
     container.style.cssText = 'position:absolute;inset:0;pointer-events:none;display:flex;';
 
-    // Mengatur posisi container di layar (Center, Left, Right)
     const justifyVal = align === 'center' ? 'center' : align === 'start' ? 'flex-start' : 'flex-end';
     container.style.justifyContent = isColumns ? justifyVal : 'stretch';
     container.style.alignItems = isColumns ? 'stretch' : justifyVal;
 
-    // 2. Inner Grid Wrapper (CSS Grid)
+    // Grid Wrapper
     const gridDiv = document.createElement('div');
     gridDiv.style.display = 'grid';
     gridDiv.style[isColumns ? 'gridTemplateColumns' : 'gridTemplateRows'] = isStretch
@@ -95,20 +101,22 @@
       : `repeat(${count}, ${fixedSize}px)`;
     gridDiv.style[isColumns ? 'columnGap' : 'rowGap'] = `${gutter}px`;
 
-    // Ukuran Grid
     gridDiv.style[isColumns ? 'width' : 'height'] = totalSize;
     gridDiv.style[isColumns ? 'height' : 'width'] = '100%';
 
-    // --- NEW: Max Width Implementation ---
+    // Penerapan Max Width yang sudah divalidasi
     if (maxWidth && isColumns) {
       gridDiv.style.maxWidth = `${maxWidth}px`;
-      // Jika stretch + max-width, pastikan width 100% agar mengisi sampai batas max
       if (isStretch) gridDiv.style.width = '100%';
     }
 
     gridDiv.style[isColumns ? 'paddingInline' : 'paddingBlock'] = `${marginStart}px ${marginEnd}px`;
 
-    // Render Cells
+    // Pastikan margin auto aktif jika container (maxWidth) dipakai agar tetap di tengah
+    if (maxWidth && align === 'center' && isColumns) {
+      gridDiv.style.marginInline = 'auto';
+    }
+
     for (let i = 0; i < count; i++) {
       const cell = document.createElement('div');
       cell.style.background = bg;
