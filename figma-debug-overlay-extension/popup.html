@@ -10,23 +10,63 @@
     />
 
     <style>
-      /* --- Base Styles --- */
+      /* --- 1. CSS Variables Definition (Stabilization) --- */
+      :root {
+        /* Colors: Backgrounds */
+        --bg-main: #121212;
+        --bg-surface: #1e1e1e;
+        --bg-surface-hover: #252525;
+        --bg-surface-active: #333333;
+        --bg-input: #1a1a1a;
+
+        /* Colors: Text */
+        --text-primary: #e0e0e0;
+        --text-secondary: #999999;
+        --text-tertiary: #666666;
+        --text-inverse: #000000;
+
+        /* Colors: Accents & Status */
+        --color-primary: #bb86fc; /* Purple */
+        --color-secondary: #03dac6; /* Teal / Success */
+        --color-danger: #cf6679; /* Red */
+        --color-border: #333333;
+        --color-border-hover: #555555;
+        --color-focus: rgba(187, 134, 252, 0.3);
+
+        /* Typography */
+        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --font-xs: 10px;
+        --font-sm: 11px;
+        --font-base: 12px;
+        --font-lg: 13px;
+        --font-xl: 16px;
+
+        /* Dimensions & Spacing */
+        --radius-sm: 4px;
+        --radius-md: 6px;
+        --radius-lg: 8px;
+
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 12px;
+        --space-lg: 16px;
+        --space-xl: 20px;
+
+        --input-height: 32px;
+        --btn-height: 36px;
+      }
+
+      /* --- 2. Base Styles --- */
       body {
         width: 400px;
         min-height: 200px;
         max-height: 600px;
         height: fit-content;
-        padding: 20px;
-        /* MENGGUNAKAN FONT INTER */
-        font-family:
-          'Inter',
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          Roboto,
-          sans-serif;
-        background: #121212;
-        color: #e0e0e0;
+        padding: var(--space-xl);
+        font-family: var(--font-sans);
+        background: var(--bg-main);
+        color: var(--text-primary);
         margin: 0;
         box-sizing: border-box;
         overflow-x: hidden;
@@ -41,24 +81,24 @@
         letter-spacing: -0.02em;
       }
       h1 {
-        font-size: 16px;
+        font-size: var(--font-xl);
         font-weight: 600;
-        margin-bottom: 4px;
+        margin-bottom: var(--space-xs);
       }
       p.subtitle {
-        font-size: 12px;
-        color: #888;
+        font-size: var(--font-base);
+        color: var(--text-secondary);
         margin: 0 0 24px 0;
         font-weight: 400;
       }
 
-      /* --- Components --- */
+      /* --- 3. Components: Buttons --- */
       button {
-        padding: 8px 16px;
+        padding: 0 var(--space-lg);
         border: none;
-        border-radius: 6px;
-        font-size: 12px;
-        font-family: 'Inter', sans-serif;
+        border-radius: var(--radius-md);
+        font-size: var(--font-base);
+        font-family: var(--font-sans);
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -66,8 +106,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        height: 36px;
+        gap: var(--space-sm);
+        height: var(--btn-height);
       }
       button:hover {
         filter: brightness(1.1);
@@ -82,57 +122,57 @@
       }
 
       .btn-primary {
-        background: #bb86fc;
-        color: #000;
+        background: var(--color-primary);
+        color: var(--text-inverse);
       }
       .btn-secondary {
-        background: #2c2c2c;
-        color: #fff;
+        background: #2c2c2c; /* Slightly lighter than surface */
+        color: #ffffff;
         border: 1px solid #444;
       }
       .btn-danger {
-        background: #cf6679;
-        color: #000;
+        background: var(--color-danger);
+        color: var(--text-inverse);
       }
       .btn-success {
-        background: #03dac6;
-        color: #000;
+        background: var(--color-secondary);
+        color: var(--text-inverse);
       }
 
-      /* --- Modern Input Styles --- */
+      /* --- 4. Inputs & Forms --- */
       .editor-grid {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: var(--space-md);
       }
       .editor-grid.two-col {
         grid-template-columns: 1fr 1fr;
       }
 
       .section-label {
-        font-size: 10px;
+        font-size: var(--font-xs);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-weight: 600;
-        color: #666;
-        margin: 16px 0 8px 0;
+        color: var(--text-tertiary);
+        margin: var(--space-lg) 0 var(--space-sm) 0;
         grid-column: 1 / -1;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--space-sm);
       }
       .section-label::after {
         content: '';
         flex: 1;
         height: 1px;
-        background: #333;
+        background: var(--color-border);
       }
 
       .input-wrapper label {
         display: block;
-        font-size: 10px;
-        color: #999;
+        font-size: var(--font-xs);
+        color: var(--text-secondary);
         margin-bottom: 5px;
         font-weight: 500;
       }
@@ -143,52 +183,58 @@
         align-items: center;
       }
 
-      /* Input & Select */
       input,
       select {
-        background: #1e1e1e;
-        border: 1px solid #333;
+        background: var(--bg-input);
+        border: 1px solid var(--color-border);
         color: #fff;
-        padding: 0 8px;
+        padding: 0 var(--space-sm);
         padding-right: 24px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         width: 100%;
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        height: 32px;
+        font-family: var(--font-sans);
+        font-size: var(--font-base);
+        height: var(--input-height);
         outline: none;
         box-sizing: border-box;
-        transition: all 0.2s;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
       }
       input:focus,
       select:focus {
-        border-color: #bb86fc;
-        background: #252525;
-        box-shadow: 0 0 0 1px rgba(187, 134, 252, 0.2);
+        border-color: var(--color-primary);
+        background: var(--bg-surface-hover);
+        box-shadow: 0 0 0 1px var(--color-focus);
       }
-
-      /* Agar angka terlihat rapi (monospaced width tapi font Inter) */
       input[type='number'] {
         font-variant-numeric: tabular-nums;
       }
 
       .suffix {
         position: absolute;
-        right: 8px;
-        font-size: 10px;
+        right: var(--space-sm);
+        font-size: var(--font-xs);
         color: #555;
         pointer-events: none;
         font-weight: 500;
       }
 
-      /* --- Type Selector --- */
+      input[type='color'] {
+        padding: 2px;
+        width: 100%;
+        cursor: pointer;
+        height: var(--input-height);
+      }
+
+      /* --- 5. Type Selector (Custom Toggle) --- */
       .type-selector {
         display: flex;
         background: #1a1a1a;
         padding: 3px;
-        border-radius: 6px;
-        border: 1px solid #333;
-        margin-bottom: 8px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        margin-bottom: var(--space-sm);
       }
       .type-option {
         flex: 1;
@@ -197,54 +243,44 @@
         justify-content: center;
         gap: 6px;
         padding: 6px;
-        font-size: 11px;
+        font-size: var(--font-sm);
         font-weight: 500;
         cursor: pointer;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         color: #777;
         transition: all 0.2s;
-      }
-      .type-option svg {
-        opacity: 0.7;
       }
       .type-option:hover {
         color: #ccc;
         background: rgba(255, 255, 255, 0.05);
       }
       .type-option.selected {
-        background: #333;
+        background: var(--bg-surface-active);
         color: #fff;
         font-weight: 600;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       }
       .type-option.selected svg {
+        stroke: var(--color-primary);
         opacity: 1;
-        stroke: #bb86fc;
       }
 
-      input[type='color'] {
-        padding: 2px;
-        width: 100%;
-        cursor: pointer;
-        height: 32px;
-      }
-
-      /* --- Status Card --- */
+      /* --- 6. Status Card --- */
       .status-card {
-        background: #1e1e1e;
-        border-radius: 8px;
-        padding: 12px 16px;
-        margin-bottom: 20px;
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        padding: var(--space-md) var(--space-lg);
+        margin-bottom: var(--space-xl);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border: 1px solid #333;
+        border: 1px solid var(--color-border);
       }
       .status-indicator {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 13px;
+        font-size: var(--font-lg);
         font-weight: 500;
       }
       .dot {
@@ -254,61 +290,55 @@
         background: #444;
       }
       .active .dot {
-        background: #03dac6;
+        background: var(--color-secondary);
         box-shadow: 0 0 8px rgba(3, 218, 198, 0.4);
       }
       .active {
-        color: #03dac6;
+        color: var(--color-secondary);
       }
 
-      /* --- Views & Editor Structure --- */
-      .view-section {
-        display: none;
-        flex-direction: column;
-      }
-      .view-section.visible {
-        display: flex;
-        animation: fadeIn 0.3s ease;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
+      /* --- 7. List & Layers --- */
       #items-list {
         flex: 1;
         overflow-y: auto;
-        margin-bottom: 16px;
+        margin-bottom: var(--space-lg);
         padding-right: 6px;
         min-height: 200px;
       }
-      #items-list::-webkit-scrollbar {
-        width: 4px;
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
       }
-      #items-list::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 2px;
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--bg-surface-active);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #444;
       }
 
       .layer-item {
-        background: #1e1e1e;
-        border: 1px solid #333;
-        border-radius: 8px;
-        padding: 12px;
-        margin-bottom: 12px;
+        background: var(--bg-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+        transition: border-color 0.2s;
       }
+      .layer-item:hover {
+        border-color: var(--color-border-hover);
+      }
+
       .layer-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 8px;
-        margin-bottom: 8px;
+        padding-bottom: var(--space-sm);
+        margin-bottom: var(--space-sm);
         border-bottom: 1px solid #2a2a2a;
       }
       .layer-item:has(.hidden) .layer-header {
@@ -318,27 +348,26 @@
       }
 
       .layer-title {
-        font-size: 12px;
+        font-size: var(--font-base);
         font-weight: 600;
-        color: #e0e0e0;
+        color: var(--text-primary);
         letter-spacing: 0.01em;
       }
-
-      /* Index Number Style (Updated) */
       .layer-index {
-        font-size: 10px;
-        color: #777;
-        font-family: 'JetBrains Mono', monospace; /* FONT KHUSUS ANGKA */
+        font-size: var(--font-xs);
+        color: var(--text-tertiary);
+        font-family: var(--font-mono);
         background: #151515;
         padding: 2px 6px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         border: 1px solid #2a2a2a;
       }
 
+      /* Icon Buttons */
       .btn-icon {
         background: transparent;
         border: none;
-        color: #666;
+        color: var(--text-tertiary);
         cursor: pointer;
         padding: 0;
         width: 28px;
@@ -346,23 +375,43 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
         transition: all 0.2s;
       }
       .btn-icon:hover {
-        background: #333;
+        background: var(--bg-surface-active);
         color: #fff;
       }
       .btn-remove:hover {
-        color: #cf6679;
-        background: #333;
+        color: var(--color-danger);
+        background: rgba(207, 102, 121, 0.1);
       }
 
+      /* --- 8. Animations & Utils --- */
+      .view-section {
+        display: none;
+        flex-direction: column;
+      }
+      .view-section.visible {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+      }
       .layer-body {
         animation: slideDown 0.2s ease-out;
       }
       .layer-body.hidden {
         display: none;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
       @keyframes slideDown {
         from {
@@ -376,8 +425,8 @@
       }
 
       .separator {
-        border-top: 1px solid #333;
-        margin: 20px 0;
+        border-top: 1px solid var(--color-border);
+        margin: var(--space-xl) 0;
       }
       .action-row {
         display: flex;
@@ -385,25 +434,73 @@
         margin-top: 10px;
       }
 
-      body::-webkit-scrollbar {
-        width: 8px;
-      }
-      body::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      body::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 4px;
-        border: 2px solid #121212;
-      }
-
+      /* Specific view tweaks */
       #editor-view .action-row {
         margin-bottom: 24px;
       }
       #editor-view .separator {
         margin-top: 24px !important;
         margin-bottom: 0 !important;
-        opacity: 0.3;
+        opacity: 0.5;
+      }
+
+      /* --- Tambahan untuk menggantikan Inline Style JS --- */
+
+      /* 1. Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-tertiary);
+        font-size: var(--font-base);
+        border: 1px dashed var(--color-border);
+        border-radius: var(--radius-lg);
+      }
+
+      /* 2. Layer Item Layout Helpers */
+      .layer-header-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow: hidden;
+        flex: 1; /* Agar mengambil sisa ruang */
+      }
+
+      .layer-header-right {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex-shrink: 0;
+      }
+
+      .layer-info-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* 3. Color Swatch */
+      .color-swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+        /* Background color tetap di-inject via JS karena dinamis */
+      }
+
+      /* 4. Visibility Button State */
+      .btn-visible.is-hidden {
+        color: var(--text-tertiary); /* Warna redup saat hidden */
+      }
+      .btn-visible:not(.is-hidden) {
+        color: var(--text-primary); /* Warna terang saat visible */
+      }
+
+      /* 5. Utility class untuk margin khusus */
+      .mb-0 {
+        margin-bottom: 0 !important;
       }
     </style>
   </head>
@@ -424,8 +521,10 @@
         </div>
       </div>
 
-      <label style="display: block; margin-bottom: 6px; font-size: 11px; color: #888">Current Layout System</label>
-      <select id="profile-select" style="margin-bottom: 12px; font-size: 13px; height: 36px"></select>
+      <label style="display: block; margin-bottom: 6px; font-size: var(--font-sm); color: var(--text-secondary)"
+        >Current Layout System</label
+      >
+      <select id="profile-select" style="margin-bottom: var(--space-md); font-size: 13px; height: 36px"></select>
 
       <div class="action-row">
         <button id="btn-edit" class="btn-secondary">Edit Layout</button>
@@ -435,8 +534,12 @@
       <div class="separator"></div>
 
       <div class="action-row">
-        <button id="btn-rename" class="btn-secondary" style="font-size: 12px; padding: 8px">Rename</button>
-        <button id="btn-delete" class="btn-secondary" style="font-size: 12px; padding: 8px; color: #cf6679">
+        <button id="btn-rename" class="btn-secondary" style="font-size: var(--font-base); padding: 8px">Rename</button>
+        <button
+          id="btn-delete"
+          class="btn-secondary"
+          style="font-size: var(--font-base); padding: 8px; color: var(--color-danger)"
+        >
           Delete Layout
         </button>
       </div>
@@ -445,7 +548,7 @@
     <div id="editor-view" class="view-section">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px">
         <h2 style="font-size: 16px">Configure Layout</h2>
-        <span id="editing-profile-name" style="font-size: 12px; color: #bb86fc"></span>
+        <span id="editing-profile-name" style="font-size: var(--font-base); color: var(--color-primary)"></span>
       </div>
 
       <div id="items-list"></div>
@@ -456,7 +559,7 @@
         style="
           border-style: dashed;
           margin-bottom: 16px;
-          color: #bbb;
+          color: var(--text-secondary);
           display: flex;
           align-items: center;
           justify-content: center;

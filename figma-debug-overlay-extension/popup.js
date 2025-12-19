@@ -212,8 +212,8 @@ function renderEditorItems() {
   els.itemsList.innerHTML = '';
 
   if (currentItems.length === 0) {
-    els.itemsList.innerHTML =
-      '<div style="text-align:center; padding:30px; color:#555; font-size:12px; border: 1px dashed #333; border-radius: 8px;">No grid layers yet.<br>Click "+ Add Grid Layer" below.</div>';
+    // UPDATED: Menggunakan class .empty-state
+    els.itemsList.innerHTML = '<div class="empty-state">No grid layers yet.<br>Click "+ Add Grid Layer" below.</div>';
     return;
   }
 
@@ -250,23 +250,25 @@ function renderEditorItems() {
     const smartTitle = getSmartLayerName(item);
     const layerIndex = index + 1;
 
+    // UPDATED: Menggunakan class CSS baru (.layer-header-left, .layer-info-group, .color-swatch, dll)
+    // Note: Style pada .color-swatch tetap inline sebagian karena warnanya dinamis dari user input.
     let html = `
       <div class="layer-header">
-        <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+        <div class="layer-header-left">
           <button class="btn-icon btn-collapse" data-idx="${index}" title="${item.collapsed ? 'Expand' : 'Collapse'}" style="flex-shrink:0;">
             ${chevronIcon}
           </button>
           
-          <div style="display:flex; align-items:center; gap:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+          <div class="layer-info-group">
              <span class="layer-index">#${layerIndex}</span>
              
-             <div style="width:10px; height:10px; border-radius:3px; background:${item.color || '#ff0000'}; box-shadow:0 0 5px ${item.color}30; flex-shrink:0;"></div>
+             <div class="color-swatch" style="background:${item.color || '#ff0000'}; box-shadow:0 0 5px ${item.color}30;"></div>
              <span class="layer-title">${smartTitle}</span>
           </div>
         </div>
         
-        <div style="display:flex; align-items:center; gap:2px; flex-shrink:0;">
-           <button class="btn-icon btn-visible" data-idx="${index}" title="Toggle Visibility" style="${!item.visible ? 'color:#666;' : 'color:#e0e0e0;'}">${eyeIcon}</button>
+        <div class="layer-header-right">
+           <button class="btn-icon btn-visible ${!item.visible ? 'is-hidden' : ''}" data-idx="${index}" title="Toggle Visibility">${eyeIcon}</button>
            <button class="btn-icon btn-remove" data-idx="${index}" title="Remove Layer">${icons.trash}</button>
         </div>
       </div>
@@ -358,7 +360,7 @@ function renderEditorItems() {
           <div class="input-wrapper">
             <label>Mode</label>
             <div class="input-container">
-              <select data-idx="${index}" data-field="typeMode" style="padding-right:4px;">
+              <select data-idx="${index}" data-field="typeMode">
                 <option value="stretch">Stretch</option>
                 <option value="center">Center</option>
                 <option value="left">Left / Top</option>
@@ -370,8 +372,9 @@ function renderEditorItems() {
     }
 
     html += `<div class="section-label">Appearance</div>`;
+    // UPDATED: Menggunakan class .mb-0
     html += `
-      <div class="editor-grid two-col" style="margin-bottom:0;">
+      <div class="editor-grid two-col mb-0">
          <div class="input-wrapper">
             <label>Color</label>
             <div class="input-container">
