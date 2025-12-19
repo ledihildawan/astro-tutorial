@@ -10,39 +10,30 @@
     />
 
     <style>
-      /* --- 1. CSS Variables Definition (Stabilization) --- */
+      /* --- 1. Design Tokens (Figma-like Dark Theme) --- */
       :root {
         /* Colors: Backgrounds */
-        --bg-main: #121212;
-        --bg-surface: #1e1e1e;
-        --bg-surface-hover: #252525;
-        --bg-surface-active: #333333;
-        --bg-input: #1a1a1a;
+        --bg-app: #1e1e1e; /* Warna dasar aplikasi */
+        --bg-panel: #2c2c2c; /* Warna container/item */
+        --bg-input: #121212; /* Warna dalam input (lebih gelap) */
+        --bg-hover: rgba(255, 255, 255, 0.04);
+        --bg-active: rgba(255, 255, 255, 0.08);
 
         /* Colors: Text */
-        --text-primary: #e0e0e0;
-        --text-secondary: #999999;
-        --text-tertiary: #666666;
-        --text-inverse: #000000;
+        --text-main: #e0e0e0;
+        --text-muted: #a0a0a0;
+        --text-disabled: #555555;
 
-        /* Colors: Accents & Status */
-        --color-primary: #bb86fc; /* Purple */
-        --color-secondary: #03dac6; /* Teal / Success */
-        --color-danger: #cf6679; /* Red */
-        --color-border: #333333;
-        --color-border-hover: #555555;
-        --color-focus: rgba(187, 134, 252, 0.3);
+        /* Colors: Accents */
+        --accent-primary: #bb86fc; /* Purple */
+        --accent-success: #03dac6; /* Teal */
+        --accent-danger: #cf6679; /* Red */
 
-        /* Typography */
-        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        --font-mono: 'JetBrains Mono', monospace;
-        --font-xs: 10px;
-        --font-sm: 11px;
-        --font-base: 12px;
-        --font-lg: 13px;
-        --font-xl: 16px;
+        /* Borders & Separators */
+        --border-subtle: #383838;
+        --border-focus: #555555;
 
-        /* Dimensions & Spacing */
+        /* Dimensions */
         --radius-sm: 4px;
         --radius-md: 6px;
         --radius-lg: 8px;
@@ -53,268 +44,305 @@
         --space-lg: 16px;
         --space-xl: 20px;
 
-        --input-height: 32px;
-        --btn-height: 36px;
+        --input-h: 30px; /* Sedikit lebih compact */
       }
 
-      /* --- 2. Base Styles --- */
+      /* --- 2. Base Reset --- */
       body {
-        width: 400px;
-        min-height: 200px;
+        width: 360px; /* Lebar standar plugin sidebar */
+        min-height: 250px;
         max-height: 600px;
-        height: fit-content;
-        padding: var(--space-xl);
-        font-family: var(--font-sans);
-        background: var(--bg-main);
-        color: var(--text-primary);
+        padding: var(--space-lg);
+        background: var(--bg-app);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
         margin: 0;
         box-sizing: border-box;
-        overflow-x: hidden;
-        overflow-y: auto;
-        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden; /* Mencegah geser kiri-kanan */
       }
 
-      h1,
-      h2 {
-        margin: 0;
-        color: #ffffff;
-        letter-spacing: -0.02em;
+      * {
+        box-sizing: border-box;
       }
+
+      /* Typography Helpers */
       h1 {
-        font-size: var(--font-xl);
+        font-size: 15px;
         font-weight: 600;
-        margin-bottom: var(--space-xs);
+        margin: 0 0 2px 0;
+        color: #fff;
       }
-      p.subtitle {
-        font-size: var(--font-base);
-        color: var(--text-secondary);
-        margin: 0 0 24px 0;
-        font-weight: 400;
+      h2 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+      }
+      .subtitle {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin: 0 0 20px 0;
       }
 
-      /* --- 3. Components: Buttons --- */
+      /* --- 3. Interactive Elements: Buttons --- */
       button {
-        padding: 0 var(--space-lg);
-        border: none;
-        border-radius: var(--radius-md);
-        font-size: var(--font-base);
-        font-family: var(--font-sans);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        width: 100%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: var(--space-sm);
-        height: var(--btn-height);
-      }
-      button:hover {
-        filter: brightness(1.1);
+        gap: 6px;
+        height: 32px;
+        padding: 0 12px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        font-family: inherit;
+        font-weight: 500;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.15s ease-out;
+        user-select: none;
       }
       button:active {
-        transform: scale(0.98);
-      }
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        filter: grayscale(1);
+        transform: translateY(1px);
       }
 
       .btn-primary {
-        background: var(--color-primary);
-        color: var(--text-inverse);
+        background: var(--accent-primary);
+        color: #121212;
+        font-weight: 600;
       }
+      .btn-primary:hover {
+        filter: brightness(1.1);
+      }
+
       .btn-secondary {
-        background: #2c2c2c; /* Slightly lighter than surface */
-        color: #ffffff;
-        border: 1px solid #444;
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-main);
+      }
+      .btn-secondary:hover {
+        border-color: var(--text-muted);
+        background: var(--bg-hover);
+      }
+
+      .btn-success {
+        background: var(--accent-success);
+        color: #000;
+        font-weight: 600;
       }
       .btn-danger {
-        background: var(--color-danger);
-        color: var(--text-inverse);
+        color: var(--accent-danger);
+        border-color: var(--border-subtle);
       }
-      .btn-success {
-        background: var(--color-secondary);
-        color: var(--text-inverse);
-      }
-
-      /* --- 4. Inputs & Forms --- */
-      .editor-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 10px;
-        margin-bottom: var(--space-md);
-      }
-      .editor-grid.two-col {
-        grid-template-columns: 1fr 1fr;
+      .btn-danger:hover {
+        border-color: var(--accent-danger);
+        background: rgba(207, 102, 121, 0.1);
       }
 
-      .section-label {
-        font-size: var(--font-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 600;
-        color: var(--text-tertiary);
-        margin: var(--space-lg) 0 var(--space-sm) 0;
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
+      /* Icon Buttons (Square) */
+      .btn-icon {
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        background: transparent;
+        color: var(--text-muted);
+        border: none;
+        border-radius: var(--radius-sm);
       }
-      .section-label::after {
-        content: '';
-        flex: 1;
-        height: 1px;
-        background: var(--color-border);
+      .btn-icon:hover {
+        background: var(--bg-hover);
+        color: var(--text-main);
       }
-
-      .input-wrapper label {
-        display: block;
-        font-size: var(--font-xs);
-        color: var(--text-secondary);
-        margin-bottom: 5px;
-        font-weight: 500;
+      .btn-icon svg {
+        width: 16px;
+        height: 16px;
       }
 
-      .input-container {
-        position: relative;
-        display: flex;
-        align-items: center;
-      }
-
+      /* --- 4. Inputs & Forms (Figma Style) --- */
       input,
       select {
-        background: var(--bg-input);
-        border: 1px solid var(--color-border);
-        color: #fff;
-        padding: 0 var(--space-sm);
-        padding-right: 24px;
-        border-radius: var(--radius-sm);
         width: 100%;
-        font-family: var(--font-sans);
-        font-size: var(--font-base);
-        height: var(--input-height);
+        height: var(--input-h);
+        background: var(--bg-input);
+        border: 1px solid transparent; /* Borderless look by default */
+        border-radius: var(--radius-sm);
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        padding: 0 8px;
+        transition: 0.2s;
         outline: none;
-        box-sizing: border-box;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
+      }
+      /* Efek saat input aktif/hover: Border muncul halus */
+      input:hover,
+      select:hover {
+        border-color: var(--border-subtle);
       }
       input:focus,
       select:focus {
-        border-color: var(--color-primary);
-        background: var(--bg-surface-hover);
-        box-shadow: 0 0 0 1px var(--color-focus);
+        border-color: var(--accent-primary);
+        background: #000; /* Sedikit lebih gelap saat fokus */
       }
       input[type='number'] {
         font-variant-numeric: tabular-nums;
       }
 
+      /* Color Picker Override */
+      input[type='color'] {
+        padding: 0;
+        border: none;
+        cursor: pointer;
+        height: var(--input-h);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+      input[type='color']::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+      input[type='color']::-webkit-color-swatch {
+        border: none;
+      }
+
+      /* Label & Wrappers */
+      .input-wrapper {
+        margin-bottom: 0;
+      }
+      .input-wrapper label {
+        display: block;
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+        font-weight: 500;
+      }
+      .input-container {
+        position: relative;
+      }
       .suffix {
         position: absolute;
-        right: var(--space-sm);
-        font-size: var(--font-xs);
-        color: #555;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 10px;
+        color: var(--text-disabled);
         pointer-events: none;
-        font-weight: 500;
+      }
+      /* Grid Layout untuk Form */
+      .editor-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .editor-grid.two-col {
+        grid-template-columns: 1fr 1fr;
+      }
+      .mb-0 {
+        margin-bottom: 0 !important;
       }
 
-      input[type='color'] {
-        padding: 2px;
-        width: 100%;
-        cursor: pointer;
-        height: var(--input-height);
-      }
+      /* --- 5. Custom Components --- */
 
-      /* --- 5. Type Selector (Custom Toggle) --- */
-      .type-selector {
-        display: flex;
-        background: #1a1a1a;
-        padding: 3px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-border);
-        margin-bottom: var(--space-sm);
-      }
-      .type-option {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 6px;
-        font-size: var(--font-sm);
-        font-weight: 500;
-        cursor: pointer;
-        border-radius: var(--radius-sm);
-        color: #777;
-        transition: all 0.2s;
-      }
-      .type-option:hover {
-        color: #ccc;
-        background: rgba(255, 255, 255, 0.05);
-      }
-      .type-option.selected {
-        background: var(--bg-surface-active);
-        color: #fff;
-        font-weight: 600;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-      }
-      .type-option.selected svg {
-        stroke: var(--color-primary);
-        opacity: 1;
-      }
-
-      /* --- 6. Status Card --- */
+      /* Status Card */
       .status-card {
-        background: var(--bg-surface);
-        border-radius: var(--radius-lg);
-        padding: var(--space-md) var(--space-lg);
-        margin-bottom: var(--space-xl);
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        border: 1px solid var(--color-border);
+        align-items: center;
+        background: var(--bg-panel);
+        padding: 10px 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        margin-bottom: 20px;
       }
       .status-indicator {
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-size: var(--font-lg);
+        gap: 8px;
         font-weight: 500;
       }
       .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #444;
-      }
-      .active .dot {
-        background: var(--color-secondary);
-        box-shadow: 0 0 8px rgba(3, 218, 198, 0.4);
-      }
-      .active {
-        color: var(--color-secondary);
-      }
-
-      /* --- 7. List & Layers --- */
-      #items-list {
-        flex: 1;
-        overflow-y: auto;
-        margin-bottom: var(--space-lg);
-        padding-right: 6px;
-        min-height: 200px;
-      }
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
+        border-radius: 50%;
+        background: #555;
+      }
+      .active .dot {
+        background: var(--accent-success);
+        box-shadow: 0 0 6px var(--accent-success);
+      }
+      .active span {
+        color: var(--accent-success);
+      }
+
+      /* Type Selector (Segmented Control) */
+      .type-selector {
+        display: flex;
+        background: var(--bg-input);
+        padding: 2px;
+        border-radius: var(--radius-md);
+        margin-bottom: 12px;
+      }
+      .type-option {
+        flex: 1;
+        text-align: center;
+        padding: 4px;
+        font-size: 10px;
+        color: var(--text-muted);
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: 0.2s;
+      }
+      .type-option:hover {
+        color: var(--text-main);
+      }
+      .type-option.selected {
+        background: var(--border-subtle); /* Highlight selection */
+        color: #fff;
+        font-weight: 600;
+      }
+
+      /* Section Separator */
+      .section-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-disabled);
+        margin: 16px 0 8px 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border-subtle);
+      }
+      .separator {
+        border-top: 1px solid var(--border-subtle);
+        margin: 16px 0;
+      }
+
+      /* --- 6. Layer Item List (The Core UI) --- */
+      #items-list {
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 4px;
+        margin-bottom: 16px;
+      }
+
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 6px;
       }
       ::-webkit-scrollbar-track {
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: var(--bg-surface-active);
+        background: #333;
         border-radius: 3px;
       }
       ::-webkit-scrollbar-thumb:hover {
@@ -322,101 +350,103 @@
       }
 
       .layer-item {
-        background: var(--bg-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        padding: var(--space-md);
-        margin-bottom: var(--space-md);
+        background: var(--bg-panel);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 8px 10px;
+        margin-bottom: 8px;
         transition: border-color 0.2s;
       }
       .layer-item:hover {
-        border-color: var(--color-border-hover);
+        border-color: var(--border-focus);
       }
 
       .layer-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        padding-bottom: var(--space-sm);
-        margin-bottom: var(--space-sm);
-        border-bottom: 1px solid #2a2a2a;
+        justify-content: space-between;
+        /* Jika expanded, kasih margin bawah agar tidak nempel content */
+        margin-bottom: 4px;
       }
-      .layer-item:has(.hidden) .layer-header {
-        border-bottom: none;
+      /* Trik CSS: Jika layer collapsed (body hidden), hilangkan margin header */
+      .layer-item:has(.layer-body.hidden) .layer-header {
         margin-bottom: 0;
-        padding-bottom: 0;
       }
 
-      .layer-title {
-        font-size: var(--font-base);
-        font-weight: 600;
-        color: var(--text-primary);
-        letter-spacing: 0.01em;
-      }
-      .layer-index {
-        font-size: var(--font-xs);
-        color: var(--text-tertiary);
-        font-family: var(--font-mono);
-        background: #151515;
-        padding: 2px 6px;
-        border-radius: var(--radius-sm);
-        border: 1px solid #2a2a2a;
-      }
-
-      /* Icon Buttons */
-      .btn-icon {
-        background: transparent;
-        border: none;
-        color: var(--text-tertiary);
-        cursor: pointer;
-        padding: 0;
-        width: 28px;
-        height: 28px;
+      .layer-header-left {
         display: flex;
         align-items: center;
-        justify-content: center;
-        border-radius: var(--radius-sm);
-        transition: all 0.2s;
+        gap: 4px;
+        flex: 1;
+        overflow: hidden;
       }
-      .btn-icon:hover {
-        background: var(--bg-surface-active);
-        color: #fff;
-      }
-      .btn-remove:hover {
-        color: var(--color-danger);
-        background: rgba(207, 102, 121, 0.1);
+      .layer-header-right {
+        display: flex;
+        align-items: center;
+        gap: 2px;
       }
 
-      /* --- 8. Animations & Utils --- */
+      .layer-info-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+      }
+      .layer-index {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        color: var(--text-disabled);
+        min-width: 16px;
+      }
+      .color-swatch {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      .layer-title {
+        font-weight: 500;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 140px; /* Cegah teks panjang merusak layout */
+      }
+
+      /* Visibility Toggle States */
+      .btn-visible.is-hidden {
+        opacity: 0.3;
+      }
+      .btn-visible:not(.is-hidden) {
+        opacity: 1;
+        color: var(--text-main);
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        border: 1px dashed var(--border-subtle);
+        border-radius: var(--radius-md);
+        color: var(--text-disabled);
+        font-size: 11px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      /* View Transitions */
       .view-section {
         display: none;
         flex-direction: column;
       }
       .view-section.visible {
         display: flex;
-        animation: fadeIn 0.3s ease;
-      }
-      .layer-body {
-        animation: slideDown 0.2s ease-out;
-      }
-      .layer-body.hidden {
-        display: none;
+        animation: fadeIn 0.2s ease;
       }
 
       @keyframes fadeIn {
         from {
           opacity: 0;
-          transform: translateY(5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
+          transform: translateY(4px);
         }
         to {
           opacity: 1;
@@ -424,83 +454,12 @@
         }
       }
 
-      .separator {
-        border-top: 1px solid var(--color-border);
-        margin: var(--space-xl) 0;
-      }
       .action-row {
         display: flex;
-        gap: 10px;
-        margin-top: 10px;
+        gap: 8px;
       }
-
-      /* Specific view tweaks */
-      #editor-view .action-row {
-        margin-bottom: 24px;
-      }
-      #editor-view .separator {
-        margin-top: 24px !important;
-        margin-bottom: 0 !important;
-        opacity: 0.5;
-      }
-
-      /* --- Tambahan untuk menggantikan Inline Style JS --- */
-
-      /* 1. Empty State */
-      .empty-state {
-        text-align: center;
-        padding: 30px;
-        color: var(--text-tertiary);
-        font-size: var(--font-base);
-        border: 1px dashed var(--color-border);
-        border-radius: var(--radius-lg);
-      }
-
-      /* 2. Layer Item Layout Helpers */
-      .layer-header-left {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        overflow: hidden;
-        flex: 1; /* Agar mengambil sisa ruang */
-      }
-
-      .layer-header-right {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-        flex-shrink: 0;
-      }
-
-      .layer-info-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      /* 3. Color Swatch */
-      .color-swatch {
-        width: 10px;
-        height: 10px;
-        border-radius: 3px;
-        flex-shrink: 0;
-        /* Background color tetap di-inject via JS karena dinamis */
-      }
-
-      /* 4. Visibility Button State */
-      .btn-visible.is-hidden {
-        color: var(--text-tertiary); /* Warna redup saat hidden */
-      }
-      .btn-visible:not(.is-hidden) {
-        color: var(--text-primary); /* Warna terang saat visible */
-      }
-
-      /* 5. Utility class untuk margin khusus */
-      .mb-0 {
-        margin-bottom: 0 !important;
+      .action-row button {
+        flex: 1;
       }
     </style>
   </head>
