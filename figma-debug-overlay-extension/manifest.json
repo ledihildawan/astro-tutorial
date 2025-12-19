@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Figma Debug Overlay",
-  "version": "1.0",
-  "description": "Overlay layout guide seperti Figma untuk debugging frontend.",
+  "name": "Figma Layout Overlay",
+  "version": "2.1.1",
+  "description": "Pixel-perfect layout grid overlay with Shadow DOM isolation.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -13,10 +13,19 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Figma Debug Overlay"
+    "default_title": "Layout Config"
   },
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
+  "commands": {
+    "toggle-overlay": {
+      "suggested_key": {
+        "default": "Alt+G",
+        "mac": "Alt+G"
+      },
+      "description": "Toggle Visibility (Fallback)"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

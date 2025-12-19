@@ -1,222 +1,171 @@
 (function () {
-  let overlay = null;
-  let isEnabled = false;
-  let currentItems = [];
+  const HOST_ID = 'figma-overlay-host-v2';
 
-  // --- Utility Functions ---
-  function parseColor(color, alpha = 0.1) {
-    if (!color) return `rgba(255, 0, 0, ${alpha})`;
-    if (typeof color === 'string' && color.match(/^rgb|a/)) {
-      return color.replace(/[\d.]+(?=\)$)/, alpha);
-    }
-    let hex = color.replace('#', '');
-    if (hex.length === 3)
-      hex = hex
-        .split('')
-        .map((x) => x + x)
-        .join('');
-    const r = parseInt(hex.substr(0, 2), 16) || 0;
-    const g = parseInt(hex.substr(2, 2), 16) || 0;
-    const b = parseInt(hex.substr(4, 2), 16) || 0;
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
+  class Overlay {
+    constructor() {
+      this.state = { enabled: false, items: [] };
 
-  function createOverlay() {
-    if (overlay) return overlay;
-    overlay = document.createElement('div');
-    overlay.id = 'figma-debug-overlay';
-    overlay.style.cssText =
-      'position:fixed;inset:0;pointer-events:none;z-index:2147483647;display:flex;flex-direction:column;';
-    document.documentElement.appendChild(overlay);
-    return overlay;
-  }
+      // Listener Messages dari Background/Popup
+      chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+        if (msg.action === 'UPDATE') {
+          this.state = { enabled: msg.enabled, items: msg.items };
+          this.render();
+        } else if (msg.action === 'TOGGLE') {
+          this.state.enabled = msg.enabled; // Pakai state dari background
+          this.render();
+        }
+      });
 
-  // --- Render Logic ---
-  function renderGrid(item) {
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'position:absolute;inset:0;pointer-events:none;display:flex;width:100%;height:100%;';
+      // Load Initial State
+      chrome.storage.sync.get(['store'], (data) => {
+        if (data.store) {
+          const profile = data.store.profiles[data.store.activeProfileId];
+          this.state.enabled = data.store.enabled;
+          this.state.items = profile ? profile.items : [];
+          this.render();
+        }
+      });
 
-    if (item.maxWidth && item.maxWidth > 0) {
-      wrapper.style.maxWidth = `${item.maxWidth}px`;
-      wrapper.style.marginInline = 'auto';
-      wrapper.style.borderLeft = '1px dashed rgba(0,0,0,0.1)';
-      wrapper.style.borderRight = '1px dashed rgba(0,0,0,0.1)';
-      wrapper.style.backgroundPosition = 'center top';
+      // === SHORTCUT LISTENER MANUAL (Figma Style) ===
+      document.addEventListener('keydown', (e) => {
+        // Cek apakah tombol yang ditekan adalah Ctrl (atau Cmd) + ' (Tanda kutip)
+        if ((e.ctrlKey || e.metaKey) && e.key === "'") {
+          e.preventDefault(); // Mencegah action default browser (jika ada)
+          // Minta background untuk melakukan toggle
+          chrome.runtime.sendMessage({ action: 'TOGGLE_REQUEST' });
+        }
+      });
     }
 
-    const col = parseColor(item.color || '#00ff00', item.opacity || 0.05);
-    wrapper.style.background = `linear-gradient(to right, ${col} 1px, transparent 1px), linear-gradient(to bottom, ${col} 1px, transparent 1px)`;
-    wrapper.style.backgroundSize = `${item.size || 8}px ${item.size || 8}px`;
+    createHost() {
+      let host = document.getElementById(HOST_ID);
+      if (host) return host;
 
-    return wrapper;
-  }
+      host = document.createElement('div');
+      host.id = HOST_ID;
+      host.style.cssText = 'position: fixed; inset: 0; pointer-events: none; z-index: 2147483647;';
 
-  function renderLayout(item, isColumns = true) {
-    const bg = parseColor(item.color || (isColumns ? '#ff0000' : '#0000ff'), item.opacity || 0.1);
+      const shadow = host.attachShadow({ mode: 'open' });
+      const container = document.createElement('div');
+      container.id = 'root';
+      container.style.cssText = 'width: 100%; height: 100%; display: flex; flex-direction: column;';
 
-    const mode = item.typeMode || 'stretch';
-    const isStretchMode = mode === 'stretch';
-
-    const count = item.count ?? 12;
-    const gutter = item.gutter ?? 20;
-    const offset = item.offset ?? 0;
-    const margin = item.margin ?? 0;
-    const fixedSize = item.width ?? (isColumns ? 80 : 60);
-
-    let maxWidth = item.maxWidth && !isNaN(item.maxWidth) && item.maxWidth > 0 ? item.maxWidth : null;
-    if (isStretchMode && maxWidth && maxWidth <= margin * 2) maxWidth = null;
-
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'absolute';
-    wrapper.style.inset = '0';
-    wrapper.style.pointerEvents = 'none';
-    wrapper.style.display = 'flex';
-    wrapper.style.width = '100%';
-
-    if (maxWidth) {
-      wrapper.style.maxWidth = `${maxWidth}px`;
-      wrapper.style.marginInline = 'auto';
+      shadow.appendChild(container);
+      document.documentElement.appendChild(host);
+      return host;
     }
 
-    let justify = 'center';
-    if (isStretchMode) {
-      justify = 'stretch';
-    } else {
-      if (mode === 'left' || (!isColumns && mode === 'top')) {
-        justify = 'flex-start';
-      } else if (mode === 'right' || (!isColumns && mode === 'bottom')) {
-        justify = 'flex-end';
-      } else if (mode === 'center') {
-        justify = 'center';
+    removeHost() {
+      const host = document.getElementById(HOST_ID);
+      if (host) host.remove();
+    }
+
+    hexToRgba(hex, alpha) {
+      if (!hex) return `rgba(255,0,0,${alpha})`;
+      let c = hex.substring(1).split('');
+      if (c.length === 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+      c = '0x' + c.join('');
+      return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    }
+
+    renderPixelGrid(item) {
+      const el = document.createElement('div');
+      const size = item.size || 8;
+      const color = this.hexToRgba(item.color, item.opacity);
+
+      el.style.cssText = `
+        position: absolute; inset: 0;
+        background-image: 
+          linear-gradient(to right, ${color} 1px, transparent 1px),
+          linear-gradient(to bottom, ${color} 1px, transparent 1px);
+        background-size: ${size}px ${size}px;
+        background-position: top center;
+      `;
+
+      if (item.maxWidth) {
+        el.style.maxWidth = item.maxWidth + 'px';
+        el.style.left = '50%';
+        el.style.transform = 'translateX(-50%)';
+        el.style.borderLeft = `1px solid ${color}`;
+        el.style.borderRight = `1px solid ${color}`;
       }
+      return el;
     }
 
-    if (isColumns) {
-      wrapper.style.justifyContent = justify;
-      wrapper.style.alignItems = 'stretch';
-    } else {
-      wrapper.style.alignItems = justify;
-      wrapper.style.justifyContent = 'stretch';
-    }
+    renderFlexGrid(item) {
+      const isRow = item.type === 'rows';
+      const wrapper = document.createElement('div');
+      const mode = item.typeMode || 'stretch';
 
-    const grid = document.createElement('div');
-    grid.style.display = 'grid';
-    grid.style.gap = `${gutter}px`;
-
-    const templateUnit = isStretchMode ? '1fr' : `${fixedSize}px`;
-
-    if (isColumns) {
-      grid.style.gridTemplateColumns = `repeat(${count}, ${templateUnit})`;
-      grid.style.height = '100%';
-      grid.style.width = isStretchMode ? '100%' : 'auto';
-    } else {
-      grid.style.gridTemplateRows = `repeat(${count}, ${templateUnit})`;
-      grid.style.width = '100%';
-      grid.style.height = isStretchMode ? '100%' : 'auto';
-    }
-
-    if (isStretchMode) {
-      const marginStyle = `${margin}px`;
-      grid.style[isColumns ? 'paddingInline' : 'paddingBlock'] = marginStyle;
-    } else {
-      if (mode === 'left' || mode === 'top') {
-        grid.style[isColumns ? 'marginLeft' : 'marginTop'] = `${offset}px`;
-      } else if (mode === 'right' || mode === 'bottom') {
-        grid.style[isColumns ? 'marginRight' : 'marginBottom'] = `${offset}px`;
-      } else if (mode === 'center' && offset !== 0) {
-        const axis = isColumns ? 'X' : 'Y';
-        grid.style.transform = `translate${axis}(${offset}px)`;
+      wrapper.style.cssText = 'position: absolute; inset: 0; display: flex; pointer-events: none;';
+      if (item.maxWidth) {
+        wrapper.style.maxWidth = item.maxWidth + 'px';
+        wrapper.style.margin = '0 auto';
+        wrapper.style.left = 0;
+        wrapper.style.right = 0;
       }
+
+      let justifyContent = 'center';
+      if (mode === 'stretch') justifyContent = 'stretch';
+      else if (mode === 'left') justifyContent = 'flex-start';
+
+      wrapper.style.justifyContent = justifyContent;
+
+      const grid = document.createElement('div');
+      grid.style.display = 'flex';
+      grid.style.flexDirection = isRow ? 'column' : 'row';
+      grid.style.gap = (item.gutter || 0) + 'px';
+
+      if (mode === 'stretch') {
+        grid.style.width = '100%';
+        grid.style.height = '100%';
+        grid.style[isRow ? 'paddingTop' : 'paddingLeft'] = (item.margin || 0) + 'px';
+        grid.style[isRow ? 'paddingBottom' : 'paddingRight'] = (item.margin || 0) + 'px';
+      } else {
+        if (isRow) {
+          grid.style.width = '100%';
+          grid.style.marginTop = (item.offset || 0) + 'px';
+        } else {
+          grid.style.height = '100%';
+          grid.style.marginLeft = (item.offset || 0) + 'px';
+        }
+      }
+
+      const color = this.hexToRgba(item.color, item.opacity);
+      const count = item.count || 12;
+
+      for (let i = 0; i < count; i++) {
+        const cell = document.createElement('div');
+        cell.style.backgroundColor = color;
+        if (mode === 'stretch') {
+          cell.style.flex = '1';
+        } else {
+          const size = (item.width || 80) + 'px';
+          cell.style.flex = '0 0 auto';
+          if (isRow) cell.style.height = size;
+          else cell.style.width = size;
+        }
+        grid.appendChild(cell);
+      }
+      wrapper.appendChild(grid);
+      return wrapper;
     }
 
-    for (let i = 0; i < count; i++) {
-      const cell = document.createElement('div');
-      cell.style.background = bg;
-      grid.appendChild(cell);
-    }
+    render() {
+      if (!this.state.enabled) {
+        this.removeHost();
+        return;
+      }
+      const host = this.createHost();
+      const root = host.shadowRoot.getElementById('root');
+      root.innerHTML = '';
 
-    wrapper.appendChild(grid);
-    return wrapper;
+      this.state.items.forEach((item) => {
+        if (!item.visible) return;
+        const node = item.type === 'grid' ? this.renderPixelGrid(item) : this.renderFlexGrid(item);
+        if (node) root.appendChild(node);
+      });
+    }
   }
-
-  function renderItem(item) {
-    if (!item || !item.type || item.visible === false) return null;
-    if (item.type === 'grid') return renderGrid(item);
-    return renderLayout(item, item.type === 'columns');
-  }
-
-  function renderAll() {
-    createOverlay();
-    overlay.innerHTML = '';
-    if (!currentItems || currentItems.length === 0) return;
-    currentItems.forEach((item) => {
-      const el = renderItem(item);
-      if (el) overlay.appendChild(el);
-    });
-  }
-
-  function toggleOverlay(forceState = null) {
-    isEnabled = forceState !== null ? forceState : !isEnabled;
-    chrome.storage.sync.set({ isOverlayEnabled: isEnabled });
-
-    if (isEnabled) renderAll();
-    else if (overlay) overlay.innerHTML = '';
-  }
-
-  // --- Default fallback (sinkron dengan popup.js) ---
-  const defaultFallbackItems = [
-    {
-      type: 'columns',
-      count: 12,
-      typeMode: 'center',
-      width: 80,
-      gutter: 24,
-      offset: 0,
-      color: '#dc3545',
-      opacity: 0.08,
-      visible: true,
-      collapsed: false,
-    },
-  ];
-
-  // --- Initialization ---
-  chrome.storage.sync.get(['figmaOverlayData', 'isOverlayEnabled'], (data) => {
-    if (data.isOverlayEnabled !== undefined) {
-      isEnabled = data.isOverlayEnabled;
-    }
-
-    const store = data.figmaOverlayData;
-    if (store && store.activeId && store.profiles[store.activeId]) {
-      currentItems = store.profiles[store.activeId].items;
-    } else {
-      currentItems = defaultFallbackItems;
-    }
-
-    if (isEnabled) renderAll();
-  });
-
-  // Shortcut: Ctrl+Shift+G
-  document.addEventListener('keydown', (e) => {
-    const tag = e.target.tagName.toUpperCase();
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
-
-    if (e.key === 'G' && e.ctrlKey && e.shiftKey) {
-      e.preventDefault();
-      toggleOverlay();
-    }
-  });
-
-  // Listener untuk broadcast dari background
-  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.action === 'apply') {
-      currentItems = msg.items || [];
-      if (msg.forceActive) isEnabled = true;
-      if (isEnabled) renderAll();
-      else if (overlay) overlay.innerHTML = '';
-    } else if (msg.action === 'toggle') {
-      toggleOverlay(msg.forceState);
-    }
-    sendResponse({ status: 'ok' });
-    return true;
-  });
+  new Overlay();
 })();

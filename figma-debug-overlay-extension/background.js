@@ -1,66 +1,41 @@
-// background.js
+// Fungsi utama untuk toggle
+function runToggle() {
+  chrome.storage.sync.get(['store'], (data) => {
+    const store = data.store || {};
+    if (store.enabled === undefined) store.enabled = false;
 
-function updateIcon(isActive) {
-  // Logic: Jika aktif gunakan icon warna, jika mati gunakan icon BW.
-  // Fallback: Jika icon BW tidak ada, gunakan icon biasa agar tidak error.
-  const path = isActive
-    ? {
-        16: 'icon16.png',
-        48: 'icon48.png',
-        128: 'icon128.png',
-      }
-    : {
-        // Ganti nama file ini jika kamu sudah punya icon hitam putih
-        16: 'icon16.png',
-        48: 'icon48.png',
-        128: 'icon128.png',
-      };
+    const newState = !store.enabled;
+    store.enabled = newState;
 
-  try {
-    chrome.action.setIcon({ path: path });
-  } catch (e) {
-    console.warn('Gagal mengubah icon (mungkin file tidak ditemukan):', e);
-  }
-}
-
-// Broadcast toggle ke semua tab aktif
-async function broadcastToggle(state) {
-  try {
-    const tabs = await chrome.tabs.query({});
-    for (const tab of tabs) {
-      // Filter tab http/https/file
-      if (tab.url && (tab.url.startsWith('http') || tab.url.startsWith('file'))) {
-        try {
-          await chrome.tabs.sendMessage(tab.id, { action: 'toggle', forceState: state });
-        } catch (err) {
-          // Tab mungkin tidak memiliki content script, abaikan
+    // Simpan & Broadcast ke semua tab
+    chrome.storage.sync.set({ store: store }, () => {
+      chrome.tabs.query({}, (tabs) => {
+        for (const tab of tabs) {
+          // Kirim hanya ke halaman web yang valid
+          if (tab.url && (tab.url.startsWith('http') || tab.url.startsWith('file'))) {
+            chrome.tabs
+              .sendMessage(tab.id, {
+                action: 'TOGGLE',
+                enabled: newState,
+              })
+              .catch(() => {});
+          }
         }
-      }
-    }
-  } catch (err) {
-    console.error('Broadcast error:', err);
-  }
+      });
+    });
+  });
 }
 
-// Init saat browser start
-chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.sync.get(['isOverlayEnabled'], (data) => {
-    updateIcon(!!data.isOverlayEnabled);
-  });
+// 1. Listener untuk Shortcut Manifest (Alt+G)
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'toggle-overlay') {
+    runToggle();
+  }
 });
 
-// Init saat install/update
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(['isOverlayEnabled'], (data) => {
-    updateIcon(!!data.isOverlayEnabled);
-  });
-});
-
-// Listen perubahan storage -> update icon & broadcast
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && changes.isOverlayEnabled !== undefined) {
-    const isEnabled = changes.isOverlayEnabled.newValue ?? false;
-    updateIcon(isEnabled);
-    broadcastToggle(isEnabled);
+// 2. Listener untuk Shortcut Manual dari Content Script (Ctrl+')
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.action === 'TOGGLE_REQUEST') {
+    runToggle();
   }
 });

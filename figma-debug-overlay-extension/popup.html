@@ -1,504 +1,72 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Figma Overlay</title>
+    <link rel="stylesheet" href="popup.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
       rel="stylesheet"
     />
-
-    <style>
-      :root {
-        --bg-app: #1e1e1e;
-        --bg-panel: #2c2c2c;
-        --bg-input: #121212;
-        --bg-hover: rgba(255, 255, 255, 0.04);
-        --text-main: #e0e0e0;
-        --text-muted: #a0a0a0;
-        --text-disabled: #555555;
-        --accent-primary: #bb86fc;
-        --accent-success: #03dac6;
-        --accent-danger: #cf6679;
-        --border-subtle: #383838;
-        --border-focus: #555555;
-        --font-base: 12px;
-        --font-sm: 11px;
-        --radius-sm: 4px;
-        --radius-md: 6px;
-        --radius-lg: 8px;
-        --space-md: 12px;
-        --space-xl: 20px;
-        --input-h: 30px;
-      }
-
-      body {
-        width: 360px;
-        min-height: 250px;
-        max-height: 600px;
-        padding: 16px;
-        background: var(--bg-app);
-        color: var(--text-main);
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        margin: 0;
-        box-sizing: border-box;
-        overflow-x: hidden;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      h1 {
-        font-size: 15px;
-        font-weight: 600;
-        margin: 0 0 2px 0;
-        color: #fff;
-      }
-      h2 {
-        font-size: 14px;
-        font-weight: 600;
-        margin: 0;
-      }
-      .subtitle {
-        font-size: 11px;
-        color: var(--text-muted);
-        margin: 0 0 20px 0;
-      }
-
-      button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        height: 32px;
-        padding: 0 12px;
-        border: 1px solid transparent;
-        border-radius: var(--radius-md);
-        font-family: inherit;
-        font-weight: 500;
-        font-size: 11px;
-        cursor: pointer;
-        transition: all 0.15s ease-out;
-        user-select: none;
-        white-space: nowrap;
-      }
-      button:active {
-        transform: translateY(1px);
-      }
-      button:focus-visible {
-        outline: 2px solid var(--accent-primary);
-        outline-offset: 2px;
-      }
-
-      .btn-primary {
-        background: var(--accent-primary);
-        color: #121212;
-        font-weight: 600;
-      }
-      .btn-primary:hover {
-        filter: brightness(1.1);
-      }
-      .btn-secondary {
-        background: transparent;
-        border: 1px solid var(--border-subtle);
-        color: var(--text-main);
-      }
-      .btn-secondary:hover {
-        border-color: var(--text-muted);
-        background: var(--bg-hover);
-      }
-      .btn-success {
-        background: var(--accent-success);
-        color: #000;
-        font-weight: 600;
-      }
-      .btn-icon {
-        width: 26px;
-        height: 26px;
-        padding: 0;
-        background: transparent;
-        color: var(--text-muted);
-        border: none;
-      }
-      .btn-icon:hover {
-        background: var(--bg-hover);
-        color: var(--text-main);
-      }
-
-      input,
-      select {
-        width: 100%;
-        height: var(--input-h);
-        background: var(--bg-input);
-        border: 1px solid transparent;
-        border-radius: var(--radius-sm);
-        color: var(--text-main);
-        font-family: 'Inter', sans-serif;
-        font-size: 11px;
-        padding: 0 8px;
-        transition: 0.2s;
-        outline: none;
-      }
-      input:hover,
-      select:hover {
-        border-color: var(--border-subtle);
-      }
-      input:focus,
-      select:focus {
-        border-color: var(--accent-primary);
-        background: #000;
-      }
-      input[type='color'] {
-        padding: 0;
-        border: none;
-        cursor: pointer;
-        height: var(--input-h);
-        overflow: hidden;
-      }
-      input[type='color']::-webkit-color-swatch {
-        border: none;
-      }
-      input::placeholder {
-        color: var(--text-disabled);
-        opacity: 0.7;
-        font-style: italic;
-      }
-
-      .input-wrapper label {
-        display: block;
-        font-size: 10px;
-        color: var(--text-muted);
-        margin-bottom: 4px;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .input-container {
-        position: relative;
-      }
-      .suffix {
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 10px;
-        color: var(--text-disabled);
-        pointer-events: none;
-      }
-
-      .editor-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
-        margin-bottom: 12px;
-      }
-      .editor-grid.two-col {
-        grid-template-columns: 1fr 1fr;
-      }
-      .mb-0 {
-        margin-bottom: 0 !important;
-      }
-
-      .status-card {
-        position: relative;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--bg-panel);
-        padding: 12px 16px;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border-subtle);
-        margin-bottom: var(--space-xl);
-        transition: all 0.3s ease;
-      }
-      .status-card:has(.active) {
-        border-color: rgba(3, 218, 198, 0.4);
-        background: linear-gradient(to right, rgba(3, 218, 198, 0.08), rgba(30, 30, 30, 0));
-        box-shadow: 0 4px 12px rgba(3, 218, 198, 0.1);
-      }
-      .status-indicator {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--text-muted);
-      }
-      .status-indicator.active {
-        color: #ffffff;
-      }
-      .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--border-focus);
-        transition: all 0.4s;
-      }
-      .status-indicator.active .dot {
-        background: var(--accent-success);
-        box-shadow: 0 0 10px var(--accent-success);
-        transform: scale(1.2);
-      }
-      .status-action {
-        width: 80px;
-        flex-shrink: 0;
-      }
-      .status-card button {
-        height: 28px;
-        font-size: 11px;
-        width: 100%;
-        padding: 0;
-      }
-
-      .type-selector {
-        display: flex;
-        background: var(--bg-input);
-        padding: 2px;
-        border-radius: var(--radius-md);
-        margin-bottom: 12px;
-      }
-      .type-option {
-        flex: 1;
-        text-align: center;
-        padding: 4px;
-        font-size: 10px;
-        color: var(--text-muted);
-        border-radius: 4px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        transition: 0.2s;
-      }
-      .type-option:hover {
-        color: var(--text-main);
-      }
-      .type-option.selected {
-        background: var(--border-subtle);
-        color: #fff;
-        font-weight: 600;
-      }
-
-      .section-label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: var(--font-sm);
-        color: var(--text-muted);
-        user-select: none;
-      }
-      .separator {
-        border-top: 1px solid var(--border-subtle);
-        margin: 16px 0;
-      }
-
-      #items-list {
-        min-height: 100px;
-        max-height: calc(100vh - 180px);
-        overflow-y: overlay;
-        overflow-x: hidden;
-        padding-right: 4px;
-        margin-bottom: 16px;
-      }
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #444;
-      }
-
-      .layer-item {
-        background: var(--bg-panel);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-md);
-        padding: 8px 10px;
-        margin-bottom: 8px;
-        transition: border-color 0.2s;
-      }
-      .layer-item:hover {
-        border-color: var(--border-focus);
-      }
-      .layer-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 4px;
-        user-select: none;
-      }
-      .layer-item:has(.layer-body.hidden) .layer-header {
-        margin-bottom: 0;
-      }
-
-      .layer-header-left {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-      }
-      .layer-info-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        overflow: hidden;
-        flex: 1;
-        min-width: 0;
-      }
-      .layer-index {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 9px;
-        color: var(--text-disabled);
-        min-width: 16px;
-      }
-      .color-swatch {
-        width: 8px;
-        height: 8px;
-        border-radius: 2px;
-        flex-shrink: 0;
-      }
-      .layer-title {
-        font-weight: 500;
-        font-size: 11px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex: 1;
-        color: var(--text-main);
-        max-width: 140px;
-      }
-
-      .btn-visible.is-hidden {
-        opacity: 0.3;
-      }
-      .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        border: 1px dashed var(--border-subtle);
-        border-radius: var(--radius-md);
-        color: var(--text-disabled);
-        font-size: 11px;
-      }
-
-      .view-section {
-        display: none;
-        flex-direction: column;
-      }
-      .view-section.visible {
-        display: flex;
-        animation: fadeIn 0.2s ease;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .layer-body {
-        animation: slideDown 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-        transform-origin: top center;
-      }
-      .hidden {
-        display: none !important;
-      }
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-8px) scaleY(0.95);
-          max-height: 0;
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0) scaleY(1);
-          max-height: 500px;
-        }
-      }
-
-      .action-row {
-        display: flex;
-        gap: 8px;
-      }
-      .action-row button {
-        flex: 1;
-      }
-      #editing-profile-name {
-        font-size: var(--font-base);
-        color: var(--accent-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-        text-align: right;
-      }
-    </style>
   </head>
   <body>
-    <div>
-      <h1>Layout Grid Overlay</h1>
-      <p class="subtitle">Pixel-perfect layout helper</p>
-    </div>
-
-    <div id="main-view" class="view-section visible">
-      <div class="status-card" id="status-container">
-        <div class="status-indicator" id="status-text">
-          <div class="dot"></div>
-          <span>Overlay Hidden</span>
-        </div>
-        <div class="status-action">
-          <button id="toggle-btn" class="btn-primary" aria-pressed="false">Show (Ctrl+Shift+G)</button>
+    <header>
+      <div class="header-left">
+        <h1>Grid System</h1>
+        <div class="shortcut-hint" title="Keyboard Shortcut">
+          <kbd>Ctrl</kbd> <span class="plus">+</span> <kbd>G</kbd>
         </div>
       </div>
 
-      <label class="section-label">Current Layout System</label>
-      <select id="profile-select" style="margin-bottom: var(--space-md); font-size: 13px; height: 36px"></select>
+      <div class="header-right">
+        <div class="toggle-switch">
+          <input type="checkbox" id="global-toggle" />
+          <label for="global-toggle"></label>
+        </div>
+      </div>
+    </header>
 
-      <div class="action-row">
-        <button id="btn-edit" class="btn-secondary">Edit Layout</button>
-        <button id="btn-create" class="btn-secondary">New Layout</button>
+    <main>
+      <div class="section">
+        <div class="row-between mb-2">
+          <label class="label-sm">Active Profile</label>
+          <div class="icon-group">
+            <button id="btn-add-profile" title="New Profile">+</button>
+            <button id="btn-delete-profile" title="Delete Profile" class="danger">×</button>
+          </div>
+        </div>
+        <select id="profile-select" class="input-select"></select>
       </div>
 
-      <div class="separator" style="margin: var(--space-xl) 0"></div>
+      <div class="divider"></div>
 
-      <div class="action-row">
-        <button id="btn-rename" class="btn-secondary">Rename</button>
-        <button id="btn-delete" class="btn-secondary" style="color: var(--accent-danger)">Delete Layout</button>
+      <div class="section grow">
+        <div class="row-between mb-2">
+          <label class="label-sm">Layers</label>
+          <button id="btn-add-layer" class="btn-text">+ Add Layer</button>
+        </div>
+
+        <div id="layers-list" class="layers-container"></div>
       </div>
-    </div>
+    </main>
 
-    <div id="editor-view" class="view-section">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px">
-        <h2 style="font-size: 16px">Configure Layout</h2>
-        <span id="editing-profile-name"></span>
+    <div id="editor-panel" class="editor-panel">
+      <div class="editor-header">
+        <h3>Edit Layer</h3>
+        <button id="btn-close-editor" class="btn-icon-close">×</button>
       </div>
 
-      <div id="items-list"></div>
+      <div class="editor-body">
+        <div class="segment-control">
+          <button data-type="columns" class="segment active">Cols</button>
+          <button data-type="rows" class="segment">Rows</button>
+          <button data-type="grid" class="segment">Grid</button>
+        </div>
 
-      <button
-        id="add-layer-btn"
-        class="btn-secondary"
-        style="border-style: dashed; margin-bottom: 16px; color: var(--text-muted); width: 100%"
-      >
-        + Add Grid Layer
-      </button>
-
-      <div class="separator" style="margin: 16px 0"></div>
-
-      <div class="action-row">
-        <button id="btn-cancel" class="btn-secondary">Cancel</button>
-        <button id="btn-save" class="btn-success">Save Changes</button>
+        <div id="editor-fields" class="form-grid"></div>
       </div>
     </div>
 
