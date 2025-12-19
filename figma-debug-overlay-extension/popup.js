@@ -174,7 +174,7 @@ function updateStatusUI(active) {
   }
 }
 
-// --- Editor Logic ---
+// --- Editor Logic (MODERNIZED) ---
 
 function openEditor(items) {
   currentItems = JSON.parse(JSON.stringify(items));
@@ -183,131 +183,266 @@ function openEditor(items) {
   switchView('editor');
 }
 
+function getSmartLayerName(item) {
+  if (item.type === 'grid') {
+    // Tampilkan ukuran kotak grid
+    return `Grid • ${item.size || 8}px`;
+  }
+
+  if (item.type === 'rows') {
+    // Tampilkan jumlah baris + Gutter
+    return `Row ${item.count || 12} • ${item.gutter || 0}px Gut`;
+  }
+
+  // Logic untuk Columns (paling sering dipakai)
+  const count = item.count || 12;
+  const mode = item.typeMode || 'stretch';
+  const modeCap = mode.charAt(0).toUpperCase() + mode.slice(1);
+  const gutter = item.gutter || 0;
+
+  // Jika mode Stretch, Margin itu penting. Jika Center, Width itu penting.
+  let extraInfo = '';
+  if (mode === 'stretch') {
+    extraInfo = ` • ${item.margin || 0}px Mar`;
+  } else {
+    // Untuk Center/Left/Right, lebar kolom (Width) itu pembeda utama
+    extraInfo = ` • ${item.width || 'Auto'}px`;
+  }
+
+  // Format Akhir: "8 Cols • Stretch • 20px Mar"
+  return `${count} Cols • ${modeCap}${extraInfo}`;
+}
+
+// 2. Update renderEditorItems dengan logika Header baru
 function renderEditorItems() {
   els.itemsList.innerHTML = '';
 
   if (currentItems.length === 0) {
     els.itemsList.innerHTML =
-      '<div style="text-align:center; padding:20px; color:#666; font-size:12px;">No grid layers yet.</div>';
+      '<div style="text-align:center; padding:30px; color:#555; font-size:12px; border: 1px dashed #333; border-radius: 8px;">No grid layers yet.<br>Click "+ Add Grid Layer" below.</div>';
+    return;
   }
 
   currentItems.forEach((item, index) => {
+    // ... (kode definisi variabel seperti isGrid, isRow tetap sama) ...
     if (item.visible === undefined) item.visible = true;
     if (item.collapsed === undefined) item.collapsed = false;
-
-    const div = document.createElement('div');
-    div.className = 'layer-item';
 
     const isGrid = item.type === 'grid';
     const isRow = item.type === 'rows';
     const isStretch = item.typeMode === 'stretch' || !item.typeMode;
     const isCenter = item.typeMode === 'center';
-
     const sizeLabel = isRow ? 'Height' : 'Width';
+    const spacingLabel = isStretch ? 'Margin' : 'Offset';
 
+    // Icons (Tetap sama)
     const eyeIcon = item.visible
-      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
-      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M1 1l22 22"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path></svg>`;
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M1 1l22 22"></path></svg>`;
 
     const chevronIcon = item.collapsed
-      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`
-      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+    // --- PERUBAHAN UTAMA DI SINI (HEADER UI) ---
+    // Kita gunakan Smart Name dan Color Swatch
+
+    const div = document.createElement('div');
+    div.className = 'layer-item';
+
+    // Generate Smart Name
+    const smartTitle = getSmartLayerName(item);
+
+    // Nomor urut (Layer 1, Layer 2, dst)
+    const layerIndex = index + 1;
 
     let html = `
       <div class="layer-header">
-        <div class="header-left" style="display:flex; align-items:center; gap:6px;">
-          <button class="btn-icon btn-collapse" data-idx="${index}" title="${item.collapsed ? 'Expand' : 'Collapse'}">
+        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+          <button class="btn-icon btn-collapse" data-idx="${index}" title="${item.collapsed ? 'Expand' : 'Collapse'}" style="flex-shrink:0;">
             ${chevronIcon}
           </button>
-          <span class="layer-title">Layer ${index + 1}</span>
+          
+          <div style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+             
+             <span style="font-size:10px; color:#666; font-family:monospace; background:#252525; padding:2px 5px; border-radius:4px; border:1px solid #333;">
+               #${layerIndex}
+             </span>
+
+             <div style="width:8px; height:8px; border-radius:50%; background:${item.color || '#ff0000'}; box-shadow:0 0 4px ${item.color}40; flex-shrink:0;"></div>
+             
+             <span class="layer-title" style="color:#e0e0e0; font-size:12px; font-weight:500;">${smartTitle}</span>
+          </div>
+
         </div>
-        <div class="header-right" style="display:flex; align-items:center; gap:4px;">
-           <button class="btn-icon btn-visible" data-idx="${index}" title="Toggle Visibility" style="${!item.visible ? 'opacity:0.6;' : ''}">
-            ${eyeIcon}
-          </button>
-          <button class="btn-remove" data-idx="${index}">Remove</button>
+        
+        <div style="display:flex; align-items:center; gap:2px; flex-shrink:0;">
+           <button class="btn-icon btn-visible" data-idx="${index}" title="Toggle Visibility" style="${!item.visible ? 'opacity:0.6;' : ''}">${eyeIcon}</button>
+           <button class="btn-remove" data-idx="${index}">✕</button>
         </div>
       </div>
       
       <div class="layer-body ${item.collapsed ? 'hidden' : ''}">
-        <div class="row">
-           <div class="col">
-              <label>Type</label>
-              <select class="input-type" data-idx="${index}">
-                <option value="grid">Grid</option>
-                <option value="rows">Rows</option>
-                <option value="columns">Columns</option>
-              </select>
-           </div>
+    `;
+
+    // ... (SISA KODE INPUT / EDITOR GRID DI BAWAHNYA SAMA PERSIS DENGAN SEBELUMNYA) ...
+    // Pastikan Anda menyalin bagian Type Selector dan Grid Inputs dari jawaban sebelumnya
+    // ke sini.
+
+    // --- CONTOH LANJUTAN KODE (Supaya tidak error saat copy paste) ---
+    html += `
+        <div class="type-selector">
+          <div class="type-option ${item.type === 'columns' || !item.type ? 'selected' : ''}" data-action="set-type" data-val="columns" data-idx="${index}">Columns</div>
+          <div class="type-option ${item.type === 'rows' ? 'selected' : ''}" data-action="set-type" data-val="rows" data-idx="${index}">Rows</div>
+          <div class="type-option ${item.type === 'grid' ? 'selected' : ''}" data-action="set-type" data-val="grid" data-idx="${index}">Grid</div>
         </div>
     `;
 
     if (isGrid) {
-      // --- PERUBAHAN: Menambahkan Input Max Width untuk Grid ---
       html += `
-        <div class="row">
-          <div class="col"><label>Square Size (px)</label><input type="number" data-idx="${index}" data-field="size" value="${item.size || 8}"></div>
-           <div class="col"><label>Max Width</label><input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="Full"></div>
-          <div class="col"><label>Opacity</label><input type="number" step="0.1" max="1" min="0" data-idx="${index}" data-field="opacity" value="${item.opacity || 0.1}"></div>
-        </div>
-         <div class="row">
-          <div class="col"><label>Color</label><input type="color" data-idx="${index}" data-field="color" value="${item.color || '#00ff00'}" style="height:36px; padding:2px;"></div>
+        <div class="section-label">Grid Settings</div>
+        <div class="editor-grid two-col">
+           <div class="input-wrapper">
+              <label>Square Size</label>
+              <div class="input-container">
+                <input type="number" data-idx="${index}" data-field="size" value="${item.size || 8}">
+                <span class="suffix">px</span>
+              </div>
+           </div>
+           <div class="input-wrapper">
+              <label>Max Width</label>
+              <div class="input-container">
+                <input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="Full">
+                <span class="suffix">px</span>
+              </div>
+           </div>
         </div>
       `;
     } else {
-      const spacingLabel = isStretch ? 'Margin (Side)' : 'Offset';
-      const spacingField = isStretch ? 'margin' : 'offset';
-      const spacingValue = isStretch ? (item.margin ?? 0) : (item.offset ?? 0);
-      const isOffsetDisabled = !isStretch && isCenter;
+      html += `<div class="section-label">Geometry</div>`;
+      html += `<div class="editor-grid">
+          <div class="input-wrapper">
+            <label>Count</label>
+            <div class="input-container">
+              <input type="number" data-idx="${index}" data-field="count" value="${item.count || 12}">
+            </div>
+          </div>
+          <div class="input-wrapper">
+            <label>${sizeLabel}</label>
+            <div class="input-container">
+              <input type="number" data-idx="${index}" data-field="width" value="${item.width || ''}" 
+                ${isStretch ? 'disabled placeholder="Auto"' : ''}>
+              ${!isStretch ? '<span class="suffix">px</span>' : ''}
+            </div>
+          </div>
+          <div class="input-wrapper">
+            <label>Gutter</label>
+            <div class="input-container">
+              <input type="number" data-idx="${index}" data-field="gutter" value="${item.gutter ?? 20}">
+              <span class="suffix">px</span>
+            </div>
+          </div>
+      </div>`;
 
-      html += `
-        <div class="row">
-          <div class="col"><label>Count</label><input type="number" data-idx="${index}" data-field="count" value="${item.count || 12}"></div>
-          <div class="col">
-            <label>${sizeLabel}</label> <input type="number" data-idx="${index}" data-field="width" value="${item.width || ''}" ${isStretch ? 'disabled placeholder="Auto"' : ''} title="${sizeLabel} of a single track">
+      html += `<div class="section-label">Position & Mode</div>`;
+      html += `<div class="editor-grid">
+          <div class="input-wrapper">
+            <label>Max Width</label>
+            <div class="input-container">
+              <input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="None">
+              <span class="suffix">px</span>
+            </div>
           </div>
-          <div class="col"><label>Gutter</label><input type="number" data-idx="${index}" data-field="gutter" value="${item.gutter ?? 20}"></div>
-        </div>
-        <div class="row">
-           <div class="col">
-            <label>Max Width (Container)</label>
-            <input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="None" min="1">
-          </div>
-           <div class="col">
+          <div class="input-wrapper">
              <label>${spacingLabel}</label>
-             <input type="number" data-idx="${index}" data-field="${spacingField}" value="${spacingValue}"
-              ${isOffsetDisabled ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
-           </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label>Alignment / Mode</label>
-            <select data-idx="${index}" data-field="typeMode">
-              <option value="stretch">Stretch (Fluid)</option>
-              <option value="center">Center</option>
-              <option value="left">Left / Top</option>
-              <option value="right">Right / Bottom</option>
-            </select>
+             <div class="input-container">
+               <input type="number" data-idx="${index}" data-field="${isStretch ? 'margin' : 'offset'}" 
+                value="${isStretch ? (item.margin ?? 0) : (item.offset ?? 0)}"
+                ${!isStretch && isCenter ? 'disabled' : ''}>
+               <span class="suffix">px</span>
+             </div>
           </div>
-          <div class="col"><label>Color</label><input type="color" data-idx="${index}" data-field="color" value="${item.color || '#ff0000'}" style="height:36px; padding:2px;"></div>
-          <div class="col"><label>Opacity</label><input type="number" step="0.05" max="1" min="0" data-idx="${index}" data-field="opacity" value="${item.opacity || 0.1}"></div>
-        </div>
-      `;
+          <div class="input-wrapper">
+            <label>Mode</label>
+            <div class="input-container">
+              <select data-idx="${index}" data-field="typeMode" style="padding-right:4px;">
+                <option value="stretch">Stretch</option>
+                <option value="center">Center</option>
+                <option value="left">Left / Top</option>
+                <option value="right">Right / Bot</option>
+              </select>
+            </div>
+          </div>
+      </div>`;
     }
 
-    html += `</div>`;
+    html += `<div class="section-label">Appearance</div>`;
+    html += `
+      <div class="editor-grid two-col" style="margin-bottom:0;">
+         <div class="input-wrapper">
+            <label>Color</label>
+            <div class="input-container">
+              <input type="color" data-idx="${index}" data-field="color" value="${item.color || '#ff0000'}">
+            </div>
+         </div>
+         <div class="input-wrapper">
+            <label>Opacity</label>
+            <div class="input-container">
+              <input type="number" step="0.1" max="1" min="0" data-idx="${index}" data-field="opacity" value="${item.opacity || 0.1}">
+            </div>
+         </div>
+      </div>
+    `;
 
+    html += `</div>`; // Close layer-body
     div.innerHTML = html;
-    div.querySelector('.input-type').value = item.type || 'columns';
-    if (!isGrid) div.querySelector('[data-field="typeMode"]').value = item.typeMode || 'stretch';
+
+    // Set selected value manually
+    if (!isGrid) {
+      const selectEl = div.querySelector('select[data-field="typeMode"]');
+      if (selectEl) selectEl.value = item.typeMode || 'stretch';
+    }
 
     els.itemsList.appendChild(div);
   });
 
+  attachEditorEvents();
+}
+
+function attachEditorEvents() {
+  // 1. Input Changes
   els.itemsList.querySelectorAll('input, select').forEach((input) => {
     input.addEventListener('change', (e) => handleItemChange(e));
   });
 
+  // 2. Type Selector Click
+  els.itemsList.querySelectorAll('.type-option').forEach((opt) => {
+    opt.addEventListener('click', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      const newType = e.target.dataset.val;
+      const item = currentItems[idx];
+
+      if (item.type === newType) return;
+
+      item.type = newType;
+      if (newType === 'grid') {
+        item.size = 8;
+        // Clean up column props
+        delete item.count;
+        delete item.margin;
+        delete item.offset;
+        delete item.gutter;
+        delete item.typeMode;
+      } else {
+        // Defaults for col/row
+        if (!item.count) item.count = 12;
+        if (!item.typeMode) item.typeMode = 'stretch';
+      }
+      renderEditorItems();
+    });
+  });
+
+  // 3. Remove Button
   els.itemsList.querySelectorAll('.btn-remove').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       currentItems.splice(e.target.dataset.idx, 1);
@@ -315,6 +450,7 @@ function renderEditorItems() {
     });
   });
 
+  // 4. Collapse Button
   els.itemsList.querySelectorAll('.btn-collapse').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const idx = e.currentTarget.dataset.idx;
@@ -323,6 +459,7 @@ function renderEditorItems() {
     });
   });
 
+  // 5. Visible Button
   els.itemsList.querySelectorAll('.btn-visible').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const idx = e.currentTarget.dataset.idx;
@@ -338,30 +475,13 @@ function handleItemChange(e) {
   const val = e.target.value;
   const item = currentItems[idx];
 
-  if (e.target.classList.contains('input-type')) {
-    item.type = val;
-    if (val === 'grid') {
-      item.size = 8;
-      // --- PERUBAHAN: Jangan hapus maxWidth untuk Grid ---
-      delete item.count;
-      delete item.margin;
-      delete item.offset;
-      delete item.gutter;
-      delete item.typeMode;
-    } else {
-      item.count = 12;
-      item.typeMode = 'stretch';
-    }
-    renderEditorItems();
-    return;
-  }
-
   if (['count', 'width', 'gutter', 'margin', 'offset', 'size', 'opacity', 'maxWidth'].includes(field)) {
     item[field] = val === '' ? null : parseFloat(val);
   } else {
     item[field] = val;
   }
 
+  // If changing mode to stretch/center, we need to re-render to enable/disable fields correctly
   if (field === 'typeMode') renderEditorItems();
 }
 
@@ -483,7 +603,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('add-layer-btn').addEventListener('click', () => {
-    currentItems.unshift({
+    currentItems.push({
       type: 'columns',
       count: 12,
       typeMode: 'stretch',
@@ -495,7 +615,12 @@ function setupEventListeners() {
       collapsed: false,
     });
     renderEditorItems();
-    els.itemsList.scrollTop = 0;
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth',
+      });
+    });
   });
 
   document.getElementById('btn-cancel').addEventListener('click', () => switchView('main'));
