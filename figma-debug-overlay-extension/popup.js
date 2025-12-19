@@ -11,9 +11,11 @@ const defaultData = {
           typeMode: 'center',
           width: 80,
           gutter: 24,
-          margin: 0,
+          offset: 0,
           color: '#dc3545',
           opacity: 0.08,
+          visible: true,
+          collapsed: false,
         },
       ],
     },
@@ -30,6 +32,8 @@ const defaultData = {
           margin: 32,
           color: '#38bdf8',
           opacity: 0.1,
+          visible: true,
+          collapsed: false,
         },
       ],
     },
@@ -37,13 +41,23 @@ const defaultData = {
       name: 'Mobile (390px)',
       locked: true,
       items: [
-        { type: 'columns', count: 4, typeMode: 'stretch', gutter: 16, margin: 20, color: '#ff4500', opacity: 0.1 },
+        {
+          type: 'columns',
+          count: 4,
+          typeMode: 'stretch',
+          gutter: 16,
+          margin: 20,
+          color: '#ff4500',
+          opacity: 0.1,
+          visible: true,
+          collapsed: false,
+        },
       ],
     },
     baseline_8: {
       name: '8pt Hard Grid',
       locked: true,
-      items: [{ type: 'grid', size: 8, color: '#e83e8c', opacity: 0.1 }],
+      items: [{ type: 'grid', size: 8, color: '#e83e8c', opacity: 0.1, visible: true, collapsed: false }],
     },
   },
 };
@@ -178,36 +192,80 @@ function renderEditorItems() {
   }
 
   currentItems.forEach((item, index) => {
+    if (item.visible === undefined) item.visible = true;
+    if (item.collapsed === undefined) item.collapsed = false;
+
     const div = document.createElement('div');
     div.className = 'layer-item';
 
     const isGrid = item.type === 'grid';
+    const isRow = item.type === 'rows';
     const isStretch = item.typeMode === 'stretch' || !item.typeMode;
+    const isCenter = item.typeMode === 'center';
+
+    const sizeLabel = isRow ? 'Height' : 'Width';
+
+    const eyeIcon = item.visible
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M1 1l22 22"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path></svg>`;
+
+    const chevronIcon = item.collapsed
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 
     let html = `
       <div class="layer-header">
-        <select class="input-type" data-idx="${index}" style="width: 120px;">
-          <option value="columns">Columns</option>
-          <option value="rows">Rows</option>
-          <option value="grid">Pixel Grid</option>
-        </select>
-        <button class="btn-remove" data-idx="${index}" style="width:auto; padding:4px 8px; font-size:11px; background:transparent; color:#CF6679; border:1px solid #CF6679; cursor:pointer;">Remove</button>
+        <div class="header-left" style="display:flex; align-items:center; gap:6px;">
+          <button class="btn-icon btn-collapse" data-idx="${index}" title="${item.collapsed ? 'Expand' : 'Collapse'}">
+            ${chevronIcon}
+          </button>
+          <span class="layer-title">Layer ${index + 1}</span>
+        </div>
+        <div class="header-right" style="display:flex; align-items:center; gap:4px;">
+           <button class="btn-icon btn-visible" data-idx="${index}" title="Toggle Visibility" style="${!item.visible ? 'opacity:0.6;' : ''}">
+            ${eyeIcon}
+          </button>
+          <button class="btn-remove" data-idx="${index}">Remove</button>
+        </div>
       </div>
+      
+      <div class="layer-body ${item.collapsed ? 'hidden' : ''}">
+        <div class="row">
+           <div class="col">
+              <label>Type</label>
+              <select class="input-type" data-idx="${index}">
+                <option value="grid">Grid</option>
+                <option value="rows">Rows</option>
+                <option value="columns">Columns</option>
+              </select>
+           </div>
+        </div>
     `;
 
     if (isGrid) {
+      // --- PERUBAHAN: Menambahkan Input Max Width untuk Grid ---
       html += `
         <div class="row">
           <div class="col"><label>Square Size (px)</label><input type="number" data-idx="${index}" data-field="size" value="${item.size || 8}"></div>
-          <div class="col"><label>Color</label><input type="color" data-idx="${index}" data-field="color" value="${item.color || '#00ff00'}" style="height:36px; padding:2px;"></div>
+           <div class="col"><label>Max Width</label><input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="Full"></div>
           <div class="col"><label>Opacity</label><input type="number" step="0.1" max="1" min="0" data-idx="${index}" data-field="opacity" value="${item.opacity || 0.1}"></div>
+        </div>
+         <div class="row">
+          <div class="col"><label>Color</label><input type="color" data-idx="${index}" data-field="color" value="${item.color || '#00ff00'}" style="height:36px; padding:2px;"></div>
         </div>
       `;
     } else {
+      const spacingLabel = isStretch ? 'Margin (Side)' : 'Offset';
+      const spacingField = isStretch ? 'margin' : 'offset';
+      const spacingValue = isStretch ? (item.margin ?? 0) : (item.offset ?? 0);
+      const isOffsetDisabled = !isStretch && isCenter;
+
       html += `
         <div class="row">
           <div class="col"><label>Count</label><input type="number" data-idx="${index}" data-field="count" value="${item.count || 12}"></div>
-          <div class="col"><label>Col Width</label><input type="number" data-idx="${index}" data-field="width" value="${item.width || ''}" ${isStretch ? 'disabled placeholder="Auto"' : ''} title="Width of a single column"></div>
+          <div class="col">
+            <label>${sizeLabel}</label> <input type="number" data-idx="${index}" data-field="width" value="${item.width || ''}" ${isStretch ? 'disabled placeholder="Auto"' : ''} title="${sizeLabel} of a single track">
+          </div>
           <div class="col"><label>Gutter</label><input type="number" data-idx="${index}" data-field="gutter" value="${item.gutter ?? 20}"></div>
         </div>
         <div class="row">
@@ -215,7 +273,11 @@ function renderEditorItems() {
             <label>Max Width (Container)</label>
             <input type="number" data-idx="${index}" data-field="maxWidth" value="${item.maxWidth || ''}" placeholder="None" min="1">
           </div>
-           <div class="col"><label>Margin (Side)</label><input type="number" data-idx="${index}" data-field="margin" value="${item.margin ?? 0}" min="0"></div>
+           <div class="col">
+             <label>${spacingLabel}</label>
+             <input type="number" data-idx="${index}" data-field="${spacingField}" value="${spacingValue}"
+              ${isOffsetDisabled ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+           </div>
         </div>
         <div class="row">
           <div class="col">
@@ -232,6 +294,8 @@ function renderEditorItems() {
         </div>
       `;
     }
+
+    html += `</div>`;
 
     div.innerHTML = html;
     div.querySelector('.input-type').value = item.type || 'columns';
@@ -250,6 +314,22 @@ function renderEditorItems() {
       renderEditorItems();
     });
   });
+
+  els.itemsList.querySelectorAll('.btn-collapse').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const idx = e.currentTarget.dataset.idx;
+      currentItems[idx].collapsed = !currentItems[idx].collapsed;
+      renderEditorItems();
+    });
+  });
+
+  els.itemsList.querySelectorAll('.btn-visible').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const idx = e.currentTarget.dataset.idx;
+      currentItems[idx].visible = !currentItems[idx].visible;
+      renderEditorItems();
+    });
+  });
 }
 
 function handleItemChange(e) {
@@ -262,11 +342,12 @@ function handleItemChange(e) {
     item.type = val;
     if (val === 'grid') {
       item.size = 8;
+      // --- PERUBAHAN: Jangan hapus maxWidth untuk Grid ---
       delete item.count;
       delete item.margin;
+      delete item.offset;
       delete item.gutter;
       delete item.typeMode;
-      delete item.maxWidth;
     } else {
       item.count = 12;
       item.typeMode = 'stretch';
@@ -275,8 +356,7 @@ function handleItemChange(e) {
     return;
   }
 
-  if (['count', 'width', 'gutter', 'margin', 'size', 'opacity', 'maxWidth'].includes(field)) {
-    // Convert empty strings to null for optional fields like maxWidth
+  if (['count', 'width', 'gutter', 'margin', 'offset', 'size', 'opacity', 'maxWidth'].includes(field)) {
     item[field] = val === '' ? null : parseFloat(val);
   } else {
     item[field] = val;
@@ -370,6 +450,8 @@ function setupEventListeners() {
           maxWidth: 1200,
           color: '#ff0000',
           opacity: 0.1,
+          visible: true,
+          collapsed: false,
         },
       ],
     };
@@ -401,7 +483,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('add-layer-btn').addEventListener('click', () => {
-    currentItems.push({
+    currentItems.unshift({
       type: 'columns',
       count: 12,
       typeMode: 'stretch',
@@ -409,35 +491,33 @@ function setupEventListeners() {
       margin: 20,
       color: '#ff0000',
       opacity: 0.1,
+      visible: true,
+      collapsed: false,
     });
     renderEditorItems();
+    els.itemsList.scrollTop = 0;
   });
 
   document.getElementById('btn-cancel').addEventListener('click', () => switchView('main'));
 
-  // --- UPDATED SAVE HANDLER WITH VALIDATION ---
   document.getElementById('btn-save').addEventListener('click', () => {
     if (storageData.profiles[storageData.activeId].locked) return;
 
-    // VALIDATION LOOP
     for (let i = 0; i < currentItems.length; i++) {
       const item = currentItems[i];
       if (item.type !== 'grid') {
-        // Hanya validasi layout columns/rows
         const mw = item.maxWidth;
         const mg = item.margin || 0;
+        const isStretch = item.typeMode === 'stretch' || !item.typeMode;
 
-        // Cek 1: Max width tidak boleh negatif atau 0
         if (mw !== null && mw !== undefined && mw <= 0) {
           alert(`Layer ${i + 1}: Max Width must be greater than 0.`);
           return;
         }
 
-        // Cek 2: Max Width HARUS lebih besar dari total Margin (Kiri + Kanan)
-        // Jika tidak, content area menjadi negatif dan grid akan geser/rusak
-        if (mw !== null && mw !== undefined && mw <= mg * 2) {
+        if (isStretch && mw !== null && mw !== undefined && mw <= mg * 2) {
           alert(
-            `Layer ${i + 1} Error:\nMax Width (${mw}px) is too small for the set Margins (${mg}px * 2 = ${mg * 2}px).\n\nPlease increase Max Width or decrease Margins.`
+            `Layer ${i + 1} Error (Stretch Mode):\nMax Width (${mw}px) is too small for the set Margins (${mg}px * 2 = ${mg * 2}px).\n\nPlease increase Max Width or decrease Margins.`
           );
           return;
         }

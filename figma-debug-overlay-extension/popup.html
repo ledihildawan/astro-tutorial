@@ -6,7 +6,7 @@
       /* --- Base Styles --- */
       body {
         width: 380px;
-        min-height: 480px; /* Sedikit diperpanjang untuk field baru */
+        min-height: 480px;
         padding: 20px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: #121212;
@@ -168,11 +168,73 @@
         margin-bottom: 12px;
         position: relative;
       }
+
       .layer-header {
         display: flex;
         justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid transparent;
+      }
+
+      .layer-item:has(.layer-body:not(.hidden)) .layer-header {
+        border-bottom: 1px solid #333;
         margin-bottom: 12px;
       }
+
+      .layer-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #e0e0e0;
+      }
+
+      .btn-icon {
+        background: transparent;
+        border: none;
+        color: #e0e0e0;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+      }
+      .btn-icon:hover {
+        background: #333;
+        color: #fff;
+      }
+
+      .layer-body {
+        animation: slideDown 0.2s ease-out;
+      }
+      .layer-body.hidden {
+        display: none;
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .btn-remove {
+        width: auto;
+        padding: 4px 8px;
+        font-size: 11px;
+        background: transparent;
+        color: #cf6679;
+        border: 1px solid #cf6679;
+        cursor: pointer;
+        margin-left: 4px;
+      }
+
       .row {
         display: flex;
         gap: 10px;

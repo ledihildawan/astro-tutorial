@@ -25,124 +25,162 @@
     if (overlay) return overlay;
     overlay = document.createElement('div');
     overlay.id = 'figma-debug-overlay';
-    // z-index sangat tinggi agar selalu di atas
-    overlay.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;';
+    overlay.style.cssText =
+      'position:fixed;inset:0;pointer-events:none;z-index:2147483647;display:flex;flex-direction:column;';
     document.body.appendChild(overlay);
     return overlay;
   }
 
-  // --- Rendering Logic ---
-
+  // --- Render Logic: Grid (Hard Grid 8px) ---
   function renderGrid(item) {
-    const div = document.createElement('div');
-    div.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
+    const wrapper = document.createElement('div');
+    // CSS dasar wrapper
+    wrapper.style.cssText = 'position:absolute;inset:0;pointer-events:none;display:flex;width:100%;height:100%;';
+
+    // Logic Center & MaxWidth untuk Grid
+    if (item.maxWidth && item.maxWidth > 0) {
+      wrapper.style.maxWidth = `${item.maxWidth}px`;
+      wrapper.style.marginInline = 'auto'; // Center container
+      wrapper.style.borderLeft = '1px dashed rgba(0,0,0,0.1)';
+      wrapper.style.borderRight = '1px dashed rgba(0,0,0,0.1)';
+      wrapper.style.backgroundPosition = 'center top';
+    }
+
     const col = parseColor(item.color || '#00ff00', item.opacity || 0.05);
-    div.style.background = `linear-gradient(to right, ${col} 1px, transparent 1px), linear-gradient(to bottom, ${col} 1px, transparent 1px)`;
-    div.style.backgroundSize = `${item.size || 8}px ${item.size || 8}px`;
-    return div;
+    wrapper.style.background = `linear-gradient(to right, ${col} 1px, transparent 1px), linear-gradient(to bottom, ${col} 1px, transparent 1px)`;
+    wrapper.style.backgroundSize = `${item.size || 8}px ${item.size || 8}px`;
+
+    return wrapper;
   }
 
+  // --- Render Logic: Layout (Columns / Rows) ---
   function renderLayout(item, isColumns = true) {
     const bg = parseColor(item.color || (isColumns ? '#ff0000' : '#0000ff'), item.opacity || 0.1);
-    const isStretch = item.typeMode === 'stretch' || !item.typeMode;
+
+    // Config Extraction
+    const mode = item.typeMode || 'stretch'; // stretch, center, left, right
+    const isStretchMode = mode === 'stretch';
+
     const count = item.count || 12;
     const gutter = item.gutter ?? 20;
+    const offset = item.offset ?? 0;
     const margin = item.margin ?? 0;
     const fixedSize = item.width ?? (isColumns ? 80 : 60);
-    const typeMode = item.typeMode || 'stretch';
 
-    // VALIDASI FAIL-SAFE DI RENDERER
-    // Pastikan maxWidth valid (angka > 0). Jika corrupt, anggap null (disable max-width)
+    // Validasi Max Width
     let maxWidth = item.maxWidth && !isNaN(item.maxWidth) && item.maxWidth > 0 ? item.maxWidth : null;
+    // Jika mode stretch, pastikan maxwidth cukup untuk margin
+    if (isStretchMode && maxWidth && maxWidth <= margin * 2) maxWidth = null;
 
-    // FAIL-SAFE 2: Jika maxWidth lebih kecil dari total margin, disable maxWidth
-    // Ini mencegah grid rendering menjadi aneh/negatif
-    if (maxWidth && maxWidth <= margin * 2) {
-      console.warn('Figma Overlay: MaxWidth is smaller than total margins. Ignoring MaxWidth to prevent layout break.');
-      maxWidth = null;
+    // -----------------------------------------------------------------------
+    // LEVEL 1: WRAPPER (Parent Container)
+    // -----------------------------------------------------------------------
+    const wrapper = document.createElement('div');
+
+    // Base Styles (Sesuai temuan Anda)
+    wrapper.style.position = 'absolute';
+    wrapper.style.inset = '0';
+    wrapper.style.pointerEvents = 'none';
+    wrapper.style.display = 'flex';
+    wrapper.style.width = '100%';
+
+    // --- PENERAPAN GLOBAL MAX-WIDTH & CENTER ---
+    // Ini sekarang diterapkan UNTUK SEMUA MODE jika maxWidth diisi.
+    if (maxWidth) {
+      wrapper.style.maxWidth = `${maxWidth}px`;
+      wrapper.style.marginInline = 'auto'; // Kunci: Ini membuat container selalu di tengah layar
     }
 
-    let align = 'center';
-    let marginStart = margin;
-    let marginEnd = margin;
+    // -----------------------------------------------------------------------
+    // LEVEL 2: ALIGNMENT (Flexbox Justify)
+    // Mengatur posisi konten Grid DI DALAM Wrapper yang sudah di-center tadi.
+    // -----------------------------------------------------------------------
 
-    // Logic alignment
-    if (typeMode === 'center') align = 'center';
-    else if (typeMode === 'left' || (!isColumns && typeMode === 'top')) {
-      align = 'start';
-      marginEnd = 0;
-    } else if (typeMode === 'right' || (!isColumns && typeMode === 'bottom')) {
-      align = 'end';
-      marginStart = 0;
-    }
+    let justify = 'center'; // Default center
 
-    const contentSize = count * fixedSize + (count > 1 ? (count - 1) * gutter : 0);
-
-    let totalSize;
-    if (isStretch) {
-      totalSize = '100%';
+    if (isStretchMode) {
+      justify = 'stretch';
     } else {
-      totalSize = `${contentSize + marginStart + marginEnd}px`;
+      // Mode Fixed: Left/Right/Center
+      if (mode === 'left' || (!isColumns && mode === 'top')) {
+        justify = 'flex-start';
+      } else if (mode === 'right' || (!isColumns && mode === 'bottom')) {
+        justify = 'flex-end';
+      } else if (mode === 'center') {
+        justify = 'center';
+      }
     }
 
-    // Container Utama (Flex)
-    const container = document.createElement('div');
-    container.style.cssText = 'position:absolute;inset:0;pointer-events:none;display:flex;';
-
-    const justifyVal = align === 'center' ? 'center' : align === 'start' ? 'flex-start' : 'flex-end';
-    container.style.justifyContent = isColumns ? justifyVal : 'stretch';
-    container.style.alignItems = isColumns ? 'stretch' : justifyVal;
-
-    // Grid Wrapper
-    const gridDiv = document.createElement('div');
-    gridDiv.style.display = 'grid';
-    gridDiv.style[isColumns ? 'gridTemplateColumns' : 'gridTemplateRows'] = isStretch
-      ? `repeat(${count}, 1fr)`
-      : `repeat(${count}, ${fixedSize}px)`;
-    gridDiv.style[isColumns ? 'columnGap' : 'rowGap'] = `${gutter}px`;
-
-    gridDiv.style[isColumns ? 'width' : 'height'] = totalSize;
-    gridDiv.style[isColumns ? 'height' : 'width'] = '100%';
-
-    // Penerapan Max Width yang sudah divalidasi
-    if (maxWidth && isColumns) {
-      gridDiv.style.maxWidth = `${maxWidth}px`;
-      if (isStretch) gridDiv.style.width = '100%';
+    if (isColumns) {
+      wrapper.style.justifyContent = justify;
+      wrapper.style.alignItems = 'stretch'; // Full Height
+    } else {
+      // Rows
+      wrapper.style.alignItems = justify; // Posisi vertikal (Top/Bottom)
+      wrapper.style.justifyContent = 'stretch'; // Full Width
     }
 
-    gridDiv.style[isColumns ? 'paddingInline' : 'paddingBlock'] = `${marginStart}px ${marginEnd}px`;
+    // -----------------------------------------------------------------------
+    // LEVEL 3: GRID CONTENT
+    // -----------------------------------------------------------------------
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gap = `${gutter}px`;
 
-    // Pastikan margin auto aktif jika container (maxWidth) dipakai agar tetap di tengah
-    if (maxWidth && align === 'center' && isColumns) {
-      gridDiv.style.marginInline = 'auto';
+    // Template Columns:
+    // Stretch -> 1fr (Fluid)
+    // Fixed -> px (Fixed size, agar tidak melar)
+    const templateUnit = isStretchMode ? '1fr' : `${fixedSize}px`;
+
+    if (isColumns) {
+      grid.style.gridTemplateColumns = `repeat(${count}, ${templateUnit})`;
+      grid.style.height = '100%';
+      // Penting: Width Auto untuk Fixed agar tidak dipaksa stretch oleh Flexbox parent
+      grid.style.width = isStretchMode ? '100%' : 'auto';
+    } else {
+      grid.style.gridTemplateRows = `repeat(${count}, ${templateUnit})`;
+      grid.style.width = '100%';
+      grid.style.height = isStretchMode ? '100%' : 'auto';
     }
 
+    // Spacing (Margin / Offset)
+    if (isStretchMode) {
+      // Margin sebagai padding wrapper
+      const marginStyle = `${margin}px`;
+      grid.style[isColumns ? 'paddingInline' : 'paddingBlock'] = marginStyle;
+    } else {
+      // Offset sebagai margin elemen grid
+      if (mode === 'left' || mode === 'top') {
+        grid.style[isColumns ? 'marginLeft' : 'marginTop'] = `${offset}px`;
+      } else if (mode === 'right' || mode === 'bottom') {
+        grid.style[isColumns ? 'marginRight' : 'marginBottom'] = `${offset}px`;
+      } else if (mode === 'center' && offset !== 0) {
+        const axis = isColumns ? 'X' : 'Y';
+        grid.style.transform = `translate${axis}(${offset}px)`;
+      }
+    }
+
+    // Render Cells
     for (let i = 0; i < count; i++) {
       const cell = document.createElement('div');
       cell.style.background = bg;
-      gridDiv.appendChild(cell);
+      grid.appendChild(cell);
     }
 
-    container.appendChild(gridDiv);
-    return container;
+    wrapper.appendChild(grid);
+    return wrapper;
   }
 
   function renderItem(item) {
-    if (!item || !item.type) return null;
-    if (item.type === 'grid') {
-      item.size = item.count || item.size || 8;
-      return renderGrid(item);
-    }
-    if (item.type === 'columns') return renderLayout(item, true);
-    if (item.type === 'rows') return renderLayout(item, false);
-    return null;
+    if (!item || !item.type || item.visible === false) return null;
+    if (item.type === 'grid') return renderGrid(item);
+    return renderLayout(item, item.type === 'columns');
   }
 
   function renderAll() {
     createOverlay();
     overlay.innerHTML = '';
     if (!currentItems || currentItems.length === 0) return;
-
     currentItems.forEach((item) => {
       const el = renderItem(item);
       if (el) overlay.appendChild(el);
@@ -161,15 +199,12 @@
     const store = data.figmaOverlayData;
     if (store && store.activeId && store.profiles[store.activeId]) {
       currentItems = store.profiles[store.activeId].items;
-    } else {
-      currentItems = [];
     }
   });
 
   document.addEventListener('keydown', (e) => {
     const tag = e.target.tagName.toUpperCase();
     if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
-
     if (e.key.toLowerCase() === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       toggleOverlay();
