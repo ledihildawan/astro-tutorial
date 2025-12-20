@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Figma Layout Overlay",
-  "version": "3.1.0",
-  "description": "Professional Grid Overlay. Full functionality restored.",
+  "name": "Figma Debug Overlay Pro",
+  "version": "4.0.0",
+  "description": "Professional Layout Grid Engine - High Performance & Per-Tab Isolation.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -13,7 +13,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Layout Config"
+    "default_title": "Grid Engine"
   },
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
@@ -23,7 +23,7 @@
         "default": "Alt+G",
         "mac": "Alt+G"
       },
-      "description": "Toggle Visibility"
+      "description": "Toggle Overlay"
     }
   },
   "content_scripts": [

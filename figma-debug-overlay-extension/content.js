@@ -1,38 +1,42 @@
+// content.js - High Performance Rendering Engine
 (function () {
-  const HOST_ID = 'figma-overlay-host-ultimate';
+  const HOST_ID = 'overlay-engine-v4';
 
   class Overlay {
     constructor() {
       this.state = { enabled: false, items: [] };
-      this.bindEvents();
-      this.loadConfig();
+      chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: false, tabId: 'self' });
+      this.init();
     }
 
-    bindEvents() {
-      chrome.runtime.onMessage.addListener((msg) => {
+    init() {
+      chrome.storage.sync.get(['store'], (data) => {
+        if (data.store?.profiles) {
+          const profile = data.store.profiles[data.store.activeProfileId];
+          this.state.items = profile ? profile.items : [];
+          this.render();
+        }
+      });
+
+      chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (msg.action === 'UPDATE') {
           this.state.items = msg.items;
           this.render();
         } else if (msg.action === 'TOGGLE_LOCAL') {
           this.state.enabled = !this.state.enabled;
           this.render();
+          chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
+        } else if (msg.action === 'GET_STATUS') {
+          sendResponse({ enabled: this.state.enabled });
         }
       });
 
       document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === "'") {
+        const tag = e.target.tagName.toUpperCase();
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+        if (e.altKey && e.key.toLowerCase() === 'g') {
           e.preventDefault();
           chrome.runtime.sendMessage({ action: 'TOGGLE_REQUEST' });
-        }
-      });
-    }
-
-    loadConfig() {
-      chrome.storage.sync.get(['store'], (data) => {
-        if (data.store && data.store.profiles) {
-          const profile = data.store.profiles[data.store.activeProfileId];
-          this.state.items = profile ? profile.items : [];
-          this.render();
         }
       });
     }
@@ -42,43 +46,39 @@
       if (host) return host;
       host = document.createElement('div');
       host.id = HOST_ID;
-      host.style.cssText = 'position: fixed; inset: 0; pointer-events: none; z-index: 2147483647;';
+      host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;contain:strict;';
       const shadow = host.attachShadow({ mode: 'open' });
       const root = document.createElement('div');
       root.id = 'root';
-      root.style.cssText = 'width: 100%; height: 100%; display: flex; flex-direction: column;';
+      root.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden;';
       shadow.appendChild(root);
       document.documentElement.appendChild(host);
       return host;
     }
 
-    removeHost() {
-      const host = document.getElementById(HOST_ID);
-      if (host) host.remove();
-    }
-
-    hexToRgba(hex, alpha) {
-      if (!hex) return `rgba(255,0,0,${alpha})`;
-      let c = hex.substring(1).split('');
-      if (c.length === 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-      c = '0x' + c.join('');
-      return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    parseColor(color, alpha) {
+      let hex = (color || '#ff0000').replace('#', '');
+      if (hex.length === 3)
+        hex = hex
+          .split('')
+          .map((c) => c + c)
+          .join('');
+      const r = parseInt(hex.substring(0, 2), 16) || 0;
+      const g = parseInt(hex.substring(2, 4), 16) || 0;
+      const b = parseInt(hex.substring(4, 6), 16) || 0;
+      return `rgba(${r},${g},${b},${alpha})`;
     }
 
     renderPixelGrid(item) {
       const el = document.createElement('div');
       const size = item.size || 8;
-      const color = this.hexToRgba(item.color, item.opacity);
-      el.style.cssText = `
-        position: absolute; inset: 0;
-        background-image: 
-          linear-gradient(to right, ${color} 1px, transparent 1px),
-          linear-gradient(to bottom, ${color} 1px, transparent 1px);
-        background-size: ${size}px ${size}px;
-        background-position: top center;
-      `;
-      if (item.maxWidth) {
-        el.style.maxWidth = item.maxWidth + 'px';
+      const color = this.parseColor(item.color, item.opacity);
+      el.style.cssText = `position:absolute;inset:0;box-sizing:border-box;`;
+      el.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
+      el.style.backgroundSize = `${size}px ${size}px`;
+      if (item.maxWidth > 0) {
+        el.style.width = '100%';
+        el.style.maxWidth = `${item.maxWidth}px`;
         el.style.left = '50%';
         el.style.transform = 'translateX(-50%)';
         el.style.borderLeft = `1px solid ${color}`;
@@ -87,109 +87,75 @@
       return el;
     }
 
-    // --- REBUILT LOGIC: STRICT ADHERENCE TO ORIGINAL SPECS ---
     renderFlexGrid(item) {
       const isRow = item.type === 'rows';
       const mode = item.typeMode || 'stretch';
-      const color = this.hexToRgba(item.color, item.opacity);
-
-      // 1. Outer Wrapper (Positioning)
+      const color = this.parseColor(item.color, item.opacity);
       const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'position: absolute; inset: 0; display: flex; pointer-events: none;';
-
+      wrapper.style.cssText = 'position:absolute;inset:0;display:flex;box-sizing:border-box;';
       if (item.maxWidth > 0) {
-        wrapper.style.maxWidth = item.maxWidth + 'px';
+        wrapper.style.width = '100%';
+        wrapper.style.maxWidth = `${item.maxWidth}px`;
         wrapper.style.margin = '0 auto';
-        wrapper.style.left = 0;
-        wrapper.style.right = 0;
+        wrapper.style.left = '0';
+        wrapper.style.right = '0';
       }
-
-      // 2. Alignment Logic (The "Matrix")
-      // COLUMNS: Justify = X axis (Left/Center/Right), Align = Y axis (Stretch)
-      // ROWS:    Align = Y axis (Top/Center/Bot), Justify = X axis (Stretch)
-
-      let justify = 'center'; // Default center
-
-      // Map Modes to Flex Properties
-      if (mode === 'stretch') {
-        justify = 'stretch';
-      } else if (mode === 'left' || mode === 'top') {
-        // Start
-        justify = 'flex-start';
-      } else if (mode === 'right' || mode === 'bottom') {
-        // End
-        justify = 'flex-end';
-      }
-
-      // Apply Flex Direction & Alignment
+      let justify =
+        mode === 'stretch'
+          ? 'stretch'
+          : mode === 'left' || mode === 'top'
+            ? 'flex-start'
+            : mode === 'right' || mode === 'bottom'
+              ? 'flex-end'
+              : 'center';
       if (isRow) {
-        wrapper.style.flexDirection = 'row'; // Wrapper flows Horizontally, children (Rows) stack Vertically inside grid
-        wrapper.style.justifyContent = 'stretch'; // Fill Width
-        wrapper.style.alignItems = justify; // Position Top/Bot/Center
+        wrapper.style.alignItems = justify;
+        wrapper.style.justifyContent = 'stretch';
       } else {
-        wrapper.style.flexDirection = 'row';
-        wrapper.style.alignItems = 'stretch'; // Fill Height
-        wrapper.style.justifyContent = justify; // Position Left/Right/Center
+        wrapper.style.justifyContent = justify;
+        wrapper.style.alignItems = 'stretch';
       }
-
-      // 3. The Grid Container
       const grid = document.createElement('div');
       grid.style.display = 'flex';
-      grid.style.flexDirection = isRow ? 'column' : 'row'; // Rows stack V, Cols stack H
-      grid.style.gap = (item.gutter || 0) + 'px';
-
-      // 4. Sizing & Offsets (Recreating original logic)
+      grid.style.flexDirection = isRow ? 'column' : 'row';
+      grid.style.gap = `${item.gutter || 0}px`;
+      grid.style.boxSizing = 'border-box';
       if (mode === 'stretch') {
         grid.style.width = '100%';
         grid.style.height = '100%';
-        const m = (item.margin || 0) + 'px';
-        if (isRow) {
-          grid.style.paddingTop = m;
-          grid.style.paddingBottom = m;
-        } else {
-          grid.style.paddingLeft = m;
-          grid.style.paddingRight = m;
-        }
+        const m = `${item.margin || 0}px`;
+        isRow ? (grid.style.padding = `${m} 0`) : (grid.style.padding = `0 ${m}`);
       } else {
-        // FIXED MODE: Handle explicit sizes + Offsets
-        const offset = (item.offset || 0) + 'px';
-
+        const off = `${item.offset || 0}px`;
         if (isRow) {
-          grid.style.width = '100%'; // Rows span full width
-          if (mode === 'top') grid.style.marginTop = offset;
-          if (mode === 'bottom') grid.style.marginBottom = offset;
+          grid.style.width = '100%';
+          if (mode === 'top') grid.style.marginTop = off;
+          if (mode === 'bottom') grid.style.marginBottom = off;
         } else {
-          grid.style.height = '100%'; // Cols span full height
-          if (mode === 'left') grid.style.marginLeft = offset;
-          if (mode === 'right') grid.style.marginRight = offset;
+          grid.style.height = '100%';
+          if (mode === 'left') grid.style.marginLeft = off;
+          if (mode === 'right') grid.style.marginRight = off;
         }
       }
-
-      // 5. Generate Cells
-      const count = item.count || 12;
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < (item.count || 12); i++) {
         const cell = document.createElement('div');
         cell.style.backgroundColor = color;
-
-        if (mode === 'stretch') {
-          cell.style.flex = '1';
-        } else {
-          // Fixed size cells
-          const size = (item.width || 80) + 'px';
+        if (mode === 'stretch') cell.style.flex = '1';
+        else {
+          const size = `${item.width || 80}px`;
+          isRow ? (cell.style.height = size) : (cell.style.width = size);
           cell.style.flex = '0 0 auto';
-          if (isRow) cell.style.height = size;
-          else cell.style.width = size;
         }
         grid.appendChild(cell);
       }
-
       wrapper.appendChild(grid);
       return wrapper;
     }
 
     render() {
       if (!this.state.enabled) {
-        this.removeHost();
+        const host = document.getElementById(HOST_ID);
+        if (host) host.remove();
         return;
       }
       const host = this.createHost();
@@ -202,6 +168,5 @@
       });
     }
   }
-
   new Overlay();
 })();

@@ -1,61 +1,88 @@
 <!doctype html>
-<html lang="en">
+<html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Layout Grid</title>
     <link rel="stylesheet" href="popup.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
-      rel="stylesheet"
-    />
   </head>
   <body>
     <header>
       <div class="header-left">
-        <h1>Grid Overlay</h1>
-        <div class="shortcut-badge" title="Use Ctrl+' to toggle">
-          <kbd>Ctrl</kbd><span class="plus">+</span><kbd>'</kbd>
-        </div>
+        <h1>Grid</h1>
+        <div class="shortcut-badge">Alt G</div>
       </div>
       <div class="toggle-switch">
         <input type="checkbox" id="global-toggle" />
         <label for="global-toggle"></label>
       </div>
     </header>
-
     <main>
-      <section class="panel-section">
+      <section>
         <div class="section-header">
-          <label>Active Profile</label>
+          <label>Profile</label>
           <div class="action-group">
             <button id="btn-add-profile" class="btn-icon" title="New Profile">
-              <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M12 5v14M5 12h14" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 5V19M5 12H19" />
+              </svg>
+            </button>
+            <button id="btn-duplicate-profile" class="btn-icon" title="Duplicate Profile">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M9 15H7C4.79086 15 3 13.2091 3 11V5C3 2.79086 4.79086 1 7 1H13C15.2091 1 17 2.79086 17 5V7M11 9H17C19.2091 9 21 10.7908 21 13V19C21 21.2091 19.2091 23 17 23H11C8.79086 23 7 21.2091 7 19V13C7 10.7908 8.79086 9 11 9Z"
+                />
               </svg>
             </button>
             <button id="btn-rename-profile" class="btn-icon" title="Rename">
-              <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M16.2141 4.98239L19.0177 7.78597M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               </svg>
             </button>
             <button id="btn-delete-profile" class="btn-icon danger" title="Delete">
-              <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
               </svg>
             </button>
           </div>
         </div>
-        <div class="select-wrapper">
-          <select id="profile-select"></select>
-          <span class="select-arrow">▼</span>
-        </div>
+        <select id="profile-select" class="select-main"></select>
       </section>
-
-      <div class="divider"></div>
-
+      <div style="height: 1px; background: var(--border); margin: 18px 0; opacity: 0.5"></div>
       <section class="panel-section grow">
         <div class="section-header">
           <label>Layers</label>
@@ -64,22 +91,31 @@
         <div id="layers-list" class="layers-container"></div>
       </section>
     </main>
-
     <div id="editor-panel" class="editor-panel">
       <div class="editor-header">
-        <h3>Edit Layer</h3>
-        <button id="btn-close-editor" class="btn-close">×</button>
+        <h3 style="margin: 0; font-size: 14px; font-weight: 700">Edit Layer</h3>
+        <button id="btn-close-editor" class="btn-icon">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 6L6 18M6 6L18 18" />
+          </svg>
+        </button>
       </div>
-      <div class="editor-body">
-        <div class="segment-control">
-          <button data-type="columns" class="segment">Cols</button>
-          <button data-type="rows" class="segment">Rows</button>
-          <button data-type="grid" class="segment">Grid</button>
-        </div>
-        <div id="editor-fields" class="form-grid"></div>
+      <div class="segment-control">
+        <button data-type="columns" class="segment active">Columns</button>
+        <button data-type="rows" class="segment">Rows</button>
+        <button data-type="grid" class="segment">Pixel</button>
       </div>
+      <div id="editor-fields" class="form-grid"></div>
     </div>
-
     <script src="popup.js"></script>
   </body>
 </html>
