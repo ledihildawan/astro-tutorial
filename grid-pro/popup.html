@@ -16,7 +16,7 @@
       <label for="global-toggle"></label>
     </div>
   </header>
-  <main>
+  <main id="main-content">
     <section>
       <div class="section-header">
         <label>Active Preset</label>
@@ -38,18 +38,18 @@
     <section>
       <div class="section-header">
         <label>Layers</label>
-        <button id="btn-add-layer" class="btn-new-layer" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;">+ NEW LAYER</button>
+        <button id="btn-add-layer" class="btn-new-layer">+ NEW LAYER</button>
       </div>
       <div id="layers-list"></div>
     </section>
   </main>
   <div id="editor-panel" class="editor-panel">
-    <div class="editor-header-ui" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h3 style="margin:0; font-size:13px; color:var(--text-secondary);">Properties</h3>
-      <button id="btn-close-editor" style="background:none; border:none; color:#fff; cursor:pointer; opacity:0.5;">✕</button>
+    <div class="editor-header-ui">
+      <h3>Properties</h3>
+      <button id="btn-close-editor">✕</button>
     </div>
     <div class="segment-control">
-      <button data-type="columns" class="segment active">Columns</button>
+      <button data-type="columns" class="segment">Columns</button>
       <button data-type="rows" class="segment">Rows</button>
       <button data-type="grid" class="segment">Pixel</button>
     </div>

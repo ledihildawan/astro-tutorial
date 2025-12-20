@@ -29,7 +29,7 @@ class App {
       editorFields: document.getElementById('editor-fields'),
       btnCloseEditor: document.getElementById('btn-close-editor'),
       segments: document.querySelectorAll('.segment'),
-      main: document.querySelector('main')
+      main: document.getElementById('main-content')
     };
     await this.load();
     this.listen();
@@ -40,7 +40,22 @@ class App {
   async load() {
     const d = await chrome.storage.local.get(['store']);
     if (d.store) {
-      if (d.store.profiles) this.state.profiles = { ...SYSTEM_PROFILES, ...d.store.profiles };
+      if (d.store.profiles) {
+        // Migrasi & Sanitasi Data Lama
+        const migrated = {};
+        Object.entries(d.store.profiles).forEach(([id, p]) => {
+          migrated[id] = {
+            ...p,
+            items: (p.items || []).map(item => ({
+              typeMode: 'stretch', // Default jika properti baru tidak ada
+              maxWidth: 0,
+              offset: 0,
+              ...item
+            }))
+          };
+        });
+        this.state.profiles = { ...SYSTEM_PROFILES, ...migrated };
+      }
       this.state.activeProfileId = d.store.activeProfileId || 'bootstrap_xxl';
     }
   }
@@ -70,6 +85,15 @@ class App {
 
   getCurrent() { return this.state.profiles[this.state.activeProfileId] || this.state.profiles['bootstrap_xxl']; }
 
+  feedback(el) {
+    el.style.transform = 'scale(0.92)';
+    setTimeout(() => el.style.transform = '', 100);
+  }
+
+  sanitize(str) {
+    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").substring(0, 30);
+  }
+
   listen() {
     this.dom.toggle.addEventListener('change', (e) => {
       chrome.tabs.query({ active: true, currentWindow: true }, (t) => {
@@ -80,14 +104,12 @@ class App {
       });
     });
 
-    chrome.runtime.onMessage.addListener((m) => {
-      if (m.action === 'SYNC_UI') this.dom.toggle.checked = m.enabled;
-    });
-
     this.dom.btnDuplicateProfile.addEventListener('click', () => {
+      this.feedback(this.dom.btnDuplicateProfile);
       const cur = this.getCurrent();
-      const name = prompt("Duplicate preset as:", `${cur.name} (Copy)`);
-      if (!name) return;
+      const rawName = prompt("Duplicate preset as:", `${cur.name} (Copy)`);
+      if (!rawName) return;
+      const name = this.sanitize(rawName);
       const id = 'c_' + Date.now();
       this.state.profiles[id] = { name, items: JSON.parse(JSON.stringify(cur.items)), locked: false };
       this.state.activeProfileId = id;
@@ -95,7 +117,9 @@ class App {
     });
 
     this.dom.btnAddProfile.addEventListener('click', () => {
-      const name = prompt("New Preset Name:"); if (!name) return;
+      this.feedback(this.dom.btnAddProfile);
+      const rawName = prompt("New Preset Name:"); if (!rawName) return;
+      const name = this.sanitize(rawName);
       const id = 'c_' + Date.now();
       this.state.profiles[id] = { name, items: [], locked: false };
       this.state.activeProfileId = id;
@@ -127,8 +151,10 @@ class App {
     });
 
     this.dom.layersList.addEventListener('click', (e) => {
-      const idx = e.target.closest('.layer-card')?.dataset.idx;
-      if (idx === undefined) return;
+      const card = e.target.closest('.layer-card');
+      if (!card) return;
+      const idx = card.dataset.idx;
+
       if (e.target.closest('.btn-vis')) {
         this.getCurrent().items[idx].visible = !this.getCurrent().items[idx].visible;
         this.push(); this.persist(); this.renderLayers();
@@ -144,7 +170,10 @@ class App {
     this.dom.btnAddLayer.addEventListener('click', () => {
       if (this.getCurrent().locked) return alert("System preset is locked. Duplicate it first.");
       this.getCurrent().items.push({ type: 'columns', count: 12, gutter: 24, margin: 24, color: '#3b82f6', opacity: 0.15, visible: true, maxWidth: 0, offset: 0 });
-      this.persist(); this.push(); this.renderLayers(); this.openEditor(this.getCurrent().items.length - 1);
+      this.persist(); this.push(); this.renderLayers();
+      const lastIdx = this.getCurrent().items.length - 1;
+      this.openEditor(lastIdx);
+      setTimeout(() => this.dom.layersList.lastElementChild?.scrollIntoView({behavior: 'smooth'}), 100);
     });
 
     this.dom.btnCloseEditor.addEventListener('click', () => this.closeEditor());
@@ -158,6 +187,7 @@ class App {
     this.dom.main.classList.add('dimmed');
     const item = this.getCurrent().items[idx];
     const isLocked = this.getCurrent().locked;
+    
     this.dom.segments.forEach(s => s.classList.toggle('active', s.dataset.type === item.type));
     
     let h = isLocked ? `<div class="locked-banner">VIEW MODE — SYSTEM PRESET</div>` : '';
@@ -182,7 +212,12 @@ class App {
     this.dom.editorFields.innerHTML = h;
   }
 
-  closeEditor() { this.state.editingIndex = null; this.dom.editorPanel.classList.remove('open'); this.dom.main.classList.remove('dimmed'); this.renderLayers(); }
+  closeEditor() { 
+    this.state.editingIndex = null; 
+    this.dom.editorPanel.classList.remove('open'); 
+    this.dom.main.classList.remove('dimmed'); 
+    this.renderLayers(); 
+  }
   
   switchType(t) { 
     if(this.getCurrent().locked) return;
@@ -193,18 +228,27 @@ class App {
   handleInput(e) { 
     if(this.getCurrent().locked) return; 
     const i = this.getCurrent().items[this.state.editingIndex];
-    i[e.target.dataset.key] = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
-    this.push(); this.saveDebounced();
+    let val = e.target.value;
+    if (e.target.type === 'number') val = parseFloat(val) || 0;
+    i[e.target.dataset.key] = val;
+    this.push(); 
+    this.saveDebounced();
     if(e.target.dataset.key ==='typeMode') this.openEditor(this.state.editingIndex);
   }
 
   render() {
-    this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`).join('');
+    this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => {
+      return `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`;
+    }).join('');
     this.renderLayers();
   }
 
   renderLayers() {
     const p = this.getCurrent();
+    if (p.items.length === 0) {
+      this.dom.layersList.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted); font-size:11px;">No layers in this preset.</div>`;
+      return;
+    }
     this.dom.layersList.innerHTML = p.items.map((item, i) => `
       <div class="layer-card ${this.state.editingIndex===i?'active':''}" data-idx="${i}">
         <div class="color-indicator" style="background:${item.color}"></div>
@@ -213,8 +257,15 @@ class App {
           <input type="range" class="quick-opacity" data-idx="${i}" min="0" max="1" step="0.01" value="${item.opacity}" ${p.locked?'disabled':''}>
         </div>
         <div style="display:flex; gap:6px;">
-          <button class="btn-vis btn-icon">${item.visible ? '👁️' : '🕶️'}</button>
-          <button class="btn-del btn-icon" ${p.locked?'style="opacity:0.2"':''}>🗑️</button>
+          <button class="btn-vis btn-icon">
+            ${item.visible ? 
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : 
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+            }
+          </button>
+          <button class="btn-del btn-icon" ${p.locked?'style="opacity:0.2; pointer-events:none;"':''}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
         </div>
       </div>`).join('');
   }

@@ -61,7 +61,7 @@
       this.host = document.createElement('div');
       this.host.id = HOST_ID;
       this.host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;contain:strict;will-change:transform;';
-      const shadow = this.host.attachShadow({ mode: 'open' });
+      this.host.attachShadow({ mode: 'open' });
       document.documentElement.appendChild(this.host);
       return this.host;
     }
