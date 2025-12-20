@@ -1,36 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "Figma Debug Overlay Pro",
-  "version": "4.0.0",
-  "description": "Professional Layout Grid Engine - High Performance & Per-Tab Isolation.",
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "Grid Engine"
-  },
+  "name": "Grid Pro",
+  "version": "8.5.0",
+  "description": "Fluid Precision Edition: Ultra-stable layout guide with zero-scroll Obsidian UI.",
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html" },
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "commands": {
     "toggle-overlay": {
-      "suggested_key": {
-        "default": "Alt+G",
-        "mac": "Alt+G"
-      },
-      "description": "Toggle Overlay"
+      "suggested_key": { "default": "Alt+G", "mac": "Alt+G" },
+      "description": "Toggle Layout Guide"
     }
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_end"
-    }
-  ]
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"],
+    "run_at": "document_end"
+  }]
 }

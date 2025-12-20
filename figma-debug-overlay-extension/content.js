@@ -1,46 +1,31 @@
-// content.js - High Performance Rendering Engine
-(function () {
-  const HOST_ID = 'overlay-engine-v4';
-
+(function() {
+  const HOST_ID = 'grid-pro-v8-engine';
   class Overlay {
     constructor() {
       this.state = { enabled: false, items: [] };
-      chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: false, tabId: 'self' });
       this.init();
     }
-
     init() {
-      chrome.storage.sync.get(['store'], (data) => {
+      chrome.storage.local.get(['store'], (data) => {
         if (data.store?.profiles) {
           const profile = data.store.profiles[data.store.activeProfileId];
           this.state.items = profile ? profile.items : [];
           this.render();
         }
       });
-
+      const resizeObserver = new ResizeObserver(() => {
+        if (this.state.enabled) this.render();
+      });
+      resizeObserver.observe(document.documentElement);
       chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        if (msg.action === 'UPDATE') {
-          this.state.items = msg.items;
-          this.render();
-        } else if (msg.action === 'TOGGLE_LOCAL') {
+        if (msg.action === 'UPDATE') { this.state.items = msg.items; this.render(); }
+        else if (msg.action === 'TOGGLE_LOCAL') {
           this.state.enabled = !this.state.enabled;
           this.render();
           chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
-        } else if (msg.action === 'GET_STATUS') {
-          sendResponse({ enabled: this.state.enabled });
-        }
-      });
-
-      document.addEventListener('keydown', (e) => {
-        const tag = e.target.tagName.toUpperCase();
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
-        if (e.altKey && e.key.toLowerCase() === 'g') {
-          e.preventDefault();
-          chrome.runtime.sendMessage({ action: 'TOGGLE_REQUEST' });
-        }
+        } else if (msg.action === 'GET_STATUS') { sendResponse({ enabled: this.state.enabled }); }
       });
     }
-
     createHost() {
       let host = document.getElementById(HOST_ID);
       if (host) return host;
@@ -55,116 +40,64 @@
       document.documentElement.appendChild(host);
       return host;
     }
-
     parseColor(color, alpha) {
       let hex = (color || '#ff0000').replace('#', '');
-      if (hex.length === 3)
-        hex = hex
-          .split('')
-          .map((c) => c + c)
-          .join('');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
       const r = parseInt(hex.substring(0, 2), 16) || 0;
       const g = parseInt(hex.substring(2, 4), 16) || 0;
       const b = parseInt(hex.substring(4, 6), 16) || 0;
       return `rgba(${r},${g},${b},${alpha})`;
     }
-
-    renderPixelGrid(item) {
-      const el = document.createElement('div');
-      const size = item.size || 8;
-      const color = this.parseColor(item.color, item.opacity);
-      el.style.cssText = `position:absolute;inset:0;box-sizing:border-box;`;
-      el.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
-      el.style.backgroundSize = `${size}px ${size}px`;
-      if (item.maxWidth > 0) {
-        el.style.width = '100%';
-        el.style.maxWidth = `${item.maxWidth}px`;
-        el.style.left = '50%';
-        el.style.transform = 'translateX(-50%)';
-        el.style.borderLeft = `1px solid ${color}`;
-        el.style.borderRight = `1px solid ${color}`;
-      }
-      return el;
-    }
-
-    renderFlexGrid(item) {
-      const isRow = item.type === 'rows';
-      const mode = item.typeMode || 'stretch';
-      const color = this.parseColor(item.color, item.opacity);
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'position:absolute;inset:0;display:flex;box-sizing:border-box;';
-      if (item.maxWidth > 0) {
-        wrapper.style.width = '100%';
-        wrapper.style.maxWidth = `${item.maxWidth}px`;
-        wrapper.style.margin = '0 auto';
-        wrapper.style.left = '0';
-        wrapper.style.right = '0';
-      }
-      let justify =
-        mode === 'stretch'
-          ? 'stretch'
-          : mode === 'left' || mode === 'top'
-            ? 'flex-start'
-            : mode === 'right' || mode === 'bottom'
-              ? 'flex-end'
-              : 'center';
-      if (isRow) {
-        wrapper.style.alignItems = justify;
-        wrapper.style.justifyContent = 'stretch';
-      } else {
-        wrapper.style.justifyContent = justify;
-        wrapper.style.alignItems = 'stretch';
-      }
-      const grid = document.createElement('div');
-      grid.style.display = 'flex';
-      grid.style.flexDirection = isRow ? 'column' : 'row';
-      grid.style.gap = `${item.gutter || 0}px`;
-      grid.style.boxSizing = 'border-box';
-      if (mode === 'stretch') {
-        grid.style.width = '100%';
-        grid.style.height = '100%';
-        const m = `${item.margin || 0}px`;
-        isRow ? (grid.style.padding = `${m} 0`) : (grid.style.padding = `0 ${m}`);
-      } else {
-        const off = `${item.offset || 0}px`;
-        if (isRow) {
-          grid.style.width = '100%';
-          if (mode === 'top') grid.style.marginTop = off;
-          if (mode === 'bottom') grid.style.marginBottom = off;
-        } else {
-          grid.style.height = '100%';
-          if (mode === 'left') grid.style.marginLeft = off;
-          if (mode === 'right') grid.style.marginRight = off;
-        }
-      }
-      for (let i = 0; i < (item.count || 12); i++) {
-        const cell = document.createElement('div');
-        cell.style.backgroundColor = color;
-        if (mode === 'stretch') cell.style.flex = '1';
-        else {
-          const size = `${item.width || 80}px`;
-          isRow ? (cell.style.height = size) : (cell.style.width = size);
-          cell.style.flex = '0 0 auto';
-        }
-        grid.appendChild(cell);
-      }
-      wrapper.appendChild(grid);
-      return wrapper;
-    }
-
     render() {
-      if (!this.state.enabled) {
-        const host = document.getElementById(HOST_ID);
-        if (host) host.remove();
-        return;
-      }
+      if (!this.state.enabled) { document.getElementById(HOST_ID)?.remove(); return; }
       const host = this.createHost();
-      const root = host.shadowRoot.getElementById('root');
+      const shadow = host.shadowRoot;
+      const root = shadow.getElementById('root');
       root.innerHTML = '';
-      this.state.items.forEach((item) => {
+      const vp = document.createElement('div');
+      vp.style.cssText = `position:absolute;top:12px;right:12px;background:rgba(9,9,11,0.9);color:#10b981;padding:4px 10px;font-family:monospace;font-size:11px;font-weight:700;border-radius:6px;border:1px solid rgba(16,185,129,0.3);z-index:9999;backdrop-filter:blur(8px);`;
+      vp.innerText = `${window.innerWidth}px`;
+      root.appendChild(vp);
+      this.state.items.forEach(item => {
         if (!item.visible) return;
-        const node = item.type === 'grid' ? this.renderPixelGrid(item) : this.renderFlexGrid(item);
-        if (node) root.appendChild(node);
+        const layer = document.createElement('div');
+        layer.style.cssText = `position:absolute;inset:0;display:grid;width:100%;height:100%;margin:0 auto;box-sizing:border-box;`;
+        const color = this.parseColor(item.color, item.opacity);
+        if (item.type === 'grid') {
+          layer.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
+          layer.style.backgroundSize = `${item.size}px ${item.size}px`;
+        } else {
+          const isRow = item.type === 'rows';
+          const mode = item.typeMode || 'stretch';
+          if (item.maxWidth > 0) layer.style.maxWidth = `${item.maxWidth}px`;
+          if (mode === 'stretch') {
+            const m = item.margin || 0;
+            layer.style.padding = isRow ? `${m}px 0` : `0 ${m}px`;
+            layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, 1fr)`;
+          } else {
+            const justify = (mode === 'left' || mode === 'top') ? 'start' : (mode === 'right' || mode === 'bottom') ? 'end' : 'center';
+            layer.style.justifyContent = isRow ? 'stretch' : justify;
+            layer.style.alignContent = isRow ? justify : 'stretch';
+            layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, ${item.width}px)`;
+          }
+          layer.style.gap = `${item.gutter}px`;
+          for (let i = 0; i < item.count; i++) {
+            const cell = document.createElement('div');
+            cell.style.backgroundColor = color;
+            cell.style.position = 'relative';
+            if (i === 0 && item.opacity > 0.05) {
+              const label = document.createElement('div');
+              label.style.cssText = `position:absolute;top:4px;left:4px;font-size:9px;color:#fff;background:rgba(0,0,0,0.6);padding:2px 4px;border-radius:3px;font-family:monospace;pointer-events:none;`;
+              requestAnimationFrame(() => {
+                const rect = cell.getBoundingClientRect();
+                label.innerText = `${Math.round(isRow ? rect.height : rect.width)}px`;
+              });
+              cell.appendChild(label);
+            }
+            layer.appendChild(cell);
+          }
+        }
+        root.appendChild(layer);
       });
     }
   }
