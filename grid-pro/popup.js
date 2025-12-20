@@ -43,15 +43,7 @@ class App {
       if (d.store.profiles) {
         const migrated = {};
         Object.entries(d.store.profiles).forEach(([id, p]) => {
-          migrated[id] = {
-            ...p,
-            items: (p.items || []).map(item => ({
-              typeMode: 'stretch',
-              maxWidth: 0,
-              offset: 0,
-              ...item
-            }))
-          };
+          migrated[id] = { ...p, items: (p.items || []).map(item => ({ typeMode: 'stretch', maxWidth: 0, offset: 0, ...item })) };
         });
         this.state.profiles = { ...SYSTEM_PROFILES, ...migrated };
       }
@@ -89,10 +81,6 @@ class App {
     setTimeout(() => el.style.transform = '', 100);
   }
 
-  sanitize(str) {
-    return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").substring(0, 30);
-  }
-
   listen() {
     this.dom.toggle.addEventListener('change', (e) => {
       chrome.tabs.query({ active: true, currentWindow: true }, (t) => {
@@ -108,9 +96,8 @@ class App {
       const cur = this.getCurrent();
       const rawName = prompt("Duplicate preset as:", `${cur.name} (Copy)`);
       if (!rawName) return;
-      const name = this.sanitize(rawName);
       const id = 'c_' + Date.now();
-      this.state.profiles[id] = { name, items: JSON.parse(JSON.stringify(cur.items)), locked: false };
+      this.state.profiles[id] = { name: rawName.substring(0,30), items: JSON.parse(JSON.stringify(cur.items)), locked: false };
       this.state.activeProfileId = id;
       this.persist(); this.render(); this.push();
     });
@@ -118,9 +105,8 @@ class App {
     this.dom.btnAddProfile.addEventListener('click', () => {
       this.feedback(this.dom.btnAddProfile);
       const rawName = prompt("New Preset Name:"); if (!rawName) return;
-      const name = this.sanitize(rawName);
       const id = 'c_' + Date.now();
-      this.state.profiles[id] = { name, items: [], locked: false };
+      this.state.profiles[id] = { name: rawName.substring(0,30), items: [], locked: false };
       this.state.activeProfileId = id;
       this.persist(); this.render();
     });
@@ -157,11 +143,11 @@ class App {
       const isLocked = this.getCurrent().locked;
 
       if (e.target.closest('.btn-vis')) {
-        if (isLocked) return; // Strict Lock: Tidak bisa toggle visibility
+        if (isLocked) return;
         this.getCurrent().items[idx].visible = !this.getCurrent().items[idx].visible;
         this.push(); this.persist(); this.renderLayers();
       } else if (e.target.closest('.btn-del')) {
-        if (isLocked) return; // Strict Lock: Tidak bisa hapus layer
+        if (isLocked) return;
         this.getCurrent().items.splice(idx, 1);
         this.closeEditor(); this.push(); this.persist(); this.renderLayers();
       } else if (!e.target.classList.contains('quick-opacity')) {
@@ -173,9 +159,7 @@ class App {
       if (this.getCurrent().locked) return;
       this.getCurrent().items.push({ type: 'columns', count: 12, gutter: 24, margin: 24, color: '#3b82f6', opacity: 0.15, visible: true, maxWidth: 0, offset: 0 });
       this.persist(); this.push(); this.renderLayers();
-      const lastIdx = this.getCurrent().items.length - 1;
-      this.openEditor(lastIdx);
-      setTimeout(() => this.dom.layersList.lastElementChild?.scrollIntoView({behavior: 'smooth'}), 100);
+      this.openEditor(this.getCurrent().items.length - 1);
     });
 
     this.dom.btnCloseEditor.addEventListener('click', () => this.closeEditor());
@@ -196,17 +180,16 @@ class App {
     const f = (l, k, t='number', s=1) => `<div class="field"><label>${l}</label><input type="${t}" data-key="${k}" value="${item[k] ?? ''}" step="${s}" ${isLocked ? 'disabled' : ''}></div>`;
     
     if (item.type === 'grid') {
-      h += f('Pixel Size', 'size') + f('Offset', 'offset') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
+      h += f('Size', 'size') + f('Offset', 'offset') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
     } else {
       const isR = item.type === 'rows';
-      h += f(isR ? 'Rows Count' : 'Columns Count', 'count') + f('Gutter', 'gutter');
-      h += `<div class="field"><label>Alignment</label><select data-key="typeMode" ${isLocked ? 'disabled' : ''}>
+      h += f('Count', 'count') + f('Gutter', 'gutter');
+      h += `<div class="field"><label>Align</label><select data-key="typeMode" ${isLocked ? 'disabled' : ''}>
         <option value="stretch" ${item.typeMode==='stretch'?'selected':''}>Stretch</option>
         <option value="center" ${item.typeMode==='center'?'selected':''}>Center</option>
         <option value="${isR?'top':'left'}" ${item.typeMode===(isR?'top':'left')?'selected':''}>${isR?'Top':'Left'}</option>
         <option value="${isR?'bottom':'right'}" ${item.typeMode===(isR?'bottom':'right')?'selected':''}>${isR?'Bottom':'Right'}</option>
       </select></div>`;
-      
       if (item.typeMode === 'stretch') h += f('Margin', 'margin'); 
       else h += f(isR ? 'Height' : 'Width', isR ? 'height' : 'width') + f('Offset', 'offset');
       h += f('Max Container', 'maxWidth') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
@@ -214,12 +197,7 @@ class App {
     this.dom.editorFields.innerHTML = h;
   }
 
-  closeEditor() { 
-    this.state.editingIndex = null; 
-    this.dom.editorPanel.classList.remove('open'); 
-    this.dom.main.classList.remove('dimmed'); 
-    this.renderLayers(); 
-  }
+  closeEditor() { this.state.editingIndex = null; this.dom.editorPanel.classList.remove('open'); this.dom.main.classList.remove('dimmed'); this.renderLayers(); }
   
   switchType(t) { 
     if(this.getCurrent().locked) return;
@@ -230,57 +208,38 @@ class App {
   handleInput(e) { 
     if(this.getCurrent().locked) return; 
     const i = this.getCurrent().items[this.state.editingIndex];
-    let val = e.target.value;
-    if (e.target.type === 'number') val = parseFloat(val) || 0;
-    i[e.target.dataset.key] = val;
-    this.push(); 
-    this.saveDebounced();
+    i[e.target.dataset.key] = e.target.type === 'number' ? (parseFloat(e.target.value) || 0) : e.target.value;
+    this.push(); this.saveDebounced();
     if(e.target.dataset.key ==='typeMode') this.openEditor(this.state.editingIndex);
   }
 
   render() {
     const isLocked = this.getCurrent().locked;
-    
     this.dom.btnDeleteProfile.style.opacity = isLocked ? '0.2' : '1';
     this.dom.btnDeleteProfile.style.pointerEvents = isLocked ? 'none' : 'auto';
-    this.dom.btnAddLayer.style.opacity = isLocked ? '0' : '1';
-    this.dom.btnAddLayer.style.pointerEvents = isLocked ? 'none' : 'auto';
-
-    this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => {
-      return `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`;
-    }).join('');
+    this.dom.btnAddLayer.style.display = isLocked ? 'none' : 'block';
+    this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`).join('');
     this.renderLayers();
   }
 
   renderLayers() {
     const p = this.getCurrent();
     if (p.items.length === 0) {
-      this.dom.layersList.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted); font-size:11px;">No layers in this preset.</div>`;
+      this.dom.layersList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:11px;">No layers.</div>`;
       return;
     }
     this.dom.layersList.innerHTML = p.items.map((item, i) => `
       <div class="layer-card ${this.state.editingIndex===i?'active':''} ${p.locked ? 'is-locked' : ''}" data-idx="${i}">
         <div class="color-indicator" style="background:${item.color}"></div>
         <div class="layer-info">
-          <div class="layer-title">Layer ${i+1} (${item.type}) <span class="op-val">${Math.round(item.opacity*100)}%</span></div>
+          <div class="layer-title">L${i+1} ${item.type} <span class="op-val">${Math.round(item.opacity*100)}%</span></div>
           <input type="range" class="quick-opacity" data-idx="${i}" min="0" max="1" step="0.01" value="${item.opacity}" ${p.locked?'disabled':''}>
         </div>
-        <div style="display:flex; gap:6px;">
-          <button class="btn-vis btn-icon" ${p.locked ? 'style="opacity:0.3; cursor:not-allowed;"' : ''}>
-            ${item.visible ? 
-              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : 
-              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
-            }
+        <div style="display:flex; gap:4px;">
+          <button class="btn-vis btn-icon" ${p.locked ? 'style="opacity:0.2; pointer-events:none;"' : ''}>
+            ${item.visible ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'}
           </button>
-          ${!p.locked ? `
-            <button class="btn-del btn-icon danger">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-            </button>
-          ` : `
-            <div class="lock-indicator">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-          `}
+          ${!p.locked ? `<button class="btn-del btn-icon danger"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>` : `<div class="lock-indicator"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>`}
         </div>
       </div>`).join('');
   }

@@ -1,29 +1,14 @@
 (function() {
-  const HOST_ID = 'grid-pro-v8-engine';
-  const DEFAULT_ITEMS = [{ 
-    type: 'columns', count: 12, typeMode: 'center', width: 80, 
-    gutter: 24, offset: 0, color: '#dc3545', opacity: 0.15, 
-    visible: true, maxWidth: 1320 
-  }];
+  const HOST_ID = 'grid-pro-v9-engine';
+  const DEFAULT_ITEMS = [{ type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 24, offset: 0, color: '#dc3545', opacity: 0.15, visible: true, maxWidth: 1320 }];
 
   class Overlay {
-    constructor() {
-      this.state = { enabled: false, items: [] };
-      this.host = null;
-      this.init();
-    }
+    constructor() { this.state = { enabled: false, items: [] }; this.host = null; this.init(); }
 
     init() {
       chrome.storage.local.get(['store'], (data) => {
         this.updateStateFromStorage(data);
         if (this.state.enabled) this.render();
-      });
-
-      let resizeTimer;
-      window.addEventListener('resize', () => {
-        if (!this.state.enabled) return;
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => this.updateViewportTag(), 50);
       });
 
       chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -40,104 +25,91 @@
         }
         return true;
       });
+      window.addEventListener('resize', () => { if (this.state.enabled) this.render(); });
     }
 
     updateStateFromStorage(data) {
-      if (data?.store?.activeProfileId) {
-        const activeId = data.store.activeProfileId;
-        const profiles = data.store.profiles || {};
-        this.state.items = profiles[activeId]?.items || DEFAULT_ITEMS;
-      } else {
-        this.state.items = DEFAULT_ITEMS;
-      }
+      const activeId = data?.store?.activeProfileId;
+      this.state.items = data?.store?.profiles?.[activeId]?.items || DEFAULT_ITEMS;
     }
 
-    removeHost() {
-      if (this.host) { this.host.remove(); this.host = null; }
-    }
+    removeHost() { if (this.host) { this.host.remove(); this.host = null; } }
 
     createHost() {
       if (this.host) return this.host;
       this.host = document.createElement('div');
       this.host.id = HOST_ID;
-      this.host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;contain:strict;will-change:transform;';
+      // Gunakan pointer-events: none agar tidak mengganggu klik pada web
+      this.host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;contain:strict;';
       this.host.attachShadow({ mode: 'open' });
       document.documentElement.appendChild(this.host);
       return this.host;
     }
 
-    parseColor(color, alpha) {
-      let hex = (color || '#ff0000').replace('#', '');
-      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-      const r = parseInt(hex.substring(0, 2), 16) || 0;
-      const g = parseInt(hex.substring(2, 4), 16) || 0;
-      const b = parseInt(hex.substring(4, 6), 16) || 0;
-      return `rgba(${r},${g},${b},${alpha})`;
-    }
-
-    updateViewportTag() {
-      const tag = this.host?.shadowRoot.querySelector('.viewport-tag');
-      if (tag) tag.textContent = `${window.innerWidth}px`;
-    }
-
     render() {
       const host = this.createHost();
       const shadow = host.shadowRoot;
-      const container = document.createElement('div');
-      container.className = 'grid-container';
       
+      const container = document.createElement('div');
+      container.style.cssText = 'position:absolute;inset:0;display:flex;justify-content:center;overflow:hidden;';
+
       const style = document.createElement('style');
       style.textContent = `
-        :host { all: initial; }
-        .viewport-tag { 
-          position: fixed; top: 12px; right: 12px; background: rgba(9,9,11,0.95); 
-          color: #10b981; padding: 6px 12px; font-family: ui-monospace, monospace; 
-          font-size: 11px; font-weight: 700; border-radius: 8px; border: 1px solid rgba(16,185,129,0.3); 
-          z-index: 9999; backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        .viewport-tag { position: fixed; top: 12px; right: 12px; background: rgba(9,9,11,0.9); color: #10b981; padding: 4px 8px; font-family: monospace; font-size: 10px; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3); z-index: 2; }
+        .grid-layer { 
+          position: absolute; 
+          height: 100%; 
+          width: 100%; 
+          display: grid; 
+          box-sizing: border-box; 
+          pointer-events: none;
         }
-        .grid-container { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-        .grid-layer { position: absolute; inset: 0; display: grid; width: 100%; height: 100%; margin: 0 auto; box-sizing: border-box; }
+        .grid-layer div { box-sizing: border-box; height: 100%; }
       `;
 
-      const tag = document.createElement('div');
-      tag.className = 'viewport-tag';
+      const tag = document.createElement('div'); 
+      tag.className = 'viewport-tag'; 
       tag.textContent = `${window.innerWidth}px`;
 
       this.state.items.forEach(item => {
         if (!item.visible) return;
         const layer = document.createElement('div');
         layer.className = 'grid-layer';
-        const color = this.parseColor(item.color, item.opacity);
+        
         const isRow = item.type === 'rows';
+        const rgb = item.color.replace('#','').match(/.{2}/g).map(x => parseInt(x, 16));
+        const color = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${item.opacity})`;
 
-        if (item.maxWidth > 0) {
-          layer.style.maxWidth = `${item.maxWidth}px`;
-          layer.style.left = '50%';
-          layer.style.transform = `translateX(-50%)`;
-        }
-
+        // --- PRESISION ENGINE ---
         if (item.type === 'grid') {
           layer.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
           layer.style.backgroundSize = `${item.size}px ${item.size}px`;
-          if (item.offset) layer.style.backgroundPosition = `${item.offset}px ${item.offset}px`;
         } else {
+          // Setting Max Width untuk presisi Container
+          if (item.maxWidth > 0) {
+            layer.style.width = `min(100%, ${item.maxWidth}px)`;
+            layer.style.left = '50%';
+            layer.style.transform = 'translateX(-50%)';
+          }
+
           const mode = item.typeMode || 'stretch';
+          const gap = item.gutter || 0;
+          
           if (mode === 'stretch') {
-            const m = item.margin || 0;
-            layer.style.padding = isRow ? `${m}px 0` : `0 ${m}px`;
+            const margin = item.margin || 0;
+            layer.style.padding = isRow ? `${margin}px 0` : `0 ${margin}px`;
+            // Gunakan 1fr dengan gap yang presisi
             layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, 1fr)`;
           } else {
-            const align = (mode === 'center') ? 'center' : (mode === 'left' || mode === 'top') ? 'start' : 'end';
-            layer.style.justifyContent = isRow ? 'stretch' : align;
-            layer.style.alignContent = isRow ? align : 'stretch';
-            layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, ${isRow ? (item.height || 80) : (item.width || 80)}px)`;
+            const align = mode === 'center' ? 'center' : (mode === 'left' || mode === 'top' ? 'start' : 'end');
+            const sizeVal = isRow ? (item.height || 80) : (item.width || 80);
             
-            const off = item.offset || 0;
-            const currentX = item.maxWidth > 0 ? '-50%' : '0';
-            if (isRow) layer.style.transform = `translateY(${off}px)`;
-            else layer.style.transform = `translateX(calc(${currentX} + ${off}px))`;
+            layer.style[isRow ? 'alignContent' : 'justifyContent'] = align;
+            layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, ${sizeVal}px)`;
           }
-          layer.style.gap = `${item.gutter}px`;
+
+          layer.style.gap = `${gap}px`;
+
           for (let i = 0; i < item.count; i++) {
             const cell = document.createElement('div');
             cell.style.backgroundColor = color;
