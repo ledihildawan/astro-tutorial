@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="status-dot-pulse"></div>
+      <h1>Grid Pro</h1>
+      <div class="shortcut-badge">Alt G</div>
+    </div>
+    <div class="toggle-switch">
+      <input type="checkbox" id="global-toggle">
+      <label for="global-toggle"></label>
+    </div>
+  </header>
+  <main>
+    <section>
+      <div class="section-header">
+        <label>Active Preset</label>
+        <div style="display:flex; gap:6px;">
+          <button id="btn-add-profile" class="btn-icon" title="New Profile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button id="btn-duplicate-profile" class="btn-icon" title="Duplicate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button id="btn-delete-profile" class="btn-icon danger" title="Delete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+      <select id="profile-select" class="select-main"></select>
+    </section>
+    <div class="divider"></div>
+    <section>
+      <div class="section-header">
+        <label>Layers</label>
+        <button id="btn-add-layer" class="btn-new-layer">+ NEW LAYER</button>
+      </div>
+      <div id="layers-list"></div>
+    </section>
+  </main>
+  <div id="editor-panel" class="editor-panel">
+    <div class="editor-handle"></div>
+    <div class="editor-header-ui">
+      <h3>Properties</h3>
+      <button id="btn-close-editor" class="btn-close-ui">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="segment-control">
+      <button data-type="columns" class="segment active">Columns</button>
+      <button data-type="rows" class="segment">Rows</button>
+      <button data-type="grid" class="segment">Pixel</button>
+    </div>
+    <div id="editor-fields" class="form-grid"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
