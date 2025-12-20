@@ -22,10 +22,11 @@ class App {
       profileSelect: document.getElementById('profile-select'),
       layersList: document.getElementById('layers-list'),
       btnAddProfile: document.getElementById('btn-add-profile'),
-      btnDuplicateProfile: document.getElementById('btn-duplicate-profile'),
-      btnDeleteProfile: document.getElementById('btn-delete-profile'),
+      btnRename: document.getElementById('btn-rename-profile'),
       btnExport: document.getElementById('btn-export-profile'),
       btnImport: document.getElementById('btn-import-profile'),
+      btnDuplicateProfile: document.getElementById('btn-duplicate-profile'),
+      btnDeleteProfile: document.getElementById('btn-delete-profile'),
       importInput: document.getElementById('import-input'),
       btnAddLayer: document.getElementById('btn-add-layer'),
       editorPanel: document.getElementById('editor-panel'),
@@ -89,7 +90,19 @@ class App {
       });
     });
 
-    // Fitur EXPORT
+    // --- LOGIKA RENAME ---
+    this.dom.btnRename.addEventListener('click', () => {
+      const cur = this.getCurrent();
+      if (cur.locked) return;
+      const newName = prompt("Rename preset to:", cur.name);
+      if (newName && newName.trim() !== "") {
+        cur.name = newName.substring(0, 30);
+        this.persist();
+        this.render();
+      }
+    });
+
+    // --- LOGIKA EXPORT ---
     this.dom.btnExport.addEventListener('click', () => {
       const current = this.getCurrent();
       const blob = new Blob([JSON.stringify(current, null, 2)], { type: 'application/json' });
@@ -101,7 +114,7 @@ class App {
       URL.revokeObjectURL(url);
     });
 
-    // Fitur IMPORT
+    // --- LOGIKA IMPORT ---
     this.dom.btnImport.addEventListener('click', () => this.dom.importInput.click());
     this.dom.importInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -263,10 +276,18 @@ class App {
 
   render() {
     const isLocked = this.getCurrent().locked;
+    
+    // Toggle visibilitas tombol berdasarkan status lock
     this.dom.btnDeleteProfile.style.opacity = isLocked ? '0.2' : '1';
     this.dom.btnDeleteProfile.style.pointerEvents = isLocked ? 'none' : 'auto';
+    this.dom.btnRename.style.opacity = isLocked ? '0.2' : '1';
+    this.dom.btnRename.style.pointerEvents = isLocked ? 'none' : 'auto';
     this.dom.btnAddLayer.style.display = isLocked ? 'none' : 'block';
-    this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`).join('');
+    
+    this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => 
+      `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`
+    ).join('');
+    
     this.renderLayers();
   }
 
