@@ -41,13 +41,12 @@ class App {
     const d = await chrome.storage.local.get(['store']);
     if (d.store) {
       if (d.store.profiles) {
-        // Migrasi & Sanitasi Data Lama
         const migrated = {};
         Object.entries(d.store.profiles).forEach(([id, p]) => {
           migrated[id] = {
             ...p,
             items: (p.items || []).map(item => ({
-              typeMode: 'stretch', // Default jika properti baru tidak ada
+              typeMode: 'stretch',
               maxWidth: 0,
               offset: 0,
               ...item
@@ -141,6 +140,7 @@ class App {
     });
 
     this.dom.layersList.addEventListener('input', (e) => {
+      if (this.getCurrent().locked) return;
       if (e.target.classList.contains('quick-opacity')) {
         const idx = e.target.dataset.idx;
         const val = parseFloat(e.target.value);
@@ -154,12 +154,14 @@ class App {
       const card = e.target.closest('.layer-card');
       if (!card) return;
       const idx = card.dataset.idx;
+      const isLocked = this.getCurrent().locked;
 
       if (e.target.closest('.btn-vis')) {
+        if (isLocked) return; // Strict Lock: Tidak bisa toggle visibility
         this.getCurrent().items[idx].visible = !this.getCurrent().items[idx].visible;
         this.push(); this.persist(); this.renderLayers();
       } else if (e.target.closest('.btn-del')) {
-        if (this.getCurrent().locked) return;
+        if (isLocked) return; // Strict Lock: Tidak bisa hapus layer
         this.getCurrent().items.splice(idx, 1);
         this.closeEditor(); this.push(); this.persist(); this.renderLayers();
       } else if (!e.target.classList.contains('quick-opacity')) {
@@ -168,7 +170,7 @@ class App {
     });
 
     this.dom.btnAddLayer.addEventListener('click', () => {
-      if (this.getCurrent().locked) return alert("System preset is locked. Duplicate it first.");
+      if (this.getCurrent().locked) return;
       this.getCurrent().items.push({ type: 'columns', count: 12, gutter: 24, margin: 24, color: '#3b82f6', opacity: 0.15, visible: true, maxWidth: 0, offset: 0 });
       this.persist(); this.push(); this.renderLayers();
       const lastIdx = this.getCurrent().items.length - 1;
@@ -237,6 +239,13 @@ class App {
   }
 
   render() {
+    const isLocked = this.getCurrent().locked;
+    
+    this.dom.btnDeleteProfile.style.opacity = isLocked ? '0.2' : '1';
+    this.dom.btnDeleteProfile.style.pointerEvents = isLocked ? 'none' : 'auto';
+    this.dom.btnAddLayer.style.opacity = isLocked ? '0' : '1';
+    this.dom.btnAddLayer.style.pointerEvents = isLocked ? 'none' : 'auto';
+
     this.dom.profileSelect.innerHTML = Object.entries(this.state.profiles).map(([id, p]) => {
       return `<option value="${id}" ${id===this.state.activeProfileId?'selected':''}>${p.name} ${p.locked?'🔒':''}</option>`;
     }).join('');
@@ -250,22 +259,28 @@ class App {
       return;
     }
     this.dom.layersList.innerHTML = p.items.map((item, i) => `
-      <div class="layer-card ${this.state.editingIndex===i?'active':''}" data-idx="${i}">
+      <div class="layer-card ${this.state.editingIndex===i?'active':''} ${p.locked ? 'is-locked' : ''}" data-idx="${i}">
         <div class="color-indicator" style="background:${item.color}"></div>
         <div class="layer-info">
           <div class="layer-title">Layer ${i+1} (${item.type}) <span class="op-val">${Math.round(item.opacity*100)}%</span></div>
           <input type="range" class="quick-opacity" data-idx="${i}" min="0" max="1" step="0.01" value="${item.opacity}" ${p.locked?'disabled':''}>
         </div>
         <div style="display:flex; gap:6px;">
-          <button class="btn-vis btn-icon">
+          <button class="btn-vis btn-icon" ${p.locked ? 'style="opacity:0.3; cursor:not-allowed;"' : ''}>
             ${item.visible ? 
               '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : 
               '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
             }
           </button>
-          <button class="btn-del btn-icon" ${p.locked?'style="opacity:0.2; pointer-events:none;"':''}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-          </button>
+          ${!p.locked ? `
+            <button class="btn-del btn-icon danger">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          ` : `
+            <div class="lock-indicator">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+          `}
         </div>
       </div>`).join('');
   }
