@@ -76,9 +76,12 @@ class App {
 
   getCurrent() { return this.state.profiles[this.state.activeProfileId] || this.state.profiles['bootstrap_xxl']; }
 
-  feedback(el) {
-    el.style.transform = 'scale(0.92)';
-    setTimeout(() => el.style.transform = '', 100);
+  feedback(el) { el.style.transform = 'scale(0.92)'; setTimeout(() => el.style.transform = '', 100); }
+
+  showInputError(el) {
+    el.style.borderColor = '#f43f5e';
+    el.style.boxShadow = '0 0 0 2px rgba(244, 63, 94, 0.2)';
+    setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 1000);
   }
 
   listen() {
@@ -92,7 +95,6 @@ class App {
     });
 
     this.dom.btnDuplicateProfile.addEventListener('click', () => {
-      this.feedback(this.dom.btnDuplicateProfile);
       const cur = this.getCurrent();
       const rawName = prompt("Duplicate preset as:", `${cur.name} (Copy)`);
       if (!rawName) return;
@@ -103,7 +105,6 @@ class App {
     });
 
     this.dom.btnAddProfile.addEventListener('click', () => {
-      this.feedback(this.dom.btnAddProfile);
       const rawName = prompt("New Preset Name:"); if (!rawName) return;
       const id = 'c_' + Date.now();
       this.state.profiles[id] = { name: rawName.substring(0,30), items: [], locked: false };
@@ -129,7 +130,7 @@ class App {
       if (this.getCurrent().locked) return;
       if (e.target.classList.contains('quick-opacity')) {
         const idx = e.target.dataset.idx;
-        const val = parseFloat(e.target.value);
+        const val = parseFloat(e.target.value) || 0;
         this.getCurrent().items[idx].opacity = val;
         this.push(); this.saveDebounced();
         e.target.closest('.layer-card').querySelector('.op-val').textContent = `${Math.round(val*100)}%`;
@@ -157,7 +158,7 @@ class App {
 
     this.dom.btnAddLayer.addEventListener('click', () => {
       if (this.getCurrent().locked) return;
-      this.getCurrent().items.push({ type: 'columns', count: 12, gutter: 24, margin: 24, color: '#3b82f6', opacity: 0.15, visible: true, maxWidth: 0, offset: 0 });
+      this.getCurrent().items.push({ type: 'columns', count: 12, gutter: 24, margin: 24, color: '#3b82f6', opacity: 0.15, visible: true, maxWidth: 0, offset: 0, size: 20, width: 80, height: 80 });
       this.persist(); this.push(); this.renderLayers();
       this.openEditor(this.getCurrent().items.length - 1);
     });
@@ -180,19 +181,19 @@ class App {
     const f = (l, k, t='number', s=1) => `<div class="field"><label>${l}</label><input type="${t}" data-key="${k}" value="${item[k] ?? ''}" step="${s}" ${isLocked ? 'disabled' : ''}></div>`;
     
     if (item.type === 'grid') {
-      h += f('Size', 'size') + f('Offset', 'offset') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
+      h += f('Cell Size (px)', 'size') + f('Color', 'color', 'color') + f('Opacity (0-1)', 'opacity', 'number', 0.01);
     } else {
       const isR = item.type === 'rows';
-      h += f('Count', 'count') + f('Gutter', 'gutter');
+      h += f('Count', 'count') + f('Gutter (px)', 'gutter');
       h += `<div class="field"><label>Align</label><select data-key="typeMode" ${isLocked ? 'disabled' : ''}>
         <option value="stretch" ${item.typeMode==='stretch'?'selected':''}>Stretch</option>
         <option value="center" ${item.typeMode==='center'?'selected':''}>Center</option>
         <option value="${isR?'top':'left'}" ${item.typeMode===(isR?'top':'left')?'selected':''}>${isR?'Top':'Left'}</option>
         <option value="${isR?'bottom':'right'}" ${item.typeMode===(isR?'bottom':'right')?'selected':''}>${isR?'Bottom':'Right'}</option>
       </select></div>`;
-      if (item.typeMode === 'stretch') h += f('Margin', 'margin'); 
-      else h += f(isR ? 'Height' : 'Width', isR ? 'height' : 'width') + f('Offset', 'offset');
-      h += f('Max Container', 'maxWidth') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
+      if (item.typeMode === 'stretch') h += f('Margin (px)', 'margin'); 
+      else h += f(isR ? 'Height (px)' : 'Width (px)', isR ? 'height' : 'width');
+      h += f('Max Container (px)', 'maxWidth') + f('Color', 'color', 'color') + f('Opacity (0-1)', 'opacity', 'number', 0.01);
     }
     this.dom.editorFields.innerHTML = h;
   }
@@ -208,9 +209,30 @@ class App {
   handleInput(e) { 
     if(this.getCurrent().locked) return; 
     const i = this.getCurrent().items[this.state.editingIndex];
-    i[e.target.dataset.key] = e.target.type === 'number' ? (parseFloat(e.target.value) || 0) : e.target.value;
+    const key = e.target.dataset.key;
+    let val = e.target.value;
+
+    if (e.target.type === 'number') {
+      val = parseFloat(val);
+      if (isNaN(val)) val = 0;
+
+      // VALIDATION RULES
+      const positiveOnly = ['count', 'gutter', 'margin', 'width', 'height', 'size', 'maxWidth'];
+      if (positiveOnly.includes(key) && val < 0) {
+        val = 0; e.target.value = 0; this.showInputError(e.target);
+      }
+      if (key === 'opacity') {
+        if (val < 0) val = 0; if (val > 1) val = 1;
+        e.target.value = val;
+      }
+      if (key === 'count' && val < 1 && i.type !== 'grid') {
+        val = 1; e.target.value = 1;
+      }
+    }
+
+    i[key] = val;
     this.push(); this.saveDebounced();
-    if(e.target.dataset.key ==='typeMode') this.openEditor(this.state.editingIndex);
+    if(key ==='typeMode') this.openEditor(this.state.editingIndex);
   }
 
   render() {
@@ -232,8 +254,8 @@ class App {
       <div class="layer-card ${this.state.editingIndex===i?'active':''} ${p.locked ? 'is-locked' : ''}" data-idx="${i}">
         <div class="color-indicator" style="background:${item.color}"></div>
         <div class="layer-info">
-          <div class="layer-title">L${i+1} ${item.type} <span class="op-val">${Math.round(item.opacity*100)}%</span></div>
-          <input type="range" class="quick-opacity" data-idx="${i}" min="0" max="1" step="0.01" value="${item.opacity}" ${p.locked?'disabled':''}>
+          <div class="layer-title">L${i+1} ${item.type} <span class="op-val">${Math.round((item.opacity||0)*100)}%</span></div>
+          <input type="range" class="quick-opacity" data-idx="${i}" min="0" max="1" step="0.01" value="${item.opacity||0}" ${p.locked?'disabled':''}>
         </div>
         <div style="display:flex; gap:4px;">
           <button class="btn-vis btn-icon" ${p.locked ? 'style="opacity:0.2; pointer-events:none;"' : ''}>
