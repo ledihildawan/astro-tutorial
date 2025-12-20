@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Figma Layout Overlay",
-  "version": "2.2.0",
-  "description": "Professional pixel-perfect layout grid overlay for web development.",
+  "version": "3.1.0",
+  "description": "Professional Grid Overlay. Full functionality restored.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -13,9 +13,9 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Layout Configuration"
+    "default_title": "Layout Config"
   },
-  "permissions": ["storage", "activeTab", "tabs"],
+  "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "commands": {
     "toggle-overlay": {
@@ -23,7 +23,7 @@
         "default": "Alt+G",
         "mac": "Alt+G"
       },
-      "description": "Toggle Layout Overlay"
+      "description": "Toggle Visibility"
     }
   },
   "content_scripts": [
