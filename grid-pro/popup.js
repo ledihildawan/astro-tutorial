@@ -100,11 +100,6 @@ class GridApp {
     this.dom.btnCloseEditor.onclick = () => this.closeEditor();
     this.dom.segments.forEach(s => s.onclick = e => this.switchType(e.target.dataset.type));
     this.dom.editorFields.oninput = e => this.handleEditorInput(e);
-    this.dom.layersList.addEventListener('mousedown', (e) => {
-      if (e.target.classList.contains('quick-opacity')) {
-        e.stopPropagation();
-      }
-    }, { capture: true });
   }
 
   handleLayerQuickOpacity(e) {
@@ -112,10 +107,8 @@ class GridApp {
     const val = parseFloat(e.target.value);
     const item = this.getCurrent().items[idx];
 
-    // 1. Update data internal
     item.opacity = val;
 
-    // 2. Update tampilan teks persentase di UI secara instan
     const card = e.target.closest('.layer-card');
     if (card) {
       const opValDisplay = card.querySelector('.op-val');
@@ -124,10 +117,7 @@ class GridApp {
       }
     }
 
-    // 3. Kirim ke konten (halaman web) secara real-time
     this.pushToContent();
-
-    // 4. Simpan ke storage (di-debounce agar tidak terlalu sering menulis ke disk)
     this.saveDebounced();
   }
 
@@ -247,39 +237,64 @@ class GridApp {
     }
   }
 
-  handleLayerQuickOpacity(e) {
-    if (!e.target.classList.contains('quick-opacity')) return;
-    const idx = +e.target.dataset.idx;
-    const val = +e.target.value;
-    const item = this.getCurrent().items[idx];
-    item.opacity = val;
-    e.target.closest('.layer-card').querySelector('.op-val').textContent = `${Math.round(val * 100)}%`;
-    this.pushToContent();
-    this.saveDebounced();
-  }
-
   initDragAndDrop() {
     const list = this.dom.layersList;
 
+    // --- LOGIKA UTAMA: Pisahkan interaksi Slider vs Drag Card ---
+
+    // 1. Saat mouse ditekan di slider, matikan kemampuan drag card induknya
+    list.addEventListener('mousedown', (e) => {
+      if (e.target.classList.contains('quick-opacity')) {
+        const card = e.target.closest('.layer-card');
+        if (card) {
+          card.setAttribute('draggable', 'false'); // Matikan drag API
+          card.classList.add('slider-active'); // Beri tanda visual/logic CSS
+        }
+      }
+    });
+
+    // 2. Saat mouse dilepas (di mana saja di dokumen), nyalakan kembali drag
+    document.addEventListener('mouseup', () => {
+      const activeCards = list.querySelectorAll('.layer-card.slider-active');
+      activeCards.forEach(card => {
+        // Cek jika profile tidak terkunci sebelum mengaktifkan drag kembali
+        if (!this.getCurrent().locked) {
+          card.setAttribute('draggable', 'true');
+        }
+        card.classList.remove('slider-active');
+      });
+    });
+
+    // -----------------------------------------------------------
+
     list.addEventListener('dragstart', (e) => {
+      // Safety check ganda: Jika target adalah slider, batalkan drag
+      if (e.target.classList.contains('quick-opacity')) {
+        e.preventDefault();
+        return;
+      }
+
       const card = e.target.closest('.layer-card');
-      if (!card || this.getCurrent().locked) return;
+      if (!card || this.getCurrent().locked) {
+        e.preventDefault();
+        return;
+      }
       
+      // Jika atribut draggable="false" (karena sedang tekan slider), browser otomatis tidak masuk sini
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', card.dataset.idx);
       
-      // Memberikan sedikit delay agar class 'dragging' terlihat sebelum drag ghost muncul
       setTimeout(() => card.style.opacity = '0.3', 0);
     });
 
     list.addEventListener('dragover', (e) => {
       e.preventDefault();
       if (this.getCurrent().locked) return;
-
       const draggingElement = list.querySelector('.dragging');
+      if (!draggingElement) return;
+
       const afterElement = this.getDragAfterElement(list, e.clientY);
-      
       if (afterElement == null) {
         list.appendChild(draggingElement);
       } else {
@@ -290,12 +305,14 @@ class GridApp {
     list.addEventListener('drop', (e) => {
       e.preventDefault();
       if (this.getCurrent().locked) return;
+      const draggingCard = list.querySelector('.dragging');
+      if (!draggingCard) return;
 
       const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
       const allCards = [...list.querySelectorAll('.layer-card')];
-      const toIndex = allCards.findIndex(card => card.classList.contains('dragging'));
+      const toIndex = allCards.indexOf(draggingCard);
 
-      if (fromIndex !== toIndex) {
+      if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
         const items = this.getCurrent().items;
         const [movedItem] = items.splice(fromIndex, 1);
         items.splice(toIndex, 0, movedItem);
@@ -311,7 +328,7 @@ class GridApp {
         card.classList.remove('dragging');
         card.style.opacity = '1';
       }
-      this.renderLayers(); // Re-render untuk memastikan index dataset kembali urut
+      this.renderLayers();
     });
   }
 

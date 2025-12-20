@@ -140,6 +140,7 @@ main.dimmed { opacity: 0.3; pointer-events: none; filter: blur(3px); }
   border: 1px solid transparent;
   transition: transform 0.2s, background-color 0.2s, opacity 0.2s;
   cursor: grab;
+  position: relative; /* Penting untuk z-index anak */
 }
 .layer-card:hover:not(.is-locked) {
   background: var(--bg-elevated);
@@ -158,9 +159,15 @@ main.dimmed { opacity: 0.3; pointer-events: none; filter: blur(3px); }
 .layer-card.dragging * {
   pointer-events: none;
 }
+/* Style baru untuk mencegah konflik slider */
+.layer-card.slider-active {
+  cursor: default;
+  border-color: var(--accent-soft);
+}
+
 .color-indicator { width: 4px; height: 28px; border-radius: 4px; flex-shrink: 0; }
 
-.layer-info { flex: 1; min-width: 0; }
+.layer-info { flex: 1; min-width: 0; position: relative; }
 .layer-title {
   font-size: 11px;
   font-weight: 600;
@@ -197,9 +204,9 @@ main.dimmed { opacity: 0.3; pointer-events: none; filter: blur(3px); }
   background: var(--bg-elevated);
   border-radius: 2px;
   outline: none;
-  cursor: pointer;
+  cursor: pointer; /* Pastikan cursor pointer */
   position: relative;
-  z-index: 2; /* Agar mudah diklik */
+  z-index: 10; /* Pastikan slider di atas elemen dragging parent */
 }
 .quick-opacity::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -208,6 +215,7 @@ main.dimmed { opacity: 0.3; pointer-events: none; filter: blur(3px); }
   border-radius: 50%;
   border: 2px solid var(--accent);
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .layer-actions { display: flex; gap: 6px; align-items: center; }
@@ -352,7 +360,7 @@ main.dimmed { opacity: 0.3; pointer-events: none; filter: blur(3px); }
   padding: 8px 14px;
   border-radius: 8px;
   transition: 0.2s;
-  flex-wrap: nowrap; /* fix no wrap */
+  flex-wrap: nowrap;
   overflow: hidden;
 }
 .btn-new-layer:hover {
