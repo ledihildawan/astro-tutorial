@@ -220,18 +220,6 @@ main.dimmed { opacity: 0.3; pointer-events: none; filter: blur(3px); }
 
 .layer-actions { display: flex; gap: 6px; align-items: center; }
 
-.drag-handle {
-  cursor: grab;
-  width: 20px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  Padding: 4px;
-}
-.drag-handle:active { cursor: grabbing; }
-
 .editor-panel {
   position: absolute; left: 0; right: 0; bottom: 0; top: 50px;
   background: #080808;
