@@ -3,24 +3,15 @@ async function updateTabUI(tabId, isEnabled) {
   const path = isEnabled 
     ? { "16": "icon16_on.png", "48": "icon48_on.png", "128": "icon128_on.png" }
     : { "16": "icon16_off.png", "48": "icon48_off.png", "128": "icon128_off.png" };
-  
-  try {
-    await chrome.action.setIcon({ path, tabId });
-  } catch (e) {
-    // Mengabaikan error jika tab ditutup
-  }
+  try { await chrome.action.setIcon({ path, tabId }); } catch (e) {}
 }
 
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'toggle-overlay') {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id || tab.url.startsWith('chrome://')) return;
-
     chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_LOCAL' }, (res) => {
-      if (chrome.runtime.lastError) {
-        chrome.tabs.reload(tab.id);
-        return;
-      }
+      if (chrome.runtime.lastError) { chrome.tabs.reload(tab.id); return; }
       if (res) updateTabUI(tab.id, res.enabled);
     });
   }

@@ -6,10 +6,6 @@ const SYSTEM_PROFILES = {
   'tailwind_container': {
     name: 'Tailwind Container', locked: true,
     items: [{ type: 'columns', count: 12, typeMode: 'stretch', maxWidth: 1280, gutter: 32, margin: 32, color: '#38bdf8', opacity: 0.15, visible: true }]
-  },
-  'baseline_8': {
-    name: '8pt Pixel Grid', locked: true,
-    items: [{ type: 'grid', size: 8, maxWidth: 0, offset: 0, color: '#e83e8c', opacity: 0.1, visible: true }]
   }
 };
 
@@ -44,9 +40,7 @@ class App {
   async load() {
     const d = await chrome.storage.local.get(['store']);
     if (d.store) {
-      if (d.store.profiles) {
-        this.state.profiles = { ...SYSTEM_PROFILES, ...d.store.profiles };
-      }
+      if (d.store.profiles) this.state.profiles = { ...SYSTEM_PROFILES, ...d.store.profiles };
       this.state.activeProfileId = d.store.activeProfileId || 'bootstrap_xxl';
     }
   }
@@ -170,11 +164,7 @@ class App {
     const f = (l, k, t='number', s=1) => `<div class="field"><label>${l}</label><input type="${t}" data-key="${k}" value="${item[k] ?? ''}" step="${s}" ${isLocked ? 'disabled' : ''}></div>`;
     
     if (item.type === 'grid') {
-      h += f('Pixel Size', 'size');
-      h += f('Max Container', 'maxWidth');
-      h += f('Offset', 'offset');
-      h += f('Color', 'color', 'color');
-      h += f('Opacity', 'opacity', 'number', 0.01);
+      h += f('Pixel Size', 'size') + f('Offset', 'offset') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
     } else {
       const isR = item.type === 'rows';
       h += f(isR ? 'Rows Count' : 'Columns Count', 'count') + f('Gutter', 'gutter');
@@ -185,15 +175,11 @@ class App {
         <option value="${isR?'bottom':'right'}" ${item.typeMode===(isR?'bottom':'right')?'selected':''}>${isR?'Bottom':'Right'}</option>
       </select></div>`;
       
-      if (item.typeMode === 'stretch') {
-        h += f('Margin', 'margin'); 
-      } else {
-        h += f(isR ? 'Height' : 'Width', isR ? 'height' : 'width') + f('Offset', 'offset');
-      }
+      if (item.typeMode === 'stretch') h += f('Margin', 'margin'); 
+      else h += f(isR ? 'Height' : 'Width', isR ? 'height' : 'width') + f('Offset', 'offset');
       h += f('Max Container', 'maxWidth') + f('Color', 'color', 'color') + f('Opacity', 'opacity', 'number', 0.01);
     }
     this.dom.editorFields.innerHTML = h;
-    this.renderLayers();
   }
 
   closeEditor() { this.state.editingIndex = null; this.dom.editorPanel.classList.remove('open'); this.dom.main.classList.remove('dimmed'); this.renderLayers(); }
@@ -209,7 +195,7 @@ class App {
     const i = this.getCurrent().items[this.state.editingIndex];
     i[e.target.dataset.key] = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
     this.push(); this.saveDebounced();
-    if(e.target.dataset.key ==='typeMode') this.openEditor(this.state.editingIndex); else this.renderLayers();
+    if(e.target.dataset.key ==='typeMode') this.openEditor(this.state.editingIndex);
   }
 
   render() {

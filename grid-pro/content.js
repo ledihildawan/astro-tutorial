@@ -9,6 +9,7 @@
   class Overlay {
     constructor() {
       this.state = { enabled: false, items: [] };
+      this.host = null;
       this.init();
     }
 
@@ -18,8 +19,11 @@
         if (this.state.enabled) this.render();
       });
 
+      let resizeTimer;
       window.addEventListener('resize', () => {
-        if (this.state.enabled) this.render();
+        if (!this.state.enabled) return;
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => this.updateViewportTag(), 50);
       });
 
       chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -28,7 +32,7 @@
           if (this.state.enabled) this.render();
         } else if (msg.action === 'TOGGLE_LOCAL') {
           this.state.enabled = !this.state.enabled;
-          this.render();
+          this.state.enabled ? this.render() : this.removeHost();
           sendResponse({ enabled: this.state.enabled });
           chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
         } else if (msg.action === 'GET_STATUS') {
@@ -48,15 +52,18 @@
       }
     }
 
+    removeHost() {
+      if (this.host) { this.host.remove(); this.host = null; }
+    }
+
     createHost() {
-      let host = document.getElementById(HOST_ID);
-      if (host) return host;
-      host = document.createElement('div');
-      host.id = HOST_ID;
-      host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;contain:strict;';
-      host.attachShadow({ mode: 'open' });
-      document.documentElement.appendChild(host);
-      return host;
+      if (this.host) return this.host;
+      this.host = document.createElement('div');
+      this.host.id = HOST_ID;
+      this.host.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147483647;contain:strict;will-change:transform;';
+      const shadow = this.host.attachShadow({ mode: 'open' });
+      document.documentElement.appendChild(this.host);
+      return this.host;
     }
 
     parseColor(color, alpha) {
@@ -68,38 +75,33 @@
       return `rgba(${r},${g},${b},${alpha})`;
     }
 
+    updateViewportTag() {
+      const tag = this.host?.shadowRoot.querySelector('.viewport-tag');
+      if (tag) tag.textContent = `${window.innerWidth}px`;
+    }
+
     render() {
-      const existing = document.getElementById(HOST_ID);
-      if (!this.state.enabled) {
-        if (existing) existing.remove();
-        return;
-      }
-      
       const host = this.createHost();
       const shadow = host.shadowRoot;
-      const fragment = document.createDocumentFragment();
+      const container = document.createElement('div');
+      container.className = 'grid-container';
       
       const style = document.createElement('style');
       style.textContent = `
         :host { all: initial; }
         .viewport-tag { 
-          position: fixed; top: 12px; right: 12px; background: rgba(9,9,11,0.92); 
+          position: fixed; top: 12px; right: 12px; background: rgba(9,9,11,0.95); 
           color: #10b981; padding: 6px 12px; font-family: ui-monospace, monospace; 
           font-size: 11px; font-weight: 700; border-radius: 8px; border: 1px solid rgba(16,185,129,0.3); 
-          z-index: 9999; backdrop-filter: blur(10px);
+          z-index: 9999; backdrop-filter: blur(10px); box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-        .grid-container { position: absolute; inset: 0; overflow: hidden; }
+        .grid-container { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
         .grid-layer { position: absolute; inset: 0; display: grid; width: 100%; height: 100%; margin: 0 auto; box-sizing: border-box; }
       `;
-      fragment.appendChild(style);
 
       const tag = document.createElement('div');
       tag.className = 'viewport-tag';
       tag.textContent = `${window.innerWidth}px`;
-      fragment.appendChild(tag);
-
-      const inner = document.createElement('div');
-      inner.className = 'grid-container';
 
       this.state.items.forEach(item => {
         if (!item.visible) return;
@@ -108,20 +110,16 @@
         const color = this.parseColor(item.color, item.opacity);
         const isRow = item.type === 'rows';
 
-        // Terapkan Max Width (Pusat secara horizontal untuk Columns/Grid, Vertikal tidak dibatasi)
         if (item.maxWidth > 0) {
           layer.style.maxWidth = `${item.maxWidth}px`;
-          layer.style.marginLeft = 'auto';
-          layer.style.marginRight = 'auto';
+          layer.style.left = '50%';
+          layer.style.transform = `translateX(-50%)`;
         }
 
         if (item.type === 'grid') {
           layer.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
           layer.style.backgroundSize = `${item.size}px ${item.size}px`;
-          if (item.offset) {
-            // Offset Pixel Grid: geser titik mulai gambar background
-            layer.style.backgroundPosition = `${item.offset}px ${item.offset}px`;
-          }
+          if (item.offset) layer.style.backgroundPosition = `${item.offset}px ${item.offset}px`;
         } else {
           const mode = item.typeMode || 'stretch';
           if (mode === 'stretch') {
@@ -129,36 +127,27 @@
             layer.style.padding = isRow ? `${m}px 0` : `0 ${m}px`;
             layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, 1fr)`;
           } else {
-            const justify = (mode === 'left' || mode === 'top') ? 'start' : (mode === 'right' || mode === 'bottom') ? 'end' : 'center';
-            layer.style.justifyContent = isRow ? 'stretch' : justify;
-            layer.style.alignContent = isRow ? justify : 'stretch';
+            const align = (mode === 'center') ? 'center' : (mode === 'left' || mode === 'top') ? 'start' : 'end';
+            layer.style.justifyContent = isRow ? 'stretch' : align;
+            layer.style.alignContent = isRow ? align : 'stretch';
             layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${item.count}, ${isRow ? (item.height || 80) : (item.width || 80)}px)`;
             
-            // Logika Offset Utama
             const off = item.offset || 0;
-            if (off !== 0) {
-              if (isRow) {
-                // GESER ATAS-BAWAH untuk ROWS
-                layer.style.transform = `translateY(${off}px)`;
-              } else {
-                // GESER KIRI-KANAN untuk COLUMNS
-                layer.style.transform = `translateX(${off}px)`;
-              }
-            }
+            const currentX = item.maxWidth > 0 ? '-50%' : '0';
+            if (isRow) layer.style.transform = `translateY(${off}px)`;
+            else layer.style.transform = `translateX(calc(${currentX} + ${off}px))`;
           }
           layer.style.gap = `${item.gutter}px`;
-
           for (let i = 0; i < item.count; i++) {
             const cell = document.createElement('div');
             cell.style.backgroundColor = color;
             layer.appendChild(cell);
           }
         }
-        inner.appendChild(layer);
+        container.appendChild(layer);
       });
 
-      fragment.appendChild(inner);
-      shadow.replaceChildren(fragment);
+      shadow.replaceChildren(style, tag, container);
     }
   }
   new Overlay();

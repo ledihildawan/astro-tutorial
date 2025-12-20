@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Grid Pro",
-  "version": "8.7.2",
-  "description": "OS-Adaptive Precision: Clean layout guide with dynamic viewport tracking.",
+  "version": "8.8.0",
+  "description": "High-performance precision layout guide with dynamic viewport tracking.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "background": { "service_worker": "background.js" },
   "action": { "default_popup": "popup.html" },

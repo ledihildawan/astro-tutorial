@@ -38,18 +38,15 @@
     <section>
       <div class="section-header">
         <label>Layers</label>
-        <button id="btn-add-layer" class="btn-new-layer">+ NEW LAYER</button>
+        <button id="btn-add-layer" class="btn-new-layer" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;">+ NEW LAYER</button>
       </div>
       <div id="layers-list"></div>
     </section>
   </main>
   <div id="editor-panel" class="editor-panel">
-    <div class="editor-handle"></div>
-    <div class="editor-header-ui">
-      <h3>Properties</h3>
-      <button id="btn-close-editor" class="btn-close-ui">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
+    <div class="editor-header-ui" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="margin:0; font-size:13px; color:var(--text-secondary);">Properties</h3>
+      <button id="btn-close-editor" style="background:none; border:none; color:#fff; cursor:pointer; opacity:0.5;">✕</button>
     </div>
     <div class="segment-control">
       <button data-type="columns" class="segment active">Columns</button>
