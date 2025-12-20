@@ -76,14 +76,6 @@ class App {
 
   getCurrent() { return this.state.profiles[this.state.activeProfileId] || this.state.profiles['bootstrap_xxl']; }
 
-  feedback(el) { el.style.transform = 'scale(0.92)'; setTimeout(() => el.style.transform = '', 100); }
-
-  showInputError(el) {
-    el.style.borderColor = '#f43f5e';
-    el.style.boxShadow = '0 0 0 2px rgba(244, 63, 94, 0.2)';
-    setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 1000);
-  }
-
   listen() {
     this.dom.toggle.addEventListener('change', (e) => {
       chrome.tabs.query({ active: true, currentWindow: true }, (t) => {
@@ -123,7 +115,11 @@ class App {
 
     this.dom.profileSelect.addEventListener('change', (e) => {
       this.state.activeProfileId = e.target.value;
-      this.closeEditor(); this.render(); this.persist(); this.push();
+      this.state.editingIndex = null; // Reset index saat ganti profile
+      this.closeEditor(); // Tutup editor agar UI bersih
+      this.render(); 
+      this.persist(); 
+      this.push();
     });
 
     this.dom.layersList.addEventListener('input', (e) => {
@@ -201,9 +197,15 @@ class App {
   closeEditor() { this.state.editingIndex = null; this.dom.editorPanel.classList.remove('open'); this.dom.main.classList.remove('dimmed'); this.renderLayers(); }
   
   switchType(t) { 
-    if(this.getCurrent().locked) return;
+    // Diperbolehkan pindah tab visual meski locked
     this.getCurrent().items[this.state.editingIndex].type = t; 
-    this.push(); this.persist(); this.openEditor(this.state.editingIndex); 
+    
+    // Hanya simpan jika tidak locked
+    if (!this.getCurrent().locked) {
+        this.persist(); 
+    }
+    this.push(); 
+    this.openEditor(this.state.editingIndex); 
   }
 
   handleInput(e) { 
@@ -215,19 +217,9 @@ class App {
     if (e.target.type === 'number') {
       val = parseFloat(val);
       if (isNaN(val)) val = 0;
-
-      // VALIDATION RULES
-      const positiveOnly = ['count', 'gutter', 'margin', 'width', 'height', 'size', 'maxWidth'];
-      if (positiveOnly.includes(key) && val < 0) {
-        val = 0; e.target.value = 0; this.showInputError(e.target);
-      }
-      if (key === 'opacity') {
-        if (val < 0) val = 0; if (val > 1) val = 1;
-        e.target.value = val;
-      }
-      if (key === 'count' && val < 1 && i.type !== 'grid') {
-        val = 1; e.target.value = 1;
-      }
+      if (['count', 'gutter', 'margin', 'width', 'height', 'size', 'maxWidth'].includes(key) && val < 0) val = 0;
+      if (key === 'opacity') { if (val < 0) val = 0; if (val > 1) val = 1; }
+      if (key === 'count' && val < 1 && i.type !== 'grid') val = 1;
     }
 
     i[key] = val;
@@ -259,7 +251,7 @@ class App {
         </div>
         <div style="display:flex; gap:4px;">
           <button class="btn-vis btn-icon" ${p.locked ? 'style="opacity:0.2; pointer-events:none;"' : ''}>
-            ${item.visible ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'}
+            ${item.visible ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M1 12s4-8 11-8 11-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'}
           </button>
           ${!p.locked ? `<button class="btn-del btn-icon danger"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>` : `<div class="lock-indicator"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>`}
         </div>
