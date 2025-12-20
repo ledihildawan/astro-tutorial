@@ -24,6 +24,9 @@ class App {
       btnAddProfile: document.getElementById('btn-add-profile'),
       btnDuplicateProfile: document.getElementById('btn-duplicate-profile'),
       btnDeleteProfile: document.getElementById('btn-delete-profile'),
+      btnExport: document.getElementById('btn-export-profile'),
+      btnImport: document.getElementById('btn-import-profile'),
+      importInput: document.getElementById('import-input'),
       btnAddLayer: document.getElementById('btn-add-layer'),
       editorPanel: document.getElementById('editor-panel'),
       editorFields: document.getElementById('editor-fields'),
@@ -86,6 +89,42 @@ class App {
       });
     });
 
+    // Fitur EXPORT
+    this.dom.btnExport.addEventListener('click', () => {
+      const current = this.getCurrent();
+      const blob = new Blob([JSON.stringify(current, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `grid-pro-${current.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Fitur IMPORT
+    this.dom.btnImport.addEventListener('click', () => this.dom.importInput.click());
+    this.dom.importInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        try {
+          const imported = JSON.parse(re.target.result);
+          if (!imported.items) throw new Error();
+          const id = 'c_' + Date.now();
+          this.state.profiles[id] = { 
+            name: (imported.name || 'Imported') + ' (Import)', 
+            items: imported.items, 
+            locked: false 
+          };
+          this.state.activeProfileId = id;
+          this.persist(); this.render(); this.push();
+        } catch (err) { alert('Invalid JSON Grid Profile'); }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    });
+
     this.dom.btnDuplicateProfile.addEventListener('click', () => {
       const cur = this.getCurrent();
       const rawName = prompt("Duplicate preset as:", `${cur.name} (Copy)`);
@@ -115,8 +154,8 @@ class App {
 
     this.dom.profileSelect.addEventListener('change', (e) => {
       this.state.activeProfileId = e.target.value;
-      this.state.editingIndex = null; // Reset index saat ganti profile
-      this.closeEditor(); // Tutup editor agar UI bersih
+      this.state.editingIndex = null;
+      this.closeEditor();
       this.render(); 
       this.persist(); 
       this.push();
@@ -197,13 +236,8 @@ class App {
   closeEditor() { this.state.editingIndex = null; this.dom.editorPanel.classList.remove('open'); this.dom.main.classList.remove('dimmed'); this.renderLayers(); }
   
   switchType(t) { 
-    // Diperbolehkan pindah tab visual meski locked
     this.getCurrent().items[this.state.editingIndex].type = t; 
-    
-    // Hanya simpan jika tidak locked
-    if (!this.getCurrent().locked) {
-        this.persist(); 
-    }
+    if (!this.getCurrent().locked) this.persist(); 
     this.push(); 
     this.openEditor(this.state.editingIndex); 
   }

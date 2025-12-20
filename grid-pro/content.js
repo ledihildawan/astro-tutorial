@@ -49,19 +49,22 @@
       const host = this.createHost();
       const shadow = host.shadowRoot;
       
+      // Menggunakan clientWidth untuk mendapatkan lebar murni tanpa scrollbar
+      const viewportWidth = document.documentElement.clientWidth;
+
       const container = document.createElement('div');
       container.style.cssText = 'position:absolute;inset:0;display:flex;justify-content:center;overflow:hidden;';
 
       const style = document.createElement('style');
       style.textContent = `
-        .viewport-tag { position: fixed; top: 12px; right: 12px; background: rgba(9,9,11,0.9); color: #10b981; padding: 4px 8px; font-family: monospace; font-size: 10px; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3); z-index: 2; pointer-events: none; }
+        .viewport-tag { position: fixed; top: 12px; right: 24px; background: rgba(9,9,11,0.9); color: #10b981; padding: 4px 8px; font-family: monospace; font-size: 10px; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3); z-index: 2; pointer-events: none; }
         .grid-layer { position: absolute; height: 100%; width: 100%; display: grid; box-sizing: border-box; pointer-events: none; }
         .grid-layer div { box-sizing: border-box; height: 100%; }
       `;
 
       const tag = document.createElement('div'); 
       tag.className = 'viewport-tag'; 
-      tag.textContent = `${window.innerWidth}px`;
+      tag.textContent = `${viewportWidth}px`;
 
       this.state.items.forEach(item => {
         if (!item.visible) return;

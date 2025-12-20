@@ -21,6 +21,13 @@
       <div class="section-header">
         <label>Active Preset</label>
         <div style="display:flex; gap:6px;">
+          <button id="btn-export-profile" class="btn-icon" title="Export JSON">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button id="btn-import-profile" class="btn-icon" title="Import JSON">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </button>
+          <div style="width: 1px; background: var(--border-strong); margin: 4px 2px;"></div>
           <button id="btn-add-profile" class="btn-icon" title="New Profile">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           </button>
@@ -33,6 +40,7 @@
         </div>
       </div>
       <select id="profile-select" class="select-main"></select>
+      <input type="file" id="import-input" style="display:none" accept=".json">
     </section>
     <div class="divider"></div>
     <section style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
