@@ -1,6 +1,6 @@
 (function() {
   const HOST_ID = 'grid-pro-v9-engine';
-  const DEFAULT_ITEMS = [{ type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 24, offset: 0, color: '#dc3545', opacity: 0.15, visible: true, maxWidth: 1320 }];
+  const DEFAULT_ITEMS = [{ type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 24, color: '#dc3545', opacity: 0.15, visible: true, maxWidth: 1320 }];
 
   class Overlay {
     constructor() { this.state = { enabled: false, items: [] }; this.host = null; this.init(); }
@@ -48,8 +48,6 @@
     render() {
       const host = this.createHost();
       const shadow = host.shadowRoot;
-      
-      // Menggunakan clientWidth untuk mendapatkan lebar murni tanpa scrollbar
       const viewportWidth = document.documentElement.clientWidth;
 
       const container = document.createElement('div');
@@ -62,15 +60,15 @@
         .grid-layer div { box-sizing: border-box; height: 100%; }
       `;
 
-      const tag = document.createElement('div'); 
-      tag.className = 'viewport-tag'; 
+      const tag = document.createElement('div');
+      tag.className = 'viewport-tag';
       tag.textContent = `${viewportWidth}px`;
 
       this.state.items.forEach(item => {
         if (!item.visible) return;
         const layer = document.createElement('div');
         layer.className = 'grid-layer';
-        
+
         const isRow = item.type === 'rows';
         const rgb = (item.color || '#3b82f6').replace('#','').match(/.{2}/g).map(x => parseInt(x, 16));
         const color = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${item.opacity || 0.15})`;
@@ -78,6 +76,11 @@
         if (item.type === 'grid') {
           layer.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
           layer.style.backgroundSize = `${item.size || 20}px ${item.size || 20}px`;
+          if (item.maxWidth > 0) {
+            layer.style.width = `min(100%, ${item.maxWidth}px)`;
+            layer.style.left = '50%';
+            layer.style.transform = 'translateX(-50%)';
+          }
         } else {
           if (item.maxWidth > 0) {
             layer.style.width = `min(100%, ${item.maxWidth}px)`;
@@ -88,7 +91,7 @@
           const mode = item.typeMode || 'stretch';
           const gap = item.gutter || 0;
           const count = Math.max(1, item.count || 1);
-          
+
           if (mode === 'stretch') {
             const margin = item.margin || 0;
             layer.style.padding = isRow ? `${margin}px 0` : `0 ${margin}px`;

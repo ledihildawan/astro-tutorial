@@ -1,7 +1,6 @@
 async function updateTabUI(tabId, isEnabled) {
   if (!tabId) return;
   const state = isEnabled ? "on" : "off";
-  // Catatan: Pastikan file icon16_on.png dll tersedia di folder root
   try {
     await chrome.action.setIcon({
       path: {
@@ -9,11 +8,9 @@ async function updateTabUI(tabId, isEnabled) {
         "48": `icon48_${state}.png`,
         "128": `icon128_${state}.png`
       },
-      tabId: tabId
+      tabId
     });
-  } catch (e) {
-    // Fail silent jika icon tidak ditemukan
-  }
+  } catch {}
 }
 
 chrome.commands.onCommand.addListener(async (command) => {
@@ -29,7 +26,6 @@ chrome.commands.onCommand.addListener(async (command) => {
 
 chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.action === 'SYNC_UI') {
-    const targetId = msg.tabId === 'self' ? sender.tab.id : msg.tabId;
-    updateTabUI(targetId, msg.enabled);
+    updateTabUI(msg.tabId === 'self' ? sender.tab.id : msg.tabId, msg.enabled);
   }
 });
