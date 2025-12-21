@@ -6,27 +6,34 @@
     constructor() { this.state = { enabled: false, items: [] }; this.host = null; this.init(); }
 
     init() {
-      chrome.storage.local.get(['store'], (data) => {
-        this.updateStateFromStorage(data);
-        if (this.state.enabled) this.render();
-      });
+    const savedEnabled = sessionStorage.getItem('gridProEnabled');
+    this.state.enabled = savedEnabled !== null ? JSON.parse(savedEnabled) : false;
 
-      chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        if (msg.action === 'UPDATE') {
-          this.state.items = msg.items || DEFAULT_ITEMS;
-          if (this.state.enabled) this.render();
-        } else if (msg.action === 'TOGGLE_LOCAL') {
-          this.state.enabled = !this.state.enabled;
-          this.state.enabled ? this.render() : this.removeHost();
-          sendResponse({ enabled: this.state.enabled });
-          chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
-        } else if (msg.action === 'GET_STATUS') {
-          sendResponse({ enabled: this.state.enabled });
-        }
-        return true;
-      });
-      window.addEventListener('resize', () => { if (this.state.enabled) this.render(); });
-    }
+    chrome.storage.local.get(['store'], (data) => {
+      this.updateStateFromStorage(data);
+      if (this.state.enabled) this.render();
+    });
+
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      if (msg.action === 'UPDATE') {
+        this.state.items = msg.items || DEFAULT_ITEMS;
+        if (this.state.enabled) this.render();
+      } else if (msg.action === 'TOGGLE_LOCAL') {
+        this.state.enabled = !this.state.enabled;
+        
+        sessionStorage.setItem('gridProEnabled', JSON.stringify(this.state.enabled));
+
+        this.state.enabled ? this.render() : this.removeHost();
+        sendResponse({ enabled: this.state.enabled });
+        chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
+      } else if (msg.action === 'GET_STATUS') {
+        sendResponse({ enabled: this.state.enabled });
+      }
+      return true;
+    });
+
+    window.addEventListener('resize', () => { if (this.state.enabled) this.render(); });
+  }
 
     updateStateFromStorage(data) {
       const activeId = data?.store?.activeProfileId;
