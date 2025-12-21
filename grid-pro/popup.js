@@ -19,7 +19,14 @@ class GridApp {
     this.profiles = { ...SYSTEM_PROFILES };
     this.activeId = 'bootstrap_xxl';
     this.editingIndex = null;
+    
+    this.debounce = (fn, delay) => {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+    };
+
     this.saveDebounced = this.debounce(() => this.persist(), 300);
+    this.debouncedPush = this.debounce(() => this.pushToContent(), 100);
     this.init();
   }
 
@@ -44,7 +51,8 @@ class GridApp {
       btnDelete: document.getElementById('btn-delete-profile'),
       btnAddLayer: document.getElementById('btn-add-layer'),
       btnCloseEditor: document.getElementById('btn-close-editor'),
-      segments: document.querySelectorAll('.segment')
+      segments: document.querySelectorAll('.segment'),
+      lockedBanner: document.getElementById('locked-banner')
     };
   }
 
@@ -67,7 +75,9 @@ class GridApp {
 
   pushToContent() {
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-      if (tab?.id) chrome.tabs.sendMessage(tab.id, { action: 'UPDATE', items: this.getCurrent().items }).catch(() => {});
+      if (tab?.id) {
+        chrome.tabs.sendMessage(tab.id, { action: 'UPDATE', items: this.getCurrent().items }).catch(() => {});
+      }
     });
   }
 
@@ -76,7 +86,7 @@ class GridApp {
       if (tab?.id) {
         chrome.tabs.sendMessage(tab.id, { action: 'GET_STATUS' }, (res) => {
           if (!chrome.runtime.lastError && res) this.dom.toggle.checked = res.enabled;
-        });
+        }).catch(() => {});
         this.pushToContent();
       }
     });
@@ -87,44 +97,49 @@ class GridApp {
   bindEvents() {
     this.dom.toggle.addEventListener('change', e => this.handleGlobalToggle(e.target.checked));
     this.dom.profileSelect.addEventListener('change', e => this.switchProfile(e.target.value));
-    document.getElementById('btn-add-profile').onclick = () => this.addProfile();
-    document.getElementById('btn-duplicate-profile').onclick = () => this.duplicateProfile();
+    
+    const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
+    bind('btn-add-profile', () => this.addProfile());
+    bind('btn-duplicate-profile', () => this.duplicateProfile());
+    bind('btn-export-profile', () => this.exportProfile());
+    bind('btn-import-profile', () => this.dom.importInput.click());
+    
     this.dom.btnRename.onclick = () => this.renameProfile();
     this.dom.btnDelete.onclick = () => this.deleteProfile();
-    document.getElementById('btn-export-profile').onclick = () => this.exportProfile();
-    document.getElementById('btn-import-profile').onclick = () => this.dom.importInput.click();
     this.dom.importInput.onchange = e => this.importProfile(e);
     this.dom.btnAddLayer.onclick = () => this.addLayer();
+    
     this.dom.layersList.oninput = e => this.handleLayerQuickOpacity(e);
     this.dom.layersList.onclick = e => this.handleLayerClick(e);
     this.dom.btnCloseEditor.onclick = () => this.closeEditor();
+    
     this.dom.segments.forEach(s => s.onclick = e => this.switchType(e.target.dataset.type));
     this.dom.editorFields.oninput = e => this.handleEditorInput(e);
   }
 
   handleLayerQuickOpacity(e) {
+    if (!e.target.matches('.quick-opacity')) return;
     const idx = parseInt(e.target.dataset.idx);
     const val = parseFloat(e.target.value);
     const item = this.getCurrent().items[idx];
-
+    
+    // UPDATE: Gunakan Nullish check jika diperlukan, meski untuk slider value pasti ada
     item.opacity = val;
 
     const card = e.target.closest('.layer-card');
     if (card) {
       const opValDisplay = card.querySelector('.op-val');
-      if (opValDisplay) {
-        opValDisplay.textContent = `${Math.round(val * 100)}%`;
-      }
+      if (opValDisplay) opValDisplay.textContent = `${Math.round(val * 100)}%`;
     }
 
-    this.pushToContent();
+    this.debouncedPush();
     this.saveDebounced();
   }
 
   handleGlobalToggle(enabled) {
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
       if (tab?.id) {
-        chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_LOCAL' });
+        chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_LOCAL' }).catch(() => {});
         chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled, tabId: tab.id });
       }
     });
@@ -135,236 +150,181 @@ class GridApp {
     this.closeEditor();
     this.render();
     this.persist();
-    this.pushToContent();
+    this.debouncedPush();
   }
 
   addProfile() {
-    const name = prompt("New Preset Name:");
-    if (!name) return;
-    const id = 'c_' + Date.now();
-    this.profiles[id] = { name: name.slice(0,30), items: [], locked: false };
+    const id = 'custom_' + Date.now();
+    this.profiles[id] = { name: 'New Preset', items: [], locked: false };
+    this.switchProfile(id);
+  }
+
+  duplicateProfile() {
+    const current = this.getCurrent();
+    const id = 'custom_' + Date.now();
+    this.profiles[id] = { 
+        name: `${current.name} Copy`, 
+        items: JSON.parse(JSON.stringify(current.items)), 
+        locked: false 
+    };
     this.switchProfile(id);
   }
 
   renameProfile() {
-    const cur = this.getCurrent();
-    if (cur.locked) return;
-    const name = prompt("Rename preset to:", cur.name);
-  }
-
-  duplicateProfile() {
-    const cur = this.getCurrent();
-    const name = prompt("Duplicate as:", `${cur.name} (Copy)`);
-    if (!name) return;
-    const id = 'c_' + Date.now();
-    this.profiles[id] = { name: name.slice(0,30), items: structuredClone(cur.items), locked: false };
-    this.switchProfile(id);
+    if (this.getCurrent().locked) return;
+    const newName = prompt('Enter new profile name:', this.getCurrent().name);
+    if (newName) {
+      this.getCurrent().name = newName;
+      this.render();
+      this.persist();
+    }
   }
 
   deleteProfile() {
-    const cur = this.getCurrent();
-    if (cur.locked || !confirm(`Delete preset "${cur.name}"?`)) return;
-    delete this.profiles[this.activeId];
-    this.activeId = Object.keys(this.profiles)[0];
-    this.render();
-    this.persist();
-    this.pushToContent();
+    if (this.getCurrent().locked) return;
+    if (confirm('Delete this profile?')) {
+      delete this.profiles[this.activeId];
+      this.activeId = Object.keys(this.profiles)[0];
+      this.switchProfile(this.activeId);
+    }
   }
 
   exportProfile() {
-    const cur = this.getCurrent();
-    const url = URL.createObjectURL(new Blob([JSON.stringify(cur, null, 2)], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `grid-pro-${cur.name.toLowerCase().replace(/\s+/g, '-')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.getCurrent()));
+    const anchor = document.createElement('a');
+    anchor.setAttribute("href", dataStr);
+    anchor.setAttribute("download", this.getCurrent().name.replace(/\s+/g, '_').toLowerCase() + ".json");
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
   }
 
   importProfile(e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = (event) => {
       try {
-        const data = JSON.parse(ev.target.result);
-        if (data?.name && Array.isArray(data.items)) {
-          const id = 'c_' + Date.now();
-          this.profiles[id] = {
-            name: data.name.slice(0,30),
-            items: data.items.map(i => ({ typeMode: 'stretch', maxWidth: 0, ...i })),
-            locked: false
-          };
+        const obj = JSON.parse(event.target.result);
+        if (obj.items && Array.isArray(obj.items)) {
+          const id = 'custom_' + Date.now();
+          this.profiles[id] = { name: obj.name || 'Imported', items: obj.items, locked: false };
           this.switchProfile(id);
-        } else alert('Invalid preset format');
-      } catch { alert('Invalid JSON'); }
-      this.dom.importInput.value = '';
+        }
+      } catch (err) {
+        alert('Invalid JSON file');
+      }
     };
     reader.readAsText(file);
+    e.target.value = '';
   }
 
   addLayer() {
     if (this.getCurrent().locked) return;
-    const newLayer = { type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 20, color: '#3b82f6', opacity: 0.15, visible: true, maxWidth: 1200 };
-    this.getCurrent().items.push(newLayer);
+    this.getCurrent().items.push({ 
+        type: 'columns', count: 12, typeMode: 'center', 
+        width: 80, gutter: 24, color: '#dc3545', 
+        opacity: 0.15, visible: true, maxWidth: 1320 
+    });
     this.openEditor(this.getCurrent().items.length - 1);
+    this.renderLayers();
     this.persist();
-    this.pushToContent();
+    this.debouncedPush();
   }
 
   handleLayerClick(e) {
+    const btnDel = e.target.closest('.btn-del');
+    const btnVis = e.target.closest('.btn-vis');
     const card = e.target.closest('.layer-card');
+    
     if (!card) return;
-    const idx = +card.dataset.idx;
-    const cur = this.getCurrent();
-    if (e.target.closest('.btn-vis')) {
-      if (!cur.locked) {
-        cur.items[idx].visible = !cur.items[idx].visible;
-        this.renderLayers();
-        this.persist();
-        this.pushToContent();
-      }
-    } else if (e.target.closest('.btn-del')) {
-      if (!cur.locked) {
-        cur.items.splice(idx, 1);
-        this.closeEditor();
-        this.renderLayers();
-        this.persist();
-        this.pushToContent();
-      }
-    } else if (!e.target.classList.contains('quick-opacity') && !e.target.closest('.drag-handle')) {
-      this.openEditor(idx);
+    const index = parseInt(card.dataset.idx);
+    
+    if (btnDel) {
+      if (this.getCurrent().locked) return;
+      this.getCurrent().items.splice(index, 1);
+      this.editingIndex = null;
+      this.closeEditor();
+      this.renderLayers();
+      this.persist();
+      this.debouncedPush();
+      return;
+    }
+    
+    // FIX: Optimized Visibility Toggle (No full re-render)
+    if (btnVis) {
+      if (this.getCurrent().locked) return;
+      const item = this.getCurrent().items[index];
+      item.visible = !item.visible;
+      btnVis.innerHTML = item.visible ? ICONS.eye : ICONS.eyeOff;
+      this.persist();
+      this.debouncedPush();
+      return;
+    }
+
+    if (!e.target.closest('input') && !e.target.closest('button')) {
+        this.openEditor(index);
     }
   }
 
-  initDragAndDrop() {
-    const list = this.dom.layersList;
-
-    // --- LOGIKA UTAMA: Pisahkan interaksi Slider vs Drag Card ---
-
-    // 1. Saat mouse ditekan di slider, matikan kemampuan drag card induknya
-    list.addEventListener('mousedown', (e) => {
-      if (e.target.classList.contains('quick-opacity')) {
-        const card = e.target.closest('.layer-card');
-        if (card) {
-          card.setAttribute('draggable', 'false'); // Matikan drag API
-          card.classList.add('slider-active'); // Beri tanda visual/logic CSS
-        }
-      }
-    });
-
-    // 2. Saat mouse dilepas (di mana saja di dokumen), nyalakan kembali drag
-    document.addEventListener('mouseup', () => {
-      const activeCards = list.querySelectorAll('.layer-card.slider-active');
-      activeCards.forEach(card => {
-        // Cek jika profile tidak terkunci sebelum mengaktifkan drag kembali
-        if (!this.getCurrent().locked) {
-          card.setAttribute('draggable', 'true');
-        }
-        card.classList.remove('slider-active');
-      });
-    });
-
-    // -----------------------------------------------------------
-
-    list.addEventListener('dragstart', (e) => {
-      // Safety check ganda: Jika target adalah slider, batalkan drag
-      if (e.target.classList.contains('quick-opacity')) {
-        e.preventDefault();
-        return;
-      }
-
-      const card = e.target.closest('.layer-card');
-      if (!card || this.getCurrent().locked) {
-        e.preventDefault();
-        return;
-      }
-      
-      // Jika atribut draggable="false" (karena sedang tekan slider), browser otomatis tidak masuk sini
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', card.dataset.idx);
-      
-      setTimeout(() => card.style.opacity = '0.3', 0);
-    });
-
-    list.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      if (this.getCurrent().locked) return;
-      const draggingElement = list.querySelector('.dragging');
-      if (!draggingElement) return;
-
-      const afterElement = this.getDragAfterElement(list, e.clientY);
-      if (afterElement == null) {
-        list.appendChild(draggingElement);
-      } else {
-        list.insertBefore(draggingElement, afterElement);
-      }
-    });
-
-    list.addEventListener('drop', (e) => {
-      e.preventDefault();
-      if (this.getCurrent().locked) return;
-      const draggingCard = list.querySelector('.dragging');
-      if (!draggingCard) return;
-
-      const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-      const allCards = [...list.querySelectorAll('.layer-card')];
-      const toIndex = allCards.indexOf(draggingCard);
-
-      if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
-        const items = this.getCurrent().items;
-        const [movedItem] = items.splice(fromIndex, 1);
-        items.splice(toIndex, 0, movedItem);
-        
-        this.persist();
-        this.pushToContent();
-      }
-    });
-
-    list.addEventListener('dragend', (e) => {
-      const card = e.target.closest('.layer-card');
-      if (card) {
-        card.classList.remove('dragging');
-        card.style.opacity = '1';
-      }
-      this.renderLayers();
-    });
+  switchType(newType) {
+    if (this.editingIndex === null) return;
+    if (this.getCurrent().locked) return;
+    
+    const item = this.getCurrent().items[this.editingIndex];
+    item.type = newType;
+    
+    // UPDATE: Gunakan Nullish Coalescing (??) untuk default values
+    // Jika user sudah pernah set gutter ke 0, jangan diubah jadi 20!
+    if (newType === 'grid') {
+        item.size = item.size ?? 20;
+    } else {
+        item.count = item.count ?? 12;
+        item.typeMode = item.typeMode ?? 'stretch';
+        item.gutter = item.gutter ?? 20;
+    }
+    
+    this.openEditor(this.editingIndex);
+    this.renderLayers();
+    this.saveDebounced();
+    this.debouncedPush();
   }
 
-  openEditor(idx) {
-    this.editingIndex = idx;
-    const item = this.getCurrent().items[idx];
-    const locked = this.getCurrent().locked;
+  openEditor(index) {
+    this.editingIndex = index;
+    const isLocked = this.getCurrent().locked;
+    
     this.dom.editorPanel.classList.add('open');
     this.dom.main.classList.add('dimmed');
-    this.dom.segments.forEach(s => s.classList.toggle('active', s.dataset.type === item.type));
+    this.dom.lockedBanner.style.display = isLocked ? 'block' : 'none';
+    
+    document.querySelectorAll('.layer-card').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+    });
 
-    const banner = document.getElementById('locked-banner');
-    banner.style.display = locked ? 'block' : 'none';
+    const item = this.getCurrent().items[index];
+    
+    this.dom.segments.forEach(s => {
+        s.classList.toggle('active', s.dataset.type === item.type);
+    });
 
-    this.renderEditorFields(item, locked);
-  }
-
-  renderEditorFields(item, locked) {
-    const field = (label, key, type = 'number', step = 1) => `
+    // UPDATE: Gunakan ?? untuk value input
+    // Ini PENTING: Jika value adalah 0, '||' akan membuatnya kosong (''). 
+    // '??' akan tetap menampilkan '0'.
+    const field = (label, key, type = 'number', step) => `
       <div class="field">
         <label>${label}</label>
-        <input type="${type}" data-key="${key}" value="${item[key] ?? ''}" step="${step}" ${locked ? 'disabled' : ''}>
+        <input type="${type}" data-key="${key}" value="${item[key] ?? ''}" step="${step || '1'}" ${isLocked ? 'disabled' : ''}>
       </div>`;
 
     let html = '';
+    
     if (item.type === 'grid') {
       html += `
         <div class="field-group">
           <label class="group-label">Layout</label>
           ${field('Cell Size (px)', 'size')}
           ${field('Max Container Width (px)', 'maxWidth')}
-        </div>
-        <div class="field-group">
-          <label class="group-label">Appearance</label>
-          ${field('Color', 'color', 'color')}
-          ${field('Opacity', 'opacity', 'number', 0.01)}
         </div>`;
     } else {
       const isRow = item.type === 'rows';
@@ -375,22 +335,27 @@ class GridApp {
           ${field('Gutter (px)', 'gutter')}
           <div class="field full-width">
             <label>Alignment Mode</label>
-            <select data-key="typeMode" ${locked ? 'disabled' : ''}>
-              <option value="stretch" ${item.typeMode==='stretch'?'selected':''}>Stretch</option>
-              <option value="center" ${item.typeMode==='center'?'selected':''}>Center</option>
+            <select data-key="typeMode" ${isLocked ? 'disabled' : ''}>
+              <option value="stretch" ${item.typeMode==='stretch'?'selected':''}>Stretch (Fluid)</option>
+              <option value="center" ${item.typeMode==='center'?'selected':''}>Center (Fixed)</option>
               <option value="${isRow?'top':'left'}" ${item.typeMode===(isRow?'top':'left')?'selected':''}>${isRow?'Top':'Left'}</option>
               <option value="${isRow?'bottom':'right'}" ${item.typeMode===(isRow?'bottom':'right')?'selected':''}>${isRow?'Bottom':'Right'}</option>
             </select>
           </div>
-          ${item.typeMode === 'stretch' ? field('Margin (px)', 'margin') : field(isRow ? 'Height (px)' : 'Width (px)', isRow ? 'height' : 'width')}
+          ${item.typeMode === 'stretch' 
+            ? field('Margin (px)', 'margin') 
+            : field(isRow ? 'Height (px)' : 'Width (px)', isRow ? 'height' : 'width')}
           ${field('Max Container Width (px)', 'maxWidth')}
-        </div>
+        </div>`;
+    }
+
+    html += `
         <div class="field-group">
           <label class="group-label">Appearance</label>
           ${field('Color', 'color', 'color')}
           ${field('Opacity', 'opacity', 'number', 0.01)}
         </div>`;
-    }
+        
     this.dom.editorFields.innerHTML = html;
   }
 
@@ -399,24 +364,37 @@ class GridApp {
     const item = this.getCurrent().items[this.editingIndex];
     const key = e.target.dataset.key;
     let val = e.target.value;
+    
     if (e.target.type === 'number') {
-      val = parseFloat(val) || 0;
-      if (val < 0) val = 0;
-      if (key === 'opacity' && val > 1) val = 1;
-      if (key === 'count' && val < 1) val = 1;
+      val = parseFloat(val);
+      // Jika input kosong atau invalid (NaN), set ke 0.
+      if (isNaN(val)) val = 0; 
+      
+      // Validasi Limit
+      if (key === 'count') val = Math.max(1, Math.min(64, Math.floor(val)));
+      if (key === 'opacity') val = Math.min(1, Math.max(0, val));
+      if (['size', 'width', 'height', 'gutter', 'margin', 'maxWidth'].includes(key)) {
+          val = Math.floor(val);
+      }
     }
+    
     item[key] = val;
-    this.pushToContent();
+    this.debouncedPush();
     this.saveDebounced();
+    
     if (key === 'typeMode') this.openEditor(this.editingIndex);
-  }
-
-  switchType(type) {
-    this.getCurrent().items[this.editingIndex].type = type;
-    this.openEditor(this.editingIndex);
-    if (!this.getCurrent().locked) {
-      this.persist();
-      this.pushToContent();
+    
+    if (['count', 'type', 'gutter', 'typeMode', 'size'].includes(key)) {
+        this.renderLayers();
+    }
+    if (key === 'opacity') {
+        const card = this.dom.layersList.querySelector(`.layer-card[data-idx="${this.editingIndex}"]`);
+        if (card) {
+            // UPDATE: Pastikan nilai opacity juga aman
+            const displayVal = item.opacity ?? 0.15;
+            card.querySelector('.quick-opacity').value = displayVal;
+            card.querySelector('.op-val').textContent = `${Math.round(displayVal * 100)}%`;
+        }
     }
   }
 
@@ -429,10 +407,13 @@ class GridApp {
 
   render() {
     const locked = this.getCurrent().locked;
-    this.dom.btnDelete.style.opacity = locked ? '0.2' : '1';
-    this.dom.btnDelete.style.pointerEvents = locked ? 'none' : 'auto';
-    this.dom.btnRename.style.opacity = locked ? '0.2' : '1';
-    this.dom.btnRename.style.pointerEvents = locked ? 'none' : 'auto';
+    const setLock = (el) => {
+        el.style.opacity = locked ? '0.2' : '1';
+        el.style.pointerEvents = locked ? 'none' : 'auto';
+    };
+    
+    setLock(this.dom.btnDelete);
+    setLock(this.dom.btnRename);
     this.dom.btnAddLayer.style.display = locked ? 'none' : 'flex';
 
     this.dom.profileSelect.innerHTML = Object.entries(this.profiles)
@@ -440,11 +421,11 @@ class GridApp {
       .join('');
 
     this.renderLayers();
-    this.initDragAndDrop();
   }
 
   renderLayers() {
     const p = this.getCurrent();
+    
     if (p.items.length === 0) {
       this.dom.layersList.innerHTML = `
         <div class="empty-state">
@@ -454,83 +435,131 @@ class GridApp {
             <span>Add Bootstrap 12-column grid</span>
           </button>
         </div>`;
-      document.getElementById('quick-add-default')?.addEventListener('click', () => {
-        if (p.locked) return;
-        p.items.push({ type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 24, color: '#dc3545', opacity: 0.15, visible: true, maxWidth: 1320 });
-        this.openEditor(p.items.length - 1);
-        this.renderLayers();
-        this.persist();
-        this.pushToContent();
-      });
+      const btn = document.getElementById('quick-add-default');
+      if (btn) btn.onclick = () => { if(!p.locked) this.addLayer(); };
       return;
     }
 
-    this.dom.layersList.innerHTML = p.items.map((item, i) => {
+    const frag = document.createDocumentFragment();
+    
+    p.items.forEach((item, i) => {
       let name = '';
+      
+      // UPDATE: Gunakan ?? untuk display text agar angka 0 tetap muncul
       if (item.type === 'grid') {
-        name = `Grid ${item.size || 20}px`;
-        if (item.maxWidth > 0) name += `, max ${item.maxWidth}px`;
-      } else if (item.type === 'columns') {
-        name = `${item.count || 12} columns (${item.gutter || 0}px)`;
-        if (item.maxWidth > 0) name += `, max ${item.maxWidth}px`;
-      } else if (item.type === 'rows') {
-        const heightVal = item.height || (item.typeMode === 'stretch' ? '1fr' : 80);
-        name = `${item.count || 12} rows (${heightVal}${typeof heightVal === 'number' ? 'px' : ''})`;
-        if (item.maxWidth > 0) name += `, max ${item.maxWidth}px`;
+        name = `Pixel Grid ${item.size ?? 20}px`;
       } else {
-        name = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+        const typeName = item.type === 'rows' ? 'Rows' : 'Cols';
+        name = `${item.count ?? 12} ${typeName} (${item.gutter ?? 0}px)`;
+        if (item.typeMode === 'stretch') name += ' Fluid';
+        else name += ` Fixed`;
       }
 
-      return `
-        <div class="layer-card ${this.editingIndex === i ? 'active' : ''} ${p.locked ? 'is-locked' : ''}" data-idx="${i}" draggable="${!p.locked}">
-          <div class="color-indicator" style="background:${item.color}"></div>
-          <div class="layer-info">
-            <div class="layer-title">
-              <span class="layer-name" title="${name}">${name}</span>
-              <span class="op-val">${Math.round((item.opacity || 0) * 100)}%</span>
-            </div>
-            <input 
-              type="range" 
-              class="quick-opacity" 
-              data-idx="${i}" 
-              min="0" 
-              max="1" 
-              step="0.01"
-              draggable="false"
-              value="${item.opacity || 0}" 
-              ${p.locked ? 'disabled' : ''}
-            >
+      const card = document.createElement('div');
+      card.className = `layer-card ${this.editingIndex === i ? 'active' : ''} ${p.locked ? 'is-locked' : ''}`;
+      card.dataset.idx = i;
+      card.draggable = !p.locked;
+
+      // UPDATE: Gunakan ?? pada opacity value input
+      card.innerHTML = `
+        <div class="color-indicator" style="background:${item.color || '#3b82f6'}"></div>
+        <div class="layer-info">
+          <div class="layer-title">
+            <span class="layer-name" title="${name}">${name}</span>
+            <span class="op-val">${Math.round((item.opacity ?? 0.15) * 100)}%</span>
           </div>
-          <div class="layer-actions">
-            <button class="btn-vis btn-icon" aria-label="Toggle visibility" ${p.locked ? 'style="opacity:0.2"' : ''}>
-              ${item.visible ? ICONS.eye : ICONS.eyeOff}
-            </button>
-            ${p.locked
-              ? `<div class="lock-indicator">${ICONS.lock}</div>`
-              : `<button class="btn-del btn-icon danger" aria-label="Delete layer">${ICONS.trash}</button>`
-            }
-          </div>
+          <input 
+            type="range" 
+            class="quick-opacity" 
+            data-idx="${i}" 
+            min="0" max="1" step="0.01"
+            value="${item.opacity ?? 0.15}" 
+            ${p.locked ? 'disabled' : ''}
+          >
+        </div>
+        <div class="layer-actions">
+          <button class="btn-vis btn-icon" aria-label="Toggle visibility" ${p.locked ? 'disabled style="opacity:0.2"' : ''}>
+            ${item.visible ? ICONS.eye : ICONS.eyeOff}
+          </button>
+          ${p.locked
+            ? `<div class="lock-indicator" style="opacity:0.3">${ICONS.lock}</div>`
+            : `<button class="btn-del btn-icon danger" aria-label="Delete layer">${ICONS.trash}</button>`
+          }
         </div>`;
-    }).join('');
+        
+        // --- DRAG CONFLICT FIX ---
+        if (!p.locked) {
+            card.addEventListener('dragstart', (e) => {
+                // PENTING: Jangan mulai drag jika user berinteraksi dengan INPUT (slider) atau BUTTON
+                if (e.target.tagName === 'INPUT' || e.target.closest('button')) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                card.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+            });
+        }
+
+      frag.appendChild(card);
+    });
+
+    this.dom.layersList.innerHTML = '';
+    this.dom.layersList.appendChild(frag);
+    
+    this.initDragAndDrop();
+  }
+
+  initDragAndDrop() {
+      const container = this.dom.layersList;
+      
+      container.ondragover = (e) => {
+          e.preventDefault();
+          const afterElement = this.getDragAfterElement(container, e.clientY);
+          const draggable = document.querySelector('.dragging');
+          
+          if (draggable) {
+              if (afterElement == null) {
+                  container.appendChild(draggable);
+              } else {
+                  container.insertBefore(draggable, afterElement);
+              }
+          }
+      };
+      
+      container.ondrop = (e) => {
+          e.preventDefault();
+          if (this.getCurrent().locked) return;
+          
+          const newItems = [];
+          [...this.dom.layersList.children].forEach(child => {
+             const oldIdx = parseInt(child.dataset.idx);
+             if (!isNaN(oldIdx)) newItems.push(this.getCurrent().items[oldIdx]);
+          });
+          
+          this.getCurrent().items = newItems;
+          this.closeEditor();
+          this.renderLayers();
+          this.persist();
+          this.debouncedPush();
+      };
   }
 
   getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.layer-card:not(.dragging)')];
-
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-  }
-
-  debounce(fn, delay) {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+      const draggableElements = [...container.querySelectorAll('.layer-card:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) {
+              return { offset: offset, element: child };
+          } else {
+              return closest;
+          }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
   }
 }
 

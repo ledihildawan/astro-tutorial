@@ -3,44 +3,69 @@
   const DEFAULT_ITEMS = [{ type: 'columns', count: 12, typeMode: 'center', width: 80, gutter: 24, color: '#dc3545', opacity: 0.15, visible: true, maxWidth: 1320 }];
 
   class Overlay {
-    constructor() { this.state = { enabled: false, items: [] }; this.host = null; this.init(); }
+    constructor() { 
+      this.state = { enabled: false, items: [] }; 
+      this.host = null; 
+      this.init(); 
+    }
+
+    debounce(fn, delay) {
+      let timer;
+      return () => {
+        clearTimeout(timer);
+        timer = setTimeout(fn, delay);
+      };
+    }
 
     init() {
-    const savedEnabled = sessionStorage.getItem('gridProEnabled');
-    this.state.enabled = savedEnabled !== null ? JSON.parse(savedEnabled) : false;
+      const savedEnabled = sessionStorage.getItem('gridProEnabled');
+      this.state.enabled = savedEnabled !== null ? JSON.parse(savedEnabled) : false;
 
-    chrome.storage.local.get(['store'], (data) => {
-      this.updateStateFromStorage(data);
-      if (this.state.enabled) this.render();
-    });
+      this.debouncedRender = this.debounce(() => this.render(), 80);
 
-    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-      if (msg.action === 'UPDATE') {
-        this.state.items = msg.items || DEFAULT_ITEMS;
+      chrome.storage.local.get(['store'], (data) => {
+        this.updateStateFromStorage(data);
         if (this.state.enabled) this.render();
-      } else if (msg.action === 'TOGGLE_LOCAL') {
-        this.state.enabled = !this.state.enabled;
-        
-        sessionStorage.setItem('gridProEnabled', JSON.stringify(this.state.enabled));
+      });
 
-        this.state.enabled ? this.render() : this.removeHost();
-        sendResponse({ enabled: this.state.enabled });
-        chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
-      } else if (msg.action === 'GET_STATUS') {
-        sendResponse({ enabled: this.state.enabled });
-      }
-      return true;
-    });
+      chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+        if (msg.action === 'UPDATE') {
+          this.state.items = msg.items || DEFAULT_ITEMS;
+          if (this.state.enabled) this.render();
+        } else if (msg.action === 'TOGGLE_LOCAL') {
+          this.state.enabled = !this.state.enabled;
+          sessionStorage.setItem('gridProEnabled', JSON.stringify(this.state.enabled));
+          this.state.enabled ? this.render() : this.removeHost();
+          sendResponse({ enabled: this.state.enabled });
+          chrome.runtime.sendMessage({ action: 'SYNC_UI', enabled: this.state.enabled, tabId: 'self' });
+        } else if (msg.action === 'GET_STATUS') {
+          sendResponse({ enabled: this.state.enabled });
+        }
+        return true;
+      });
 
-    window.addEventListener('resize', () => { if (this.state.enabled) this.render(); });
-  }
+      window.addEventListener('resize', () => {
+        if (this.state.enabled) {
+            if (this.host && this.host.shadowRoot) {
+                const tag = this.host.shadowRoot.querySelector('.viewport-tag');
+                if (tag) tag.textContent = `${document.documentElement.clientWidth}px`;
+            }
+            this.debouncedRender();
+        }
+      });
+    }
 
     updateStateFromStorage(data) {
       const activeId = data?.store?.activeProfileId;
       this.state.items = data?.store?.profiles?.[activeId]?.items || DEFAULT_ITEMS;
     }
 
-    removeHost() { if (this.host) { this.host.remove(); this.host = null; } }
+    removeHost() { 
+      if (this.host) { 
+        this.host.remove(); 
+        this.host = null; 
+      } 
+    }
 
     createHost() {
       if (this.host) return this.host;
@@ -63,8 +88,7 @@
       const style = document.createElement('style');
       style.textContent = `
         .viewport-tag { position: fixed; top: 12px; right: 24px; background: rgba(9,9,11,0.9); color: #10b981; padding: 4px 8px; font-family: monospace; font-size: 10px; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3); z-index: 2; pointer-events: none; }
-        .grid-layer { position: absolute; height: 100%; width: 100%; display: grid; box-sizing: border-box; pointer-events: none; }
-        .grid-layer div { box-sizing: border-box; height: 100%; }
+        .grid-layer { position: absolute; height: 100%; width: 100%; pointer-events: none; }
       `;
 
       const tag = document.createElement('div');
@@ -77,46 +101,93 @@
         layer.className = 'grid-layer';
 
         const isRow = item.type === 'rows';
-        const rgb = (item.color || '#3b82f6').replace('#','').match(/.{2}/g).map(x => parseInt(x, 16));
-        const color = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${item.opacity || 0.15})`;
+        
+        // UPDATE: Use '??' for color and opacity. Fixes bug where opacity 0 becomes 0.15
+        const rgb = (item.color ?? '#3b82f6').replace('#','').match(/.{2}/g).map(x => parseInt(x, 16));
+        const color = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${item.opacity ?? 0.15})`;
+        
+        const maxWidth = item.maxWidth ?? 0;
+        if (maxWidth > 0) {
+            layer.style.width = `min(100%, ${maxWidth}px)`;
+            layer.style.left = '50%';
+            layer.style.transform = 'translateX(-50%)';
+        }
 
         if (item.type === 'grid') {
-          layer.style.backgroundImage = `linear-gradient(to right, ${color} 1px, transparent 1px), linear-gradient(to bottom, ${color} 1px, transparent 1px)`;
-          layer.style.backgroundSize = `${item.size || 20}px ${item.size || 20}px`;
-          if (item.maxWidth > 0) {
-            layer.style.width = `min(100%, ${item.maxWidth}px)`;
-            layer.style.left = '50%';
-            layer.style.transform = 'translateX(-50%)';
-          }
-        } else {
-          if (item.maxWidth > 0) {
-            layer.style.width = `min(100%, ${item.maxWidth}px)`;
-            layer.style.left = '50%';
-            layer.style.transform = 'translateX(-50%)';
-          }
+            const size = item.size ?? 20;
+            layer.style.backgroundImage = `
+                linear-gradient(to right, ${color} 1px, transparent 1px), 
+                linear-gradient(to bottom, ${color} 1px, transparent 1px)
+            `;
+            layer.style.backgroundSize = `${size}px ${size}px`;
+        } 
+        else {
+            const count = Math.max(1, item.count ?? 1);
+            // UPDATE: Use '??' so gutter can be 0px
+            const gutter = item.gutter ?? 0;
+            const mode = item.typeMode ?? 'stretch';
+            const direction = isRow ? 'to bottom' : 'to right';
+            
+            let gradient = '';
 
-          const mode = item.typeMode || 'stretch';
-          const gap = item.gutter || 0;
-          const count = Math.max(1, item.count || 1);
+            if (mode === 'stretch') {
+                // UPDATE: Use '??' so margin can be 0px
+                const margin = item.margin ?? 0;
+                
+                if(margin > 0) {
+                    if (maxWidth > 0) {
+                        layer.style.width = `min(calc(100% - ${margin*2}px), ${maxWidth}px)`;
+                    } else {
+                        layer.style.left = `${margin}px`;
+                        layer.style.width = isRow ? '100%' : `calc(100% - ${margin * 2}px)`;
+                        layer.style.transform = 'none';
+                    }
+                }
 
-          if (mode === 'stretch') {
-            const margin = item.margin || 0;
-            layer.style.padding = isRow ? `${margin}px 0` : `0 ${margin}px`;
-            layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${count}, 1fr)`;
-          } else {
-            const align = mode === 'center' ? 'center' : (mode === 'left' || mode === 'top' ? 'start' : 'end');
-            const sizeVal = isRow ? (item.height || 80) : (item.width || 80);
-            layer.style[isRow ? 'alignContent' : 'justifyContent'] = align;
-            layer.style[isRow ? 'gridTemplateRows' : 'gridTemplateColumns'] = `repeat(${count}, ${sizeVal}px)`;
-          }
+                const colWidth = `((100% - ${(count - 1) * gutter}px) / ${count})`;
+                
+                gradient = `repeating-linear-gradient(
+                    ${direction}, 
+                    ${color} 0, 
+                    ${color} calc(${colWidth}), 
+                    transparent calc(${colWidth}), 
+                    transparent calc(${colWidth} + ${gutter}px)
+                )`;
+                
+            } else {
+                // FIXED
+                const sizeVal = isRow ? (item.height ?? 80) : (item.width ?? 80);
+                const totalGridSize = count * sizeVal + (count - 1) * gutter;
+                
+                layer.style.width = `${totalGridSize}px`;
+                
+                if (mode === 'center') {
+                    layer.style.left = '50%';
+                    layer.style.transform = 'translateX(-50%)';
+                } else if (mode === 'right' || mode === 'bottom') {
+                     layer.style[isRow ? 'bottom' : 'right'] = '0';
+                     layer.style[isRow ? 'top' : 'left'] = 'auto';
+                     if(mode==='right') layer.style.transform = 'none';
+                } else {
+                     layer.style.left = '0';
+                     layer.style.transform = 'none';
+                }
+                
+                gradient = `repeating-linear-gradient(
+                    ${direction}, 
+                    ${color} 0, 
+                    ${color} ${sizeVal}px, 
+                    transparent ${sizeVal}px, 
+                    transparent ${sizeVal + gutter}px
+                )`;
+            }
 
-          layer.style.gap = `${gap}px`;
-          for (let i = 0; i < count; i++) {
-            const cell = document.createElement('div');
-            cell.style.backgroundColor = color;
-            layer.appendChild(cell);
-          }
+            layer.style.backgroundImage = gradient;
+            if (mode !== 'stretch') {
+                layer.style.backgroundRepeat = 'no-repeat'; 
+            }
         }
+        
         container.appendChild(layer);
       });
 
