@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Grid Pro",
-  "version": "9.0.1",
+  "version": "9.3.0",
   "description": "High-performance precision layout guide with strict validation.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "background": { "service_worker": "background.js" },
@@ -13,6 +13,9 @@
       "suggested_key": { "default": "Alt+G", "mac": "Alt+G" },
       "description": "Toggle Layout Guide"
     }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "content_scripts": [{
     "matches": ["<all_urls>"],

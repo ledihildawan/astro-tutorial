@@ -10,22 +10,28 @@ async function updateTabUI(tabId, isEnabled) {
       },
       tabId
     });
-  } catch {}
+  } catch (e) {
+    // Suppress error jika tab sudah tertutup
+  }
 }
 
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'toggle-overlay') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id || tab.url.startsWith('chrome://')) return;
-    chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_LOCAL' }, (res) => {
-      if (chrome.runtime.lastError) { chrome.tabs.reload(tab.id); return; }
-      if (res) updateTabUI(tab.id, res.enabled);
-    });
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) return;
+      
+      chrome.tabs.sendMessage(tab.id, { action: 'TOGGLE_LOCAL' }, (res) => {
+        if (chrome.runtime.lastError) return;
+        if (res) updateTabUI(tab.id, res.enabled);
+      });
+    } catch (e) {}
   }
 });
 
 chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.action === 'SYNC_UI') {
-    updateTabUI(msg.tabId === 'self' ? sender.tab.id : msg.tabId, msg.enabled);
+    const targetTabId = msg.tabId === 'self' ? sender.tab?.id : msg.tabId;
+    if (targetTabId) updateTabUI(targetTabId, msg.enabled);
   }
 });
