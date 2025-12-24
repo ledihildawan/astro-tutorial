@@ -540,8 +540,8 @@
         object-fit: cover;
         opacity: 0;
         transition: opacity 0.5s ease-in;
-        z-index: 1;
       }
+      .um-img-skeleton.loaded img,
       .um-img-skeleton img.loaded {
         opacity: 1;
       }
@@ -1864,8 +1864,10 @@
           const frag = document.createDocumentFragment();
           const items = this._opts.items;
           if (!items?.length) return frag;
+
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
+
             if (forSR) {
               const li = document.createElement('li');
               li.textContent = item.alt || item.text || item;
@@ -1877,30 +1879,48 @@
                 wrapper.appendChild(node);
                 node = wrapper;
               }
-              const cloned = node.cloneNode(true);
-              const img = cloned.querySelector('img');
-              if (img) {
-                const markLoaded = () => {
+
+              // === PERBAIKAN UTAMA: Handle semua gambar di dalam node ini ===
+              node.querySelectorAll('img').forEach((img) => {
+                const skeletonContainer = img.closest('.um-img-skeleton');
+
+                const markAsLoaded = () => {
                   img.classList.add('loaded');
-                  cloned.classList.add('loaded');
+                  if (skeletonContainer) {
+                    skeletonContainer.classList.add('loaded');
+                  }
                 };
-                if (img.complete && img.naturalWidth > 0) markLoaded();
-                else {
-                  img.onload = markLoaded;
-                  img.onerror = markLoaded;
+
+                // Jika gambar sudah complete (cached dari browser)
+                if (img.complete) {
+                  if (img.naturalWidth > 0) {
+                    markAsLoaded();
+                  } else {
+                    // Broken image tapi complete → tetap mark loaded agar skeleton hilang
+                    markAsLoaded();
+                  }
+                } else {
+                  // Setup event listener baru
+                  img.onload = markAsLoaded;
+                  img.onerror = markAsLoaded; // Agar skeleton tidak stuck forever kalau gambar error
                 }
-              }
-              cloned.querySelectorAll('*').forEach((el) => {
+              });
+
+              // Bersihkan ID & tabindex untuk accessibility
+              node.querySelectorAll('*').forEach((el) => {
                 if (el.id) el.removeAttribute('id');
                 el.setAttribute('tabindex', '-1');
               });
-              frag.appendChild(cloned);
+
+              frag.appendChild(node);
+
               if (i < items.length - 1 || addTrailingSeparator) {
                 const sep = this.#buildSeparatorNode(this._opts.separator);
                 if (sep) frag.appendChild(sep);
               }
             }
           }
+
           return frag;
         }
         buildSRList() {
@@ -2260,47 +2280,77 @@
           pauseOnHover: true,
           whiteSpace: 'normal', // Text wrap enabled
         });
-        const sambaViews = [
+        const products = [
           {
-            view: 'Side Profile',
-            img: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp',
-            alt: 'Adidas Samba OG - Classic side profile',
+            view: 'Side Profile (Lateral)',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Samba_OG_Shoes_White_B75806_01_00_standard.jpg',
+            alt: 'Adidas Samba OG - Lateral side profile with gold SAMBA lettering',
           },
           {
-            view: 'Top-Down / Lacing',
-            img: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp',
-            alt: 'Adidas Samba OG - Top-down view',
+            view: 'Perspective / Three-Quarter View',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/8c4158c4c39a4ab09b8ba8c000c96fd0_9366/Samba_OG_Shoes_White_B75806_01_01_standard.jpg',
+            alt: 'Adidas Samba OG - Angled three-quarter lateral view',
+          },
+          {
+            view: 'Medial Side Profile',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/ec595635a2994adea094a8bf0117ef1a_9366/Samba_OG_Shoes_White_B75806_02_standard.jpg',
+            alt: 'Adidas Samba OG - Clean medial side view',
+          },
+          {
+            view: 'Top-Down / Lacing / Tongue Detail',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/97cd0902ae2e402b895aa8bf0117f98f_9366/Samba_OG_Shoes_White_B75806_03_standard.jpg',
+            alt: 'Adidas Samba OG - Top-down view showing blue tongue label and lacing',
           },
           {
             view: 'Toe Box Detail',
-            img: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp',
-            alt: 'Adidas Samba OG - Toe box',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/b067d21288bc43ec8298a8bf01180400_9366/Samba_OG_Shoes_White_B75806_04_standard.jpg',
+            alt: 'Adidas Samba OG - Close-up suede T-toe and front detail',
           },
           {
-            view: 'Lifestyle / On-Foot',
-            img: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp',
-            alt: 'Adidas Samba OG - Lifestyle',
+            view: 'Heel Tab & Rear View',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3a8d5f9cb7444bd195f1a8bf01180e68_9366/Samba_OG_Shoes_White_B75806_05_standard.jpg',
+            alt: 'Adidas Samba OG - Rear view with black heel tab',
           },
           {
-            view: 'Heel Tab & Sole',
-            img: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp',
-            alt: 'Adidas Samba OG - Heel view',
+            view: 'Outsole / Bottom Sole',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/07567ea7d2bb425b8651a8bf0117e4f1_9366/Samba_OG_Shoes_White_B75806_06_standard.jpg',
+            alt: 'Adidas Samba OG - Full gum rubber outsole with pivot point and traction pattern',
           },
           {
-            view: 'Perspective View',
-            img: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp',
-            alt: 'Adidas Samba OG - Perspective',
+            view: 'Heel Close-Up Detail',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/b19389122c51434eb5bea8bf0117da35_9366/Samba_OG_Shoes_White_B75806_07_standard.jpg',
+            alt: 'Adidas Samba OG - Close-up heel with gold SAMBA lettering',
+          },
+          {
+            view: 'Toe Box Close-Up Detail',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/f9ce5733049f4ca8a93aa8bf011858bd_9366/Samba_OG_Shoes_White_B75806_09_standard.jpg',
+            alt: 'Adidas Samba OG - Detailed toe box and suede overlay',
+          },
+          {
+            view: 'Lifestyle / On-Foot (Standing)',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/671c62b81c3448e980aca8bf01181a93_9366/Samba_OG_Shoes_White_B75806_41_detail.jpg',
+            alt: 'Adidas Samba OG - On-foot lifestyle look with adidas socks',
+          },
+          {
+            view: 'Pair View (Both Shoes)',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/6cea1ecd4fee4337ab5da8bf011823ca_9366/Samba_OG_Shoes_White_B75806_42_detail.jpg',
+            alt: 'Adidas Samba OG - Full pair view side by side',
+          },
+          {
+            view: 'Outsole Close-Up Detail',
+            img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/0c94e4fecb7a4088b15fa8bf01183214_9366/Samba_OG_Shoes_White_B75806_43_detail.jpg',
+            alt: 'Adidas Samba OG - Close-up gum sole traction and pivot point',
           },
         ];
         new UniversalMarquee('#demo-products', {
-          items: sambaViews,
+          items: products,
           renderItem: (item) => {
             const div = document.createElement('div');
             div.className = 'product-view-card um-img-skeleton';
             div.innerHTML = `
-              <img src="${item.img}" alt="${item.alt}" loading="lazy" style="object-fit: cover;">
-              <div class="view-label">${item.view}</div>
-            `;
+      <img src="${item.img}" alt="${item.alt}" loading="lazy">
+      <div class="view-label">${item.view}</div>
+    `;
             return div;
           },
           speed: 30,
