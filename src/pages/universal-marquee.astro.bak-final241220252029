@@ -72,6 +72,7 @@
           background: var(--color-accent-primary);
           color: #ffffff;
         }
+
         h1,
         h2,
         h3 {
@@ -86,6 +87,7 @@
         .root-layout-footer {
           color: var(--text-muted);
         }
+
         .usage-example {
           background: var(--bg-card);
           border-color: var(--border-primary);
@@ -109,6 +111,7 @@
         .usage-example:hover > p {
           color: var(--text-primary);
         }
+
         .code-window {
           background: var(--code-bg);
           box-shadow:
@@ -129,6 +132,7 @@
         .code-content code {
           color: var(--code-text);
         }
+
         .hljs {
           background: var(--code-bg) !important;
           color: var(--code-text);
@@ -138,51 +142,20 @@
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
-        .inline-code {
-          background: rgba(30, 41, 59, 0.6);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          padding: 0.2rem 0.5rem;
-          border-radius: 8px;
-          border: 1px solid rgba(34, 211, 238, 0.2);
-          font-family: var(--font-family-mono);
-          font-size: 0.95rem;
-          color: #67fca8;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-          display: inline-block;
-          transition: all var(--transition-normal);
-        }
 
+        .inline-code {
+          background: rgba(226, 232, 240, 0.8);
+          backdrop-filter: blur(10px);
+          border-color: rgba(34, 211, 238, 0.3);
+          color: var(--text-primary);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
         .inline-code:hover {
-          background: rgba(34, 211, 238, 0.2);
+          background: rgba(226, 232, 240, 0.95);
           border-color: var(--color-accent-primary);
-          color: #ffffff;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(34, 211, 238, 0.3);
-        }
-        code.inline-code .hljs {
-          background: transparent !important;
-          padding: 0;
-          color: inherit;
-        }
-        .inline-code {
-          position: relative;
-          overflow: hidden;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
         }
 
-        .inline-code::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.05), transparent);
-          opacity: 0;
-          transition: opacity var(--transition-normal);
-          pointer-events: none;
-        }
-
-        .inline-code:hover::before {
-          opacity: 1;
-        }
         #features {
           background: linear-gradient(90deg, #818cf8, #c084fc, #a78bfa, #22d3ee, #818cf8);
           box-shadow: 0 20px 50px -10px rgba(139, 92, 246, 0.2);
@@ -195,6 +168,7 @@
           box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
           text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
         }
+
         #demo-testimonials {
           --testimonials-bg: rgba(248, 250, 252, 0.95);
           --testimonials-card-bg: #ffffff;
@@ -212,6 +186,7 @@
           box-shadow: var(--testimonials-shadow);
           color: var(--testimonials-text-primary);
         }
+
         #demo-products {
           background: linear-gradient(135deg, #f8fafc, #f1f5f9);
           border-color: rgba(34, 211, 238, 0.1);
@@ -221,6 +196,7 @@
           border-color: rgba(34, 211, 238, 0.15);
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
+
         #demo-ticker {
           background: rgba(241, 245, 249, 0.95);
           border-color: rgba(34, 211, 238, 0.3);
@@ -231,6 +207,7 @@
           background: rgba(255, 255, 255, 0.9);
           border-color: rgba(34, 211, 238, 0.15);
         }
+
         .um-container.um-overflow-left::before {
           background: linear-gradient(to right, var(--bg-primary), transparent);
         }
@@ -240,6 +217,7 @@
         .blob {
           opacity: 0.12;
         }
+
         .dot.red {
           background-color: var(--code-dot-red);
         }
@@ -249,6 +227,7 @@
         .dot.green {
           background-color: var(--code-dot-green);
         }
+
         /* Highlight.js Light Mode */
         .hljs {
           background: var(--code-bg) !important;
@@ -310,6 +289,7 @@
         .hljs-tag .hljs-attr {
           color: #dc2626;
         }
+
         /* SMOOTH TRANSITIONS FOR LIGHT MODE */
         .usage-example,
         #demo-testimonials .testimonial-card,
@@ -340,32 +320,39 @@
         --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
         --font-family-fun: 'Luckiest Guy', sans-serif;
         --font-family-mono: 'Space Mono', monospace;
+
         --spacing-sm: 1rem;
         --spacing-md: 1.5rem;
         --spacing-lg: 2.5rem;
         --spacing-xl: 4rem;
         --section-spacing: 6rem;
+
         --radius-xs: 6px;
         --radius-sm: 12px;
         --radius-lg: 24px;
         --radius-xl: 30px;
         --radius-pill: 60px;
+
         --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         --transition-normal: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         --transition-bounce: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
         --gradient-accent-1: #6366f1;
         --gradient-accent-2: #a855f7;
         --color-accent-primary: #22d3ee;
+
         --layout-max-width: 1200px;
         --layout-gutter: var(--spacing-md);
         --layout-vertical-spacing: 5rem;
         --layout-guide-width: 1px;
         --layout-guide-style: solid;
+
         --um-overlay-width: 120px;
         --um-gallery-item-width: 420px;
         --um-gallery-item-height: 280px;
         --um-gallery-border-radius: var(--radius-lg);
+
         --code-bg: #1e1e1e;
         --code-header-bg: #252526;
         --code-scrollbar-thumb: #424242;
@@ -373,8 +360,11 @@
         --code-dot-red: #ff5f56;
         --code-dot-yellow: #ffbd2e;
         --code-dot-green: #27c93f;
+
         --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.5);
       }
+
+      /* 2. KEYFRAMES */
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -469,6 +459,7 @@
             0 0 60px var(--ticker-accent-glow);
         }
       }
+
       /* 3. UNIVERSAL MARQUEE CORE */
       .um-container {
         display: flex;
@@ -566,6 +557,7 @@
         right: 0;
         background: linear-gradient(to left, var(--gradient-overlay-color, #030712), transparent);
       }
+
       @media (prefers-reduced-motion: reduce) {
         .um-container {
           overflow-x: auto !important;
@@ -576,6 +568,7 @@
           animation: none !important;
         }
       }
+
       /* 4. GLOBAL LAYOUT & TYPOGRAPHY */
       html {
         scroll-behavior: smooth;
@@ -624,6 +617,7 @@
         background: var(--color-accent-primary);
         color: #030712;
       }
+
       .root-layout {
         position: relative;
         width: 100%;
@@ -773,16 +767,15 @@
         transition: transform 0.8s var(--transition-bounce);
       }
 
+      /* ALL ORIGINAL DARK STYLES (unchanged, only enhanced with transitions above) */
       .usage-example {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(34, 211, 238, 0.2);
+        background: #0f172a;
+        border: 1px solid #1e293b;
         border-radius: var(--radius-lg);
         padding: var(--spacing-lg);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         overflow: hidden;
         position: relative;
-        transition: all var(--transition-slow);
-        backdrop-filter: blur(12px);
       }
       .usage-example::before {
         content: '';
@@ -800,10 +793,8 @@
         z-index: 0;
       }
       .usage-example:hover {
-        transform: translateY(-8px);
-        box-shadow:
-          0 25px 60px rgba(0, 0, 0, 0.5),
-          0 0 40px rgba(34, 211, 238, 0.2);
+        transform: translateY(-12px) scale(1.015);
+        box-shadow: var(--shadow-elevated);
         border-color: var(--color-accent-primary);
         z-index: 10;
       }
@@ -811,20 +802,19 @@
         opacity: 1;
       }
       .usage-example h3 {
-        font-size: 1.8rem;
-        margin: 0 0 var(--spacing-md);
+        font-size: 1.75rem;
+        margin: 0 0 var(--spacing-sm);
         font-weight: 700;
         letter-spacing: -0.01em;
         position: relative;
         z-index: 1;
         transition: color var(--transition-normal);
-        color: #e0f2fe;
       }
       .usage-example:hover h3 {
         color: var(--color-accent-primary);
       }
       .usage-example > p {
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
         line-height: 1.7;
         color: #94a3b8;
         font-size: 1.05rem;
@@ -835,6 +825,95 @@
       .usage-example:hover > p {
         color: #e0f2fe;
       }
+      .usage-example .code-window {
+        position: relative;
+        z-index: 1;
+      }
+      .usage-example:hover .code-window {
+        transform: translateY(-4px);
+      }
+
+      .code-window {
+        margin: var(--spacing-lg) 0 0;
+        background: var(--code-bg);
+        border-radius: var(--radius-sm);
+        box-shadow:
+          0 10px 30px -10px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+      }
+      .code-header {
+        background: var(--code-header-bg);
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+      }
+      .window-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .dot.red {
+        background-color: var(--code-dot-red);
+      }
+      .dot.yellow {
+        background-color: var(--code-dot-yellow);
+      }
+      .dot.green {
+        background-color: var(--code-dot-green);
+      }
+      .file-name {
+        color: #9ca3af;
+        font-family: var(--font-family-primary);
+        font-size: 0.85rem;
+        font-weight: 500;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.8;
+      }
+      .copy-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        cursor: pointer;
+        color: #9ca3af;
+        border-radius: var(--radius-xs);
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+      }
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+      .copy-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+      .code-content {
+        margin: 0;
+        padding: var(--spacing-md);
+        overflow-x: auto;
+      }
+      .code-content code {
+        font-family: var(--font-family-mono);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--code-text);
+        tab-size: 2;
+        white-space: pre;
+      }
+
       .main-title {
         text-align: center;
         font-size: clamp(3rem, 7vw, 5rem);
@@ -894,6 +973,7 @@
         outline: 2px solid var(--color-accent-primary);
         outline-offset: 4px;
       }
+
       #features {
         --features-padding-v: var(--spacing-lg);
         --features-rotate: -3deg;
@@ -1408,191 +1488,7 @@
           opacity: 0.8;
         }
       }
-      .code-toggle-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        margin: 3rem auto 0;
-        padding: 16px 40px;
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        color: #e0f2fe;
-        border: 2px solid rgba(34, 211, 238, 0.4);
-        border-radius: var(--radius-pill);
-        font-family: var(--font-family-heading);
-        font-weight: 700;
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
-        cursor: pointer;
-        transition: all var(--transition-slow);
-        box-shadow:
-          0 10px 30px rgba(0, 0, 0, 0.4),
-          inset 0 0 20px rgba(34, 211, 238, 0.05);
-        position: relative;
-        overflow: hidden;
-      }
-      .code-toggle-btn::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), transparent);
-        opacity: 0;
-        transition: opacity var(--transition-normal);
-      }
-      .code-toggle-btn:hover {
-        background: rgba(34, 211, 238, 0.15);
-        border-color: var(--color-accent-primary);
-        color: #ffffff;
-        transform: translateY(-6px) scale(1.02);
-        box-shadow:
-          0 20px 50px rgba(34, 211, 238, 0.3),
-          0 0 40px rgba(34, 211, 238, 0.2),
-          inset 0 0 30px rgba(34, 211, 238, 0.1);
-      }
-      .code-toggle-btn:hover::before {
-        opacity: 1;
-      }
-      .code-toggle-btn .icon-chevron {
-        width: 20px;
-        height: 20px;
-        transition: transform var(--transition-normal);
-      }
-      .code-toggle-btn[aria-expanded='true'] .icon-chevron {
-        transform: rotate(180deg);
-      }
-      .code-viewer {
-        margin: var(--spacing-lg) 0 0;
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        border: 1px solid rgba(34, 211, 238, 0.2);
-        box-shadow:
-          0 15px 40px rgba(0, 0, 0, 0.5),
-          inset 0 0 30px rgba(34, 211, 238, 0.05);
-        max-height: 0;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition:
-          max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity var(--transition-slow),
-          transform var(--transition-slow),
-          box-shadow var(--transition-slow);
-        padding: 0 var(--spacing-md);
-      }
-      .code-viewer.open {
-        max-height: 900px;
-        opacity: 1;
-        transform: translateY(0);
-        padding: var(--spacing-lg) var(--spacing-md);
-        box-shadow:
-          0 25px 60px rgba(0, 0, 0, 0.6),
-          0 0 60px rgba(34, 211, 238, 0.25),
-          inset 0 0 40px rgba(34, 211, 238, 0.08);
-      }
-      .code-tabs {
-        display: flex;
-        align-items: center;
-        background: rgba(30, 41, 59, 0.5);
-        padding: 12px 20px;
-        gap: 8px;
-        border-bottom: 1px solid rgba(34, 211, 238, 0.15);
-        position: relative;
-      }
-      .code-tab {
-        position: relative;
-        padding: 10px 20px;
-        border-radius: var(--radius-sm);
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #94a3b8;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        transition: color var(--transition-fast);
-        z-index: 2;
-      }
-      .code-tab.active {
-        color: #ffffff;
-      }
-      .code-tab::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 50%;
-        width: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #6366f1, var(--color-accent-primary), #a855f7);
-        border-radius: 2px;
-        transition: all var(--transition-normal);
-        transform: translateX(-50%);
-        z-index: 1;
-      }
-      .code-tab.active::after {
-        width: 80%;
-      }
-      .code-tab:hover:not(.active) {
-        color: #e0f2fe;
-      }
-      .copy-tab-btn {
-        margin-left: auto;
-        background: rgba(34, 211, 238, 0.15);
-        border: 1px solid rgba(34, 211, 238, 0.3);
-        color: #94a3b8;
-        padding: 10px;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        transition: all var(--transition-normal);
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .copy-tab-btn:hover {
-        background: var(--color-accent-primary);
-        color: #030712;
-        border-color: var(--color-accent-primary);
-        box-shadow: 0 0 30px rgba(34, 211, 238, 0.5);
-        transform: scale(1.05);
-      }
-      .copy-tab-btn:active {
-        transform: scale(0.95);
-      }
-      .copy-tab-btn svg {
-        width: 20px;
-        height: 20px;
-        display: block;
-        flex-shrink: 0;
-        transition: all var(--transition-normal);
-      }
-      .copy-tab-btn:hover svg {
-        transform: scale(1.1);
-        stroke: #030712;
-      }
-      .code-panels {
-        max-height: 600px;
-        overflow-y: auto;
-        padding-top: var(--spacing-md);
-        scrollbar-color: #1e293b transparent;
-      }
-      .code-panel {
-        display: none;
-        margin: 0;
-      }
-      .code-panel.active {
-        display: block;
-      }
-      .code-panel code {
-        font-family: var(--font-family-mono);
-        font-size: 0.95rem;
-        line-height: 1.8;
-        color: #e0f2fe;
-        white-space: pre;
-      }
+
       .ambient-background {
         position: fixed;
         inset: 0;
@@ -1632,9 +1528,10 @@
         animation-delay: -10s;
         opacity: 0.2;
       }
+
       .hljs {
-        background: transparent !important;
-        color: #e0f2fe;
+        background: #1e1e1e !important;
+        color: #ffffff;
       }
       .hljs-string {
         color: #67fca8;
@@ -1653,7 +1550,7 @@
         color: #508be5;
       }
       .hljs-comment {
-        color: #64748b;
+        color: #7f7f7f;
       }
       .hljs-built_in {
         color: #ea5452;
@@ -1704,25 +1601,17 @@
                   <h3>Scrolling Testimonials</h3>
                   <p>Build social proof with smooth customer reviews.</p>
                   <div id="demo-testimonials" role="region" aria-label="Testimonials marquee"></div>
-                  <button class="code-toggle-btn" aria-expanded="false" aria-controls="code-testimonials">
-                    <svg
-                      class="icon-chevron"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg
-                    >
-                    <span>Show code</span>
-                  </button>
-                  <div class="code-viewer" id="code-testimonials">
-                    <div class="code-tabs">
-                      <button class="code-tab active" data-tab="html">HTML</button>
-                      <button class="code-tab" data-tab="js">JavaScript</button>
-                      <button class="code-tab" data-tab="css">CSS</button>
-                      <button class="copy-tab-btn" aria-label="Copy active tab">
+                  <figure class="code-window">
+                    <div class="code-header">
+                      <div class="window-controls">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                      </div>
+                      <span class="file-name">testimonials.html</span>
+                      <button class="copy-btn" aria-label="Copy code">
                         <svg
+                          xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -1730,40 +1619,29 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                         >
-                          <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
                       </button>
                     </div>
-                    <div class="code-panels">
-                      <pre class="code-panel active" data-tab="html"><code class="language-html" /></pre>
-                      <pre class="code-panel" data-tab="js"><code class="language-js" /></pre>
-                      <pre class="code-panel" data-tab="css"><code class="language-css" /></pre>
-                    </div>
-                  </div>
+                    <pre class="code-content"><code /></pre>
+                  </figure>
                 </article>
                 <article class="usage-example">
                   <h3>Immersive Product Gallery</h3>
                   <p>Showcase product details or angles (e.g., Adidas Samba OG).</p>
                   <div id="demo-products" role="region" aria-label="Product gallery marquee"></div>
-                  <button class="code-toggle-btn" aria-expanded="false" aria-controls="code-products">
-                    <svg
-                      class="icon-chevron"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg
-                    >
-                    <span>Show code</span>
-                  </button>
-                  <div class="code-viewer" id="code-products">
-                    <div class="code-tabs">
-                      <button class="code-tab active" data-tab="html">HTML</button>
-                      <button class="code-tab" data-tab="js">JavaScript</button>
-                      <button class="copy-tab-btn" aria-label="Copy active tab">
+                  <figure class="code-window">
+                    <div class="code-header">
+                      <div class="window-controls">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                      </div>
+                      <span class="file-name">gallery.html</span>
+                      <button class="copy-btn" aria-label="Copy code">
                         <svg
+                          xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -1771,39 +1649,29 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                         >
-                          <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
                       </button>
                     </div>
-                    <div class="code-panels">
-                      <pre class="code-panel active" data-tab="html"><code class="language-html" /></pre>
-                      <pre class="code-panel" data-tab="js"><code class="language-js" /></pre>
-                    </div>
-                  </div>
+                    <pre class="code-content"><code /></pre>
+                  </figure>
                 </article>
                 <article class="usage-example">
                   <h3>Live News / Stock Ticker</h3>
                   <p>Display fast-moving updates, prices, or alerts.</p>
                   <div id="demo-ticker" role="region" aria-label="Ticker marquee"></div>
-                  <button class="code-toggle-btn" aria-expanded="false" aria-controls="code-ticker">
-                    <svg
-                      class="icon-chevron"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg
-                    >
-                    <span>Show code</span>
-                  </button>
-                  <div class="code-viewer" id="code-ticker">
-                    <div class="code-tabs">
-                      <button class="code-tab active" data-tab="html">HTML</button>
-                      <button class="code-tab" data-tab="js">JavaScript</button>
-                      <button class="copy-tab-btn" aria-label="Copy active tab">
+                  <figure class="code-window">
+                    <div class="code-header">
+                      <div class="window-controls">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                      </div>
+                      <span class="file-name">ticker.html</span>
+                      <button class="copy-btn" aria-label="Copy code">
                         <svg
+                          xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
@@ -1811,16 +1679,13 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                         >
-                          <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
                       </button>
                     </div>
-                    <div class="code-panels">
-                      <pre class="code-panel active" data-tab="html"><code class="language-html" /></pre>
-                      <pre class="code-panel" data-tab="js"><code class="language-js" /></pre>
-                    </div>
-                  </div>
+                    <pre class="code-content"><code /></pre>
+                  </figure>
                 </article>
               </div>
             </section>
@@ -1837,6 +1702,7 @@
         >
       </footer>
     </div>
+
     <script type="module">
       class ContentBuilder {
         constructor(options) {
@@ -2112,7 +1978,7 @@
           linkedin: `<svg class="t-icon icon-linkedin" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
           ph: `<svg class="t-icon icon-ph" viewBox="0 0 24 24"><path d="M13.6,8.4h-3.4v7.2h3.4c2,0,3.6-1.6,3.6-3.6S15.6,8.4,13.6,8.4z M12,24C5.4,24,0,18.6,0,12S5.4,0,12,0 s12,5.4,12,12S18.6,24,12,24z M13.6,6h-5.8v12h2.4v-2.4h3.4c3.3,0,6-2.7,6-6S16.9,6,13.6,6z"/></svg>`,
         };
-        const features = [
+        const DEMO_1_ITEMS = [
           'Seamless infinite horizontal marquee',
           'Automatic dynamic cycle duplication',
           'Speed-based scrolling or fixed duration',
@@ -2134,7 +2000,7 @@
           speed: 45,
           gap: 0,
           direction: 'left',
-          items: features,
+          items: DEMO_1_ITEMS,
           separator: ' 🎊 ',
           renderItem: (text, index) => {
             const wrapper = document.createElement('div');
@@ -2343,182 +2209,162 @@
       initApp();
     </script>
     <script type="module">
-      const codeExamples = {
-        testimonials: {
-          html: `<!-- Tempatkan di mana pun Anda ingin marquee muncul -->
-<div id="testimonials"></div>`,
-          css: `/* Styling opsional untuk card testimonial */
-.testimonial-card {
-  background: rgba(30, 41, 59, 0.8);
-  padding: 1.8rem;
-  border-radius: 28px;
-  width: 400px;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(34, 211, 238, 0.15);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-}`,
-          js: `const reviews = [
-  { name: "Sarah Jenkins", handle: "@sarah_dev", avatar: "https://i.pravatar.cc/150?u=sarah", text: "Game-changer. The performance on mobile is silky smooth.", stars: 5 }
-  // tambahkan review lainnya...
-];
-
-new UniversalMarquee("#testimonials", {
-  items: reviews,
-  speed: 25,
-  gap: "3rem",
-  pauseOnHover: true,
-  whiteSpace: "normal",
-  renderItem: (item) => {
-    const card = document.createElement("div");
-    card.className = "testimonial-card";
-    card.innerHTML = \`
-      <div style="margin-bottom:1rem;font-style:italic;color:#e0f2fe;">"\${item.text}"</div>
-      <div style="display:flex;align-items:center;gap:1rem;">
-        <img src="\${item.avatar}" alt="\${item.name}" style="width:60px;height:60px;border-radius:50%;">
-        <div>
-          <strong>\${item.name}</strong><br>
-          <span style="color:#94a3b8;">\${item.handle}</span>
-        </div>
-      </div>
-    \`;
-    return card;
-  }
-});`,
-        },
-        products: {
-          html: `<div id="gallery"></div>`,
-          js: `const images = [
-  { img: "https://example.com/samba-side.jpg", alt: "Side view", label: "Side Profile" },
-  { img: "https://example.com/samba-top.jpg", alt: "Top view", label: "Top-Down" }
-  // tambahkan gambar lain...
-];
-
-new UniversalMarquee("#gallery", {
-  items: images,
-  speed: 30,
-  gap: "1.5rem",
-  pauseOnHover: true,
-  renderItem: (item) => {
-    const card = document.createElement("div");
-    card.className = "um-img-skeleton product-view-card";
-    card.style.cssText = "width:420px;height:280px;border-radius:24px;overflow:hidden;position:relative;";
-    card.innerHTML = \`
-      <img src="\${item.img}" alt="\${item.alt}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
-      <div style="position:absolute;bottom:20px;left:20px;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:10px 20px;border-radius:50px;color:#fff;font-weight:800;">\${item.label}</div>
-    \`;
-    return card;
-  }
-});`,
-        },
-        ticker: {
-          html: `<div id="ticker"></div>`,
-          js: `const stocks = [
-  { sym: "NVDA", val: "$177", change: "1.2%", up: true },
-  { sym: "TSLA", val: "$475", change: "3.6%", up: true },
-  { sym: "AAPL", val: "$274", change: "1.5%", up: false }
-  // tambahkan data lain...
-];
-
-new UniversalMarquee("#ticker", {
-  items: stocks,
-  speed: 70,
-  separator: " • ",
-  renderItem: (item) => {
-    const el = document.createElement("div");
-    el.style.cssText = "display:flex;align-items:center;gap:1.8rem;background:rgba(30,41,59,0.6);padding:1rem 2rem;border-radius:16px;white-space:nowrap;border:1px solid rgba(34,211,238,0.1);";
-    const sign = item.up ? "+" : "-";
-    const color = item.up ? "#34d399" : "#f87171";
-    el.innerHTML = \`
-      <span style="font-weight:800;letter-spacing:1px;">\${item.sym}</span>
-      <span style="font-weight:700;">\${item.val}</span>
-      <span style="font-weight:800;color:\${color};">\${sign}\${item.change}</span>
-    \`;
-    return el;
-  }
-});`,
-        },
-      };
-
-      document.querySelectorAll('.code-viewer').forEach((viewer) => {
-        const id = viewer.id.replace('code-', '');
-        const data = codeExamples[id];
-        if (!data) return;
-
-        const htmlEl = viewer.querySelector('[data-tab="html"] code');
-        const jsEl = viewer.querySelector('[data-tab="js"] code');
-        const cssEl = viewer.querySelector('[data-tab="css"] code');
-        const cssTab = viewer.querySelector('[data-tab="css"]');
-
-        if (htmlEl && data.html) htmlEl.textContent = data.html;
-        if (jsEl && data.js) jsEl.textContent = data.js;
-        if (cssEl && data.css) cssEl.textContent = data.css;
-        else if (cssTab) cssTab.style.display = 'none';
-      });
-
-      document.querySelectorAll('.code-panel code').forEach((block) => hljs.highlightElement(block));
-    </script>
-    <script type="module">
-      document.querySelectorAll('.code-toggle-btn').forEach((btn) => {
-        const span = btn.querySelector('span');
-
-        btn.addEventListener('click', () => {
-          const expanded = btn.getAttribute('aria-expanded') === 'true';
-          const newState = !expanded;
-
-          btn.setAttribute('aria-expanded', newState);
-
-          span.textContent = newState ? 'Hide code' : 'Show code';
-
-          const viewer = document.getElementById(btn.getAttribute('aria-controls'));
-          if (viewer) {
-            viewer.classList.toggle('open', newState);
+      document.querySelectorAll('.copy-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const codeBlock = btn.closest('.code-window').querySelector('pre code');
+          const code = codeBlock.textContent.trim();
+          const originalSVG = btn.innerHTML;
+          try {
+            await navigator.clipboard.writeText(code);
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#27c93f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation: pop 0.2s ease-out"><polyline points="20 6 9 17 4 12"/></svg>`;
+            btn.style.borderColor = 'var(--code-dot-green)';
+          } catch (err) {
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff5f56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`;
+          } finally {
+            setTimeout(() => {
+              btn.innerHTML = originalSVG;
+              btn.style.borderColor = 'transparent';
+            }, 2000);
           }
         });
       });
+      const style = document.createElement('style');
+      style.textContent = `@keyframes pop { 0% { transform: scale(0.8); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }`;
+      document.head.appendChild(style);
+    </script>
+    <script type="module">
+      const codeExamples = {
+        'testimonials.html': `<!-- HTML -->
+<div id="testimonials"></div>
 
-      document.querySelectorAll('.code-viewer').forEach((viewer) => {
-        const tabs = viewer.querySelectorAll('.code-tab');
-        const copyBtn = viewer.querySelector('.copy-tab-btn');
+<!-- CSS (opsional) -->
+<style>
+  .testimonial-card {
+    background: #1e293b;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    width: 380px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    color: #e0f2fe;
+  }
+  .testimonial-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+</style>
 
-        tabs.forEach((tab) => {
-          tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-            tabs.forEach((t) => t.classList.remove('active'));
-            tab.classList.add('active');
-            viewer.querySelectorAll('.code-panel').forEach((p) => p.classList.remove('active'));
-            const panel = viewer.querySelector(`.code-panel[data-tab="${target}"]`);
-            if (panel) panel.classList.add('active');
-          });
-        });
+<!-- JavaScript -->
+<script type="module">
+  const reviews = [
+    { name: "Sarah Jenkins", handle: "@sarah_dev", avatar: "https://i.pravatar.cc/150?u=sarah", text: "Game-changer for mobile performance.", stars: 5 },
+    { name: "John Doe", handle: "@johndoe", avatar: "https://i.pravatar.cc/150?u=john", text: "Smooth and accessible marquee!", stars: 5 }
+    // tambahkan review lain...
+  ];
 
-        if (copyBtn) {
-          const defaultIcon = copyBtn.innerHTML;
+  new UniversalMarquee("#testimonials", {
+    items: reviews,
+    speed: 25,
+    gap: "3rem",
+    pauseOnHover: true,
+    whiteSpace: "normal",
+    renderItem: (item) => {
+      const card = document.createElement("div");
+      card.className = "testimonial-card";
+      card.innerHTML = \`
+        <p style="margin:0 0 1rem;font-style:italic;">"\${item.text}"</p>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <img src="\${item.avatar}" alt="\${item.name}">
+          <div>
+            <strong>\${item.name}</strong><br>
+            <span style="color:#94a3b8;">\${item.handle}</span>
+          </div>
+        </div>
+      \`;
+      return card;
+    }
+  });
+<\/script>`,
 
-          copyBtn.addEventListener('click', async () => {
-            const codeEl = viewer.querySelector('.code-panel.active code');
-            if (!codeEl) return;
-            const text = codeEl.textContent.trim();
+        'gallery.html': `<!-- HTML -->
+<div id="gallery"></div>
 
-            try {
-              await navigator.clipboard.writeText(text);
-              copyBtn.innerHTML =
-                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#27c93f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-            } catch {
-              copyBtn.innerHTML =
-                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff5f56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg>';
-            }
+<!-- JavaScript -->
+<script type="module">
+  const images = [
+    { img: "https://example.com/img1.jpg", alt: "Product view 1", label: "Side View" },
+    { img: "https://example.com/img2.jpg", alt: "Product view 2", label: "Top View" }
+    // tambahkan gambar lain...
+  ];
 
-            setTimeout(() => {
-              copyBtn.innerHTML = defaultIcon;
-            }, 2000);
-          });
+  new UniversalMarquee("#gallery", {
+    items: images,
+    speed: 30,
+    gap: "1.5rem",
+    pauseOnHover: true,
+    renderItem: (item) => {
+      const card = document.createElement("div");
+      card.className = "um-img-skeleton";
+      card.style.cssText = "position:relative;width:420px;height:280px;border-radius:24px;overflow:hidden;";
+      card.innerHTML = \`
+        <img src="\${item.img}" alt="\${item.alt}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+        <div style="position:absolute;bottom:20px;left:20px;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:50px;color:#fff;font-weight:bold;">\${item.label}</div>
+      \`;
+      return card;
+    }
+  });
+<\/script>`,
+
+        'ticker.html': `<!-- HTML -->
+<div id="ticker"></div>
+
+<!-- JavaScript -->
+<script type="module">
+  const stocks = [
+    { sym: "NVDA", val: "$177", change: "1.2%", up: true },
+    { sym: "TSLA", val: "$475", change: "3.6%", up: true },
+    { sym: "AAPL", val: "$274", change: "1.5%", up: false }
+    // tambahkan data lain...
+  ];
+
+  new UniversalMarquee("#ticker", {
+    items: stocks,
+    speed: 70,
+    separator: " • ",
+    renderItem: (item) => {
+      const el = document.createElement("div");
+      el.style.cssText = "display:flex;align-items:center;gap:1.5rem;background:rgba(30,41,59,0.6);padding:0.8rem 1.8rem;border-radius:16px;white-space:nowrap;";
+      const sign = item.up ? "+" : "-";
+      const color = item.up ? "#34d399" : "#f87171";
+      el.innerHTML = \`
+        <span style="font-weight:800;">\${item.sym}</span>
+        <span style="font-weight:700;">\${item.val}</span>
+        <span style="color:\${color};font-weight:700;">\${sign}\${item.change}</span>
+      \`;
+      return el;
+    }
+  });
+<\/script>`,
+      };
+
+      document.querySelectorAll('.code-window').forEach((win) => {
+        const name = win.querySelector('.file-name').textContent.trim();
+        const codeEl = win.querySelector('pre code');
+        if (codeExamples[name]) {
+          codeEl.textContent = codeExamples[name];
         }
       });
     </script>
     <script type="module">
-      // Highlight semua inline code setelah DOM loaded
-      document.querySelectorAll('code.inline-code').forEach((block) => {
-        hljs.highlightElement(block);
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.code-content code').forEach((block) => {
+          const fileName = block.closest('.code-window')?.querySelector('.file-name')?.textContent.trim() || '';
+          let lang = 'javascript';
+          if (fileName.includes('html')) lang = 'html';
+          else if (fileName.includes('css')) lang = 'css';
+          block.classList.add(`language-${lang}`);
+          hljs.highlightElement(block);
+        });
       });
     </script>
   </body>
