@@ -21,6 +21,14 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://universal-marquee.example.com" />
     <meta property="og:image" content="https://placehold.co/1200x630/0f172a/e0f2fe?text=Universal+Marquee" />
+    <meta property="og:title" content="Universal Marquee - The Lightweight JS Scroll Library" />
+    <meta
+      property="og:description"
+      content="Zero dependencies. Fully accessible. Works with text, images, or any custom HTML."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://universal-marquee.example.com" />
+    <meta property="og:image" content="https://placehold.co/1200x630/0f172a/e0f2fe?text=Universal+Marquee" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💫</text></svg>"
@@ -331,10 +339,7 @@
         }
       }
     </style>
-
-    <!-- DARK THEME + SMOOTH TRANSITIONS -->
     <style is:global>
-      /* 1. GLOBAL ROOT VARIABLES */
       :root {
         --font-family-primary: 'Outfit', system-ui, sans-serif;
         --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
@@ -375,6 +380,7 @@
         --code-dot-green: #27c93f;
         --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.5);
       }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -469,17 +475,51 @@
             0 0 60px var(--ticker-accent-glow);
         }
       }
-      /* 3. UNIVERSAL MARQUEE CORE */
+      @keyframes um-marquee {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
       .um-container {
         display: flex;
         overflow: hidden;
-        user-select: none;
         width: 100%;
         position: relative;
-        transform: translate3d(0, 0, 0);
-        opacity: 0;
-        animation: fadeIn 0.5s ease-out forwards;
+        transform: translateZ(0); /* Force hardware acceleration */
       }
+
+      .um-track {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: var(--um-gap, 2rem);
+        white-space: var(--um-white-space, nowrap);
+        animation: um-marquee var(--um-duration, 30s) linear infinite;
+        will-change: transform;
+      }
+
+      .um-container.um-direction-right .um-track {
+        animation-direction: reverse;
+      }
+
+      .um-container.um-pause-on-hover:hover .um-track {
+        animation-play-state: paused;
+      }
+
+      .um-track > * {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .um-item-separator {
+        flex-shrink: 0;
+      }
+
       .um-sr-only {
         position: absolute;
         width: 1px;
@@ -490,64 +530,7 @@
         clip: rect(0, 0, 0, 0);
         border: 0;
       }
-      .um-track {
-        display: flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        gap: var(--um-gap, 2rem);
-        will-change: transform;
-        backface-visibility: hidden;
-      }
-      .um-track > * {
-        flex-shrink: 0;
-        white-space: var(--um-white-space, nowrap);
-        display: flex;
-        align-items: center;
-      }
-      .um-item-separator {
-        flex-shrink: 0;
-      }
-      .um-img-skeleton {
-        position: relative;
-        background: #1e293b;
-        overflow: hidden;
-        border-radius: var(--um-gallery-border-radius);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        transition: all var(--transition-slow);
-        width: var(--um-gallery-item-width);
-        height: var(--um-gallery-item-height);
-        min-width: var(--um-gallery-item-width);
-      }
-      .um-img-skeleton::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        transform: translateX(-100%);
-        background-image: linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0) 0%,
-          rgba(255, 255, 255, 0.05) 20%,
-          rgba(255, 255, 255, 0.1) 60%,
-          rgba(255, 255, 255, 0)
-        );
-        animation: shimmer 2s infinite;
-      }
-      .um-img-skeleton img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0;
-        transition: opacity 0.5s ease-in;
-      }
-      .um-img-skeleton.loaded img,
-      .um-img-skeleton img.loaded {
-        opacity: 1;
-      }
-      .um-img-skeleton.loaded::after {
-        display: none;
-      }
+
       .um-container.um-overflow-left::before,
       .um-container.um-overflow-right::after {
         content: '';
@@ -558,25 +541,27 @@
         pointer-events: none;
         z-index: 2;
       }
+
       .um-container.um-overflow-left::before {
         left: 0;
-        background: linear-gradient(to right, var(--gradient-overlay-color, #030712), transparent);
+        background: linear-gradient(to right, #030712, transparent);
       }
+
       .um-container.um-overflow-right::after {
         right: 0;
-        background: linear-gradient(to left, var(--gradient-overlay-color, #030712), transparent);
+        background: linear-gradient(to left, #030712, transparent);
       }
+
       @media (prefers-reduced-motion: reduce) {
+        .um-track {
+          animation: none !important;
+        }
         .um-container {
           overflow-x: auto !important;
           -webkit-overflow-scrolling: touch;
         }
-        .um-track {
-          transform: none !important;
-          animation: none !important;
-        }
       }
-      /* 4. GLOBAL LAYOUT & TYPOGRAPHY */
+
       html {
         scroll-behavior: smooth;
         scroll-padding-top: calc(var(--layout-vertical-spacing) + 2rem);
@@ -1837,37 +1822,28 @@
         >
       </footer>
     </div>
+
     <script type="module">
       class ContentBuilder {
         constructor(options) {
           this._opts = options;
         }
+
         #buildSeparatorNode(separator) {
           if (!separator) return null;
-          const container = document.createElement('span');
-          container.classList.add('um-item-separator');
-          container.setAttribute('aria-hidden', 'true');
-          if (typeof separator === 'string') {
-            container.innerHTML = separator;
-          } else if (separator instanceof Node) {
-            container.appendChild(separator.cloneNode(true));
-          } else {
-            container.textContent = String(separator);
-          }
-          container.querySelectorAll('*').forEach((el) => {
-            if (el.id) el.removeAttribute('id');
-            el.setAttribute('tabindex', '-1');
-          });
-          return container;
+          const el = document.createElement('span');
+          el.className = 'um-item-separator';
+          el.setAttribute('aria-hidden', 'true');
+          if (typeof separator === 'string') el.innerHTML = separator;
+          else if (separator instanceof Node) el.appendChild(separator.cloneNode(true));
+          else el.textContent = String(separator);
+          return el;
         }
+
         buildCycleContent(forSR = false, addTrailingSeparator = true) {
           const frag = document.createDocumentFragment();
-          const items = this._opts.items;
-          if (!items?.length) return frag;
-
-          for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-
+          const items = this._opts.items || [];
+          items.forEach((item, i) => {
             if (forSR) {
               const li = document.createElement('li');
               li.textContent = item.alt || item.text || item;
@@ -1879,63 +1855,33 @@
                 wrapper.appendChild(node);
                 node = wrapper;
               }
-
-              // === PERBAIKAN UTAMA: Handle semua gambar di dalam node ini ===
-              node.querySelectorAll('img').forEach((img) => {
-                const skeletonContainer = img.closest('.um-img-skeleton');
-
-                const markAsLoaded = () => {
-                  img.classList.add('loaded');
-                  if (skeletonContainer) {
-                    skeletonContainer.classList.add('loaded');
-                  }
-                };
-
-                // Jika gambar sudah complete (cached dari browser)
-                if (img.complete) {
-                  if (img.naturalWidth > 0) {
-                    markAsLoaded();
-                  } else {
-                    // Broken image tapi complete → tetap mark loaded agar skeleton hilang
-                    markAsLoaded();
-                  }
-                } else {
-                  // Setup event listener baru
-                  img.onload = markAsLoaded;
-                  img.onerror = markAsLoaded; // Agar skeleton tidak stuck forever kalau gambar error
-                }
-              });
-
-              // Bersihkan ID & tabindex untuk accessibility
               node.querySelectorAll('*').forEach((el) => {
                 if (el.id) el.removeAttribute('id');
                 el.setAttribute('tabindex', '-1');
               });
-
               frag.appendChild(node);
-
-              if (i < items.length - 1 || addTrailingSeparator) {
+              if (i < items.length - 1 || (addTrailingSeparator && i === items.length - 1)) {
                 const sep = this.#buildSeparatorNode(this._opts.separator);
                 if (sep) frag.appendChild(sep);
               }
             }
-          }
-
+          });
           return frag;
         }
+
         buildSRList() {
           const mode = this._opts.screenReaderMode || 'ordered';
-          const items = this._opts.items;
-          if (!items?.length) {
-            const div = document.createElement('div');
-            div.className = 'um-sr-only';
-            return div;
-          }
-          let container;
-          if (mode === 'ordered') container = document.createElement('ol');
-          else if (mode === 'unordered') container = document.createElement('ul');
-          else container = document.createElement('div');
+          const items = this._opts.items || [];
+          if (!items.length) return document.createElement('div');
+
+          const container =
+            mode === 'ordered'
+              ? document.createElement('ol')
+              : mode === 'unordered'
+                ? document.createElement('ul')
+                : document.createElement('div');
           container.className = 'um-sr-only';
+
           if (mode === 'plain') {
             items.forEach((item) => {
               const p = document.createElement('p');
@@ -1947,182 +1893,103 @@
           }
           return container;
         }
+
         measureCycleMetrics(root) {
           if (!this._opts.items?.length) return { width: 0, gap: 0 };
           const temp = document.createElement('div');
           temp.className = 'um-track';
-          temp.style.position = 'absolute';
-          temp.style.visibility = 'hidden';
-          let gapVal = this._opts.gap;
-          if (typeof gapVal === 'number') gapVal = `${gapVal}px`;
-          temp.style.setProperty('--um-gap', gapVal);
-          const cycleFrag = this.buildCycleContent(false, false);
-          temp.appendChild(cycleFrag);
+          temp.style.cssText = 'position:absolute;visibility:hidden;';
+          temp.style.setProperty(
+            '--um-gap',
+            typeof this._opts.gap === 'number' ? `${this._opts.gap}px` : this._opts.gap
+          );
+          temp.appendChild(this.buildCycleContent());
           root.appendChild(temp);
-          const width = temp.offsetWidth || 0;
-          const parsedGap = parseFloat(getComputedStyle(temp).gap || '0');
+          const width = temp.offsetWidth;
+          const gap = parseFloat(getComputedStyle(temp).gap || '0');
           root.removeChild(temp);
-          return { width, gap: parsedGap };
+          return { width, gap };
         }
       }
-      class AnimationController {
-        constructor(track, opts) {
-          this._track = track;
-          this._opts = opts;
-        }
-        start(cycleWidth, gap) {
-          if (this._anim) this._anim.cancel();
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-          const distance = cycleWidth + gap;
-          if (distance <= 0) return;
-          let duration = this._opts.duration
-            ? this._opts.duration * 1000
-            : (distance / (this._opts.speed > 0 ? this._opts.speed : 50)) * 1000;
-          const from = 'translate3d(0,0,0)';
-          const to = `translate3d(-${distance}px,0,0)`;
-          const keyframes =
-            this._opts.direction === 'right'
-              ? [{ transform: to }, { transform: from }]
-              : [{ transform: from }, { transform: to }];
-          this._anim = this._track.animate(keyframes, {
-            duration,
-            iterations: Infinity,
-            easing: 'linear',
-          });
-        }
-        pause() {
-          if (this._anim?.playState === 'running') this._anim.pause();
-        }
-        play() {
-          if (this._anim?.playState !== 'running') this._anim.play();
-        }
-        cancel() {
-          if (this._anim) this._anim.cancel();
-        }
-      }
+
       class UniversalMarquee {
-        constructor(selector, opts) {
+        constructor(selector, opts = {}) {
           this._root = document.querySelector(selector);
           if (!this._root) return;
+
           this._opts = {
             speed: 50,
-            duration: null,
             gap: '2rem',
             direction: 'left',
+            duration: null,
             items: [],
             separator: '',
-            renderItem: (i) => document.createTextNode(typeof i === 'object' ? i.text || i.alt || i : i),
+            renderItem: (item) => document.createTextNode(String(item)),
             pauseOnHover: true,
-            ariaLabel: 'Marquee',
             screenReader: true,
-            screenReaderMode: 'ordered',
-            gradientOverlay: 'auto',
-            gradientColor: null,
             whiteSpace: 'nowrap',
             ...opts,
           };
-          this._root.classList.add('um-container', 'js-enabled');
-          if (this._opts.screenReader) {
-            this._root.setAttribute('role', 'region');
-            this._root.setAttribute('aria-label', this._opts.ariaLabel);
-          }
-          this._root.style.setProperty('--um-white-space', this._opts.whiteSpace);
+
           this._builder = new ContentBuilder(this._opts);
-          this.handleResize = this.handleResize.bind(this);
-          this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
           this.#setup();
-          this.#initObservers();
-          this.#initInteractivity();
+          this.#initResizeObserver();
         }
+
         #setup() {
           this._root.innerHTML = '';
+          this._root.classList.add('um-container');
+          if (this._opts.direction === 'right') this._root.classList.add('um-direction-right');
+          if (this._opts.pauseOnHover) this._root.classList.add('um-pause-on-hover');
+
           this._track = document.createElement('div');
           this._track.className = 'um-track';
-          this._track.setAttribute('aria-hidden', 'true');
-          if ('inert' in HTMLElement.prototype) this._track.inert = true;
-          this._track.style.willChange = 'transform';
-          if (this._opts.screenReader) {
-            this._root.appendChild(this._builder.buildSRList());
-          }
+
+          if (this._opts.screenReader) this._root.appendChild(this._builder.buildSRList());
           this._root.appendChild(this._track);
+
           this.#reflow();
         }
+
         #reflow() {
-          const metrics = this._builder.measureCycleMetrics(this._root);
-          if (metrics.width === 0) return;
-          if (this._anim) this._anim.cancel();
-          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          const cyclesCount = reducedMotion ? 1 : 2;
+          const { width, gap } = this._builder.measureCycleMetrics(this._root);
+          if (width === 0) return;
+
+          let duration = this._opts.duration ?? (width + gap) / this._opts.speed;
+          this._track.style.setProperty('--um-duration', `${duration * 2}s`);
+          this._track.style.setProperty('--um-gap', this._opts.gap);
+          this._track.style.setProperty('--um-white-space', this._opts.whiteSpace);
+
           this._track.innerHTML = '';
-          const cycleFrag = this._builder.buildCycleContent(false, false);
-          for (let i = 0; i < cyclesCount; i++) {
-            this._track.appendChild(cycleFrag.cloneNode(true));
-          }
-          let shouldShowOverlay = false;
-          if (this._opts.gradientOverlay === true) shouldShowOverlay = true;
-          else if (this._opts.gradientOverlay === 'auto' && reducedMotion) {
-            shouldShowOverlay = this._track.scrollWidth > this._root.offsetWidth;
-          }
-          if (shouldShowOverlay) {
-            this._root.classList.add('um-overflow-left', 'um-overflow-right');
-            let overlayColor = this._opts.gradientColor || getComputedStyle(this._root).backgroundColor;
-            this._root.style.setProperty('--gradient-overlay-color', overlayColor);
+
+          // Check prefers-reduced-motion (hanya sekali saat reflow)
+          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+          if (reducedMotion) {
+            // Reduced motion: hanya satu cycle, TANPA trailing separator
+            const cycleNoTrail = this._builder.buildCycleContent(false, false); // addTrailingSeparator = false
+            this._track.appendChild(cycleNoTrail);
           } else {
-            this._root.classList.remove('um-overflow-left', 'um-overflow-right');
-            this._root.style.removeProperty('--gradient-overlay-color');
-          }
-          if (!reducedMotion) {
-            this._anim = new AnimationController(this._track, this._opts);
-            this._anim.start(metrics.width, metrics.gap);
+            // Normal: duplikasi cycle lengkap (DENGAN trailing separator untuk seamless)
+            const cycleFull = this._builder.buildCycleContent(false, true); // addTrailingSeparator = true
+            this._track.appendChild(cycleFull.cloneNode(true));
+            this._track.appendChild(cycleFull.cloneNode(true));
           }
         }
-        #initInteractivity() {
-          if (this._opts.pauseOnHover !== false) {
-            this._root.addEventListener('mouseenter', () => this._anim?.pause());
-            this._root.addEventListener('mouseleave', () => this._anim?.play());
-            this._root.addEventListener('focusin', () => this._anim?.pause());
-            this._root.addEventListener('focusout', () => this._anim?.play());
-            this._root.addEventListener('touchstart', () => this._anim?.pause(), { passive: true });
-            this._root.addEventListener('touchend', () => this._anim?.play());
-          }
-        }
-        handleResize() {
-          clearTimeout(this._resizeTimer);
-          this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 200);
-        }
-        handleVisibilityChange() {
-          if (!this._anim) return;
-          document.hidden ? this._anim.pause() : this._isInViewport && this._anim.play();
-        }
-        #initObservers() {
-          this._resizeObserver = new ResizeObserver(this.handleResize);
-          this._resizeObserver.observe(this._root);
-          if ('IntersectionObserver' in window) {
-            this._observer = new IntersectionObserver(
-              (entries) => {
-                entries.forEach((entry) => {
-                  if (!this._anim) return;
-                  this._isInViewport = entry.isIntersecting;
-                  entry.isIntersecting && !document.hidden ? this._anim.play() : this._anim.pause();
-                });
-              },
-              { rootMargin: '50px 0px' }
-            );
-            this._observer.observe(this._root);
-          }
-          document.addEventListener('visibilitychange', this.handleVisibilityChange);
-          const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-          mediaQuery.addEventListener('change', () => requestAnimationFrame(() => this.#reflow()));
-        }
-        destroy() {
-          if (this._resizeObserver) this._resizeObserver.disconnect();
-          if (this._observer) this._observer.disconnect();
-          document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-          if (this._anim) this._anim.cancel();
-          this._root.innerHTML = '';
-          this._root.classList.remove('um-container', 'js-enabled');
+
+        #initResizeObserver() {
+          new ResizeObserver(() => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => requestAnimationFrame(() => this.#reflow()), 100);
+          }).observe(this._root);
+
+          // Optional: pause when tab hidden
+          document.addEventListener('visibilitychange', () => {
+            this._track.style.animationPlayState = document.hidden ? 'paused' : 'running';
+          });
         }
       }
+
       window.UniversalMarquee = UniversalMarquee;
     </script>
     <script type="module">
