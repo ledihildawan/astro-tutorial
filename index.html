@@ -1,67 +1,140 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Marquee v2.2 Demo</title>
+    <title>Universal Marquee v4.0 Demo</title>
     <style>
-        /* --- 1. PAGE STYLING (Hanya untuk kosmetik demo) --- */
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #0f172a; /* Slate 900 */
-            color: #f1f5f9;
-            margin: 0;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 4rem;
-            max-width: 800px;
-            margin-inline: auto;
+        /* --- RESET & DEMO PAGE STYLES --- */
+        :root {
+            --bg: #0f172a;
+            --text: #f8fafc;
+            --accent: #38bdf8;
+            --card-bg: #1e293b;
         }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
+        h1, h2, p { margin: 0; }
+        
+        header {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: linear-gradient(to bottom, #1e293b, #0f172a);
+        }
+        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--accent); }
+        header p { color: #94a3b8; }
 
         section {
-            border-bottom: 1px solid #334155;
-            padding-bottom: 2rem;
+            margin: 3rem 0;
+            border-top: 1px solid #334155;
+            padding-top: 1rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .section-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .badge {
+            font-size: 0.75rem;
+            background: var(--accent);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
-        h2 { margin-bottom: 0.5rem; color: #38bdf8; }
-        .badge { 
-            background: #f59e0b; color: #000; padding: 2px 6px; 
-            border-radius: 4px; font-size: 0.8rem; vertical-align: middle; 
-        }
-        p { margin-top: 0; color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.5rem; }
-
-        /* Container styling untuk demo */
-        .marquee-container {
-            background: #1e293b;
+        /* Demo Item Styles */
+        .logo-box {
+            width: 120px;
+            height: 60px;
+            background: var(--card-bg);
             border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 8px;
-            padding: 1rem 0;
-            margin-bottom: 1rem;
+            font-weight: bold;
+            color: #64748b;
         }
 
-        /* --- 2. UNIVERSAL MARQUEE v2.2 CSS --- */
-        
+        .card-testimonial {
+            width: 280px;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #334155;
+            user-select: none; /* Penting untuk drag */
+        }
+        .card-testimonial h4 { color: var(--accent); margin-bottom: 0.5rem; }
+        .card-testimonial p { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; }
+
+        .photo-item {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            filter: grayscale(0.5);
+            transition: filter 0.3s;
+        }
+        .photo-item:hover { filter: grayscale(0); }
+
+        .rtl-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e2e8f0;
+            padding: 0 1rem;
+            background: #334155;
+            border-radius: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- UNIVERSAL MARQUEE v4.0 CSS --- */
         .um-host {
             display: flex;
             width: 100%;
             overflow: hidden;
             position: relative;
+            direction: var(--um-direction-attr, ltr);
             contain: layout paint;
             
-            /* CSS Variables Defaults */
             --um-mask-width: 5%;
             --um-gap: 2rem;
-            --um-bounce-dist: 0px; /* Variabel dinamis untuk mode Ping-Pong */
-            
-            /* Masking (Fade Edges) */
-            mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+            --um-duration: 0s;
+            --um-direction: normal; 
+            --um-delay: 0s;
+            --um-play-state: running;
+            --um-align: center;
+            --um-scroll-boost: 0px;
             
             user-select: none;
             touch-action: pan-y;
+            -webkit-user-drag: none;
         }
 
+        .um-host.um-cursor-grab { cursor: grab; }
+        .um-host.um-cursor-grabbing { cursor: grabbing; }
+
+        .um-host[data-mask="both"] {
+            mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+        }
         .um-host.um-no-mask { mask-image: none; -webkit-mask-image: none; }
 
         .um-track {
@@ -69,89 +142,87 @@
             width: max-content;
             flex-shrink: 0;
             gap: var(--um-gap);
+            align-items: var(--um-align);
             will-change: transform;
-            transform: translate3d(0, 0, 0);
-            
-            animation-duration: var(--um-duration, 0s);
-            animation-play-state: var(--um-play-state, running);
-            animation-direction: var(--um-direction, normal);
-            animation-delay: var(--um-delay, 0s);
-            animation-iteration-count: infinite;
-            
-            /* Default: Infinite Loop */
+            transform: translate3d(var(--um-scroll-boost), 0, 0);
+        }
+
+        .um-animating .um-track {
             animation-name: um-scroll;
             animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            animation-duration: var(--um-duration);
+            animation-direction: var(--um-direction);
+            animation-play-state: var(--um-play-state);
+            animation-delay: var(--um-delay);
         }
 
-        /* Mode 1: Infinite Loop */
+        .um-dragging .um-track { animation: none !important; }
+        .um-host.um-paused .um-track { animation-play-state: paused; }
+
         @keyframes um-scroll {
-            from { transform: translate3d(0, 0, 0); }
-            to   { transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0); }
+            0%   { transform: translate3d(calc(0px + var(--um-scroll-boost)), 0, 0); }
+            100% { transform: translate3d(calc(-50% - (var(--um-gap) / 2) + var(--um-scroll-boost)), 0, 0); }
         }
 
-        /* Mode 2: Auto-Reverse (Ping-Pong) */
-        .um-host.um-mode-reverse .um-track {
-            animation-name: um-bounce;
-            animation-direction: alternate; /* Bolak-balik */
-            animation-timing-function: ease-in-out; /* Gerakan natural */
-        }
-
-        @keyframes um-bounce {
-            0%   { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(calc(var(--um-bounce-dist) * -1), 0, 0); }
-        }
-
-        /* Interaction */
-        .um-host.um-pause-hover:hover .um-track { animation-play-state: paused; }
-        .um-host.um-pause-click:active .um-track { animation-play-state: paused; }
-
-        .um-item { display: flex; align-items: center; flex-shrink: 0; }
+        .um-item { display: flex; flex-shrink: 0; pointer-events: auto; height: 100%; }
+        .um-item img { pointer-events: none; -webkit-user-drag: none; }
         .um-separator { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-        /* --- 3. CUSTOM ITEM STYLES --- */
-        .news-item { font-weight: 600; white-space: nowrap; }
-        .tag-live { background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-right: 8px; text-transform: uppercase; }
-        
-        .song-item { font-family: 'Courier New', monospace; font-size: 1.2rem; color: #a5f3fc; }
-        .song-icon { margin-right: 10px; }
-
     </style>
 </head>
 <body>
 
-    <h1>UniversalMarquee v2.2 Demo</h1>
+    <header>
+        <div class="container">
+            <h1>Universal Marquee v4.0</h1>
+            <p>GPU Accelerated • Inertia Drag • Scroll Velocity • Smart Performance</p>
+        </div>
+    </header>
 
     <section>
-        <h2>1. News Ticker (Standard Mode)</h2>
-        <p>Fitur: Infinite Loop, Mobile First Responsive (Cepat di Desktop, Lambat di HP), Pause on Hover.</p>
-        
-        <div id="marquee-news" class="marquee-container"></div>
-    </section>
-
-    <section>
-        <h2>2. Song Title <span class="badge">NEW v2.2</span></h2>
-        <p>Fitur: <b>Auto Reverse</b>. Teks bergerak sampai ujung, diam sebentar (delay), lalu kembali. Cocok untuk teks panjang tunggal.</p>
-        
-        <div id="marquee-song" class="marquee-container" style="max-width: 300px; margin: 0 auto; border-color: #0ea5e9;"></div>
-        
-        <div style="text-align: center; margin-top: 1rem;">
-            <button onclick="changeSong()" style="padding: 8px 16px; cursor: pointer;">Ganti Lagu (Hot Swap)</button>
+        <div class="container">
+            <h2 class="section-title">1. Infinite Loop <span class="badge">Performance Optimized</span></h2>
+            <div id="marquee-logos"></div>
         </div>
     </section>
 
-    <script>
+    <section>
+        <div class="container">
+            <h2 class="section-title">2. Draggable & Momentum <span class="badge">Try Swiping!</span></h2>
+            <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">Grab and throw the cards. Notice the physics decay.</p>
+        </div>
+        <div id="marquee-cards" style="padding: 1rem 0; background: #0b1120;"></div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2 class="section-title">3. Scroll Velocity & Randomize <span class="badge">Scroll Page Fast!</span></h2>
+            <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">The marquee accelerates when you scroll the window. Items are randomized on reload.</p>
+            <div id="marquee-photos"></div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2 class="section-title">4. RTL Support <span class="badge">Right-to-Left</span></h2>
+            <div id="marquee-rtl" style="margin-top: 1rem;"></div>
+        </div>
+    </section>
+
+    <div style="height: 100vh;"></div> <script type="module">
         /**
-         * UNIVERSAL MARQUEE LIBRARY v2.2
-         * (Auto-Reverse & Mobile First Included)
+         * UniversalMarquee v4.0 Class Definition
+         * (Disatukan di sini agar bisa langsung jalan tanpa import external)
          */
         class UniversalMarquee {
             static #DEFAULTS = {
-                speed: 50, gap: '2rem', direction: 'normal', delay: 0,
-                autoReverse: false, // v2.2 Feature
-                pauseOnHover: true, pauseOnClick: false,
-                mask: true, maskWidth: '5%',
-                responsive: {}, items: [], separator: null,
-                renderItem: (item) => document.createTextNode(String(item)),
+                speed: 50, gap: '2rem', direction: 'normal', alignItems: 'center', rtl: false,
+                minClones: 0, randomize: false, pauseOnInvisibility: true,
+                hoverBehavior: 'pause', draggable: false, dragSpeed: 1.2, dragMomentum: true,
+                scrollVelocity: false, mask: true, maskSide: 'both', maskWidth: '5%',
+                reducedMotionMode: 'stop',
+                items: [], separator: null, renderItem: (item) => document.createTextNode(String(item)),
+                onInit: () => {}, onDragStart: () => {}, onDragEnd: () => {}, onItemClick: () => {},
             };
 
             constructor(selector, options = {}) {
@@ -159,34 +230,39 @@
                 if (!this.root) throw new Error(`Node '${selector}' not found.`);
                 this.userOptions = options;
                 this.config = { ...UniversalMarquee.#DEFAULTS, ...options };
-                this._observers = [];
-                this._resizeTimer = null;
-                this._isManualPaused = false;
+                this._observers = []; this._resizeTimer = null; this._isManualPaused = false;
+                this._drag = { active: false, startX: 0, currentX: 0, lastTranslate: 0, hasMoved: false, velocity: 0, lastTime: 0 };
+                this._scroll = { currentOffset: 0, targetOffset: 0, rafId: null };
                 this.#init();
-            }
-
-            updateItems(newItems) {
-                this.config.items = newItems;
-                this.#buildDOM();
-                this.#waitForAssets().then(() => this.#syncPhysics());
-            }
-
-            pause() { this._isManualPaused = true; this.root.style.setProperty('--um-play-state', 'paused'); }
-            play() { this._isManualPaused = false; this.root.style.setProperty('--um-play-state', 'running'); }
-            set direction(val) { this.config.direction = val; this.root.style.setProperty('--um-direction', val); }
-            set speed(pxPerSecond) { this.config.speed = pxPerSecond; this.#syncPhysics(); }
-
-            destroy() {
-                this._observers.forEach(obs => obs.disconnect());
-                this.root.classList.remove('um-host', 'um-pause-hover', 'um-pause-click', 'um-no-mask', 'um-mode-reverse');
-                this.root.innerHTML = '';
             }
 
             #init() {
                 this.root.classList.add('um-host');
-                this.#evaluateResponsive(); 
+                if (this.config.randomize) this.#shuffleItems();
+                this.#handleReducedMotion();
+                this.#evaluateResponsive();
                 this.#buildDOM();
-                this.#waitForAssets().then(() => { this.#syncPhysics(); this.#attachObservers(); });
+                this.#waitForAssets().then(() => {
+                    this.#syncPhysics();
+                    this.#attachObservers();
+                    this.#attachEvents();
+                    if (this.config.scrollVelocity) this.#initScrollTrigger();
+                    if (this.config.onInit) this.config.onInit(this);
+                });
+            }
+
+            #shuffleItems() {
+                for (let i = this.config.items.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.config.items[i], this.config.items[j]] = [this.config.items[j], this.config.items[i]];
+                }
+            }
+
+            #handleReducedMotion() {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    if (this.config.reducedMotionMode === 'stop') { this.config.speed = 0; this.pause(); }
+                    else if (this.config.reducedMotionMode === 'reduce-speed') { this.config.speed *= 0.15; }
+                }
             }
 
             #buildDOM() {
@@ -198,195 +274,280 @@
 
                 this.track = document.createElement('div');
                 this.track.className = 'um-track';
+                
+                const temp = document.createElement('div');
+                temp.style.cssText = 'position:absolute;visibility:hidden;width:max-content;display:flex;gap:var(--um-gap);';
+                temp.appendChild(singleSet.cloneNode(true));
+                this.root.appendChild(temp);
+                this._contentWidth = temp.offsetWidth;
+                this.root.removeChild(temp);
 
-                // --- v2.2 LOGIC: Auto Reverse vs Loop ---
-                if (this.config.autoReverse) {
-                    this.root.classList.add('um-mode-reverse');
-                    this.track.appendChild(singleSet.cloneNode(true));
-                } else {
-                    this.root.classList.remove('um-mode-reverse');
-                    const temp = document.createElement('div');
-                    temp.style.cssText = 'position:absolute; visibility:hidden; width:max-content; display:flex; gap:var(--um-gap);';
-                    temp.appendChild(singleSet.cloneNode(true));
-                    this.root.appendChild(temp);
-                    const contentW = temp.offsetWidth;
-                    const viewportW = this.root.offsetWidth || window.innerWidth;
-                    this.root.removeChild(temp);
+                let clones = 0;
+                if (this._contentWidth > 0) clones = Math.ceil((this.root.offsetWidth || window.innerWidth) / this._contentWidth);
+                clones = Math.max(clones, this.config.minClones);
 
-                    if (contentW > 0) {
-                        const coverage = Math.ceil(viewportW / contentW) + 1;
-                        const filled = document.createDocumentFragment();
-                        for (let i = 0; i < coverage; i++) filled.appendChild(singleSet.cloneNode(true));
-                        const groupA = document.createElement('div');
-                        groupA.style.display = 'flex'; groupA.style.gap = 'var(--um-gap)';
-                        groupA.appendChild(filled.cloneNode(true));
-                        const groupB = groupA.cloneNode(true);
-                        this.#sanitizeIds(groupB);
-                        this.track.appendChild(groupA);
-                        this.track.appendChild(groupB);
-                    }
-                }
+                const superGroup = document.createDocumentFragment();
+                for (let i = 0; i <= clones; i++) superGroup.appendChild(singleSet.cloneNode(true));
+
+                this.track.appendChild(superGroup.cloneNode(true));
+                const groupB = superGroup.cloneNode(true);
+                this.#sanitizeIds(groupB);
+                this.track.appendChild(groupB);
+                
                 this.root.innerHTML = '';
                 this.root.appendChild(this.track);
+                this.root.classList.add('um-animating');
             }
 
             #syncPhysics() {
                 if (!this.track) return;
-                let distance = 0;
-
-                if (this.config.autoReverse) {
-                    const contentW = this.track.scrollWidth;
-                    const containerW = this.root.offsetWidth;
-                    // Jarak = Seberapa banyak konten "tumpah" keluar container
-                    distance = (contentW > containerW) ? contentW - containerW : 0;
-                    this.root.style.setProperty('--um-bounce-dist', `${distance}px`);
-                } else {
-                    distance = this.track.scrollWidth / 2;
-                }
-
-                if (distance <= 0) {
-                    this.root.style.setProperty('--um-duration', '0s');
-                } else {
-                    const duration = distance / this.config.speed;
-                    this.root.style.setProperty('--um-duration', `${duration}s`);
-                }
-            }
-
-            #evaluateResponsive() {
-                const width = window.innerWidth;
-                let targetConfig = { ...UniversalMarquee.#DEFAULTS, ...this.userOptions };
-                if (this.userOptions.responsive) {
-                    const bps = Object.keys(this.userOptions.responsive).map(Number).sort((a, b) => a - b);
-                    for (const bp of bps) {
-                        if (width >= bp) targetConfig = { ...targetConfig, ...this.userOptions.responsive[bp] };
-                    }
-                }
-                
-                const modeChanged = this.config.autoReverse !== targetConfig.autoReverse;
-                this.config = targetConfig;
-                this.#applyConfigStyles();
-                if (modeChanged) this.#buildDOM();
-                this.#syncPhysics();
+                const loopDist = this.track.scrollWidth / 2;
+                if (loopDist > 0) this.root.style.setProperty('--um-duration', `${loopDist / this.config.speed}s`);
             }
 
             #applyConfigStyles() {
-                this.root.style.setProperty('--um-delay', `${this.config.delay}ms`);
-                if (this.config.mask) {
-                    this.root.classList.remove('um-no-mask');
+                this.root.style.setProperty('--um-align', this.config.alignItems);
+                this.root.style.setProperty('--um-direction-attr', this.config.rtl ? 'rtl' : 'ltr');
+                if (this.config.rtl) this.root.setAttribute('dir', 'rtl'); else this.root.removeAttribute('dir');
+                
+                if (this.config.mask && this.config.maskSide !== 'none') {
+                    this.root.setAttribute('data-mask', this.config.maskSide);
                     this.root.style.setProperty('--um-mask-width', this.config.maskWidth);
                 } else { this.root.classList.add('um-no-mask'); }
-                this.root.classList.toggle('um-pause-hover', this.config.pauseOnHover);
-                this.root.classList.toggle('um-pause-click', this.config.pauseOnClick);
-                this.root.style.setProperty('--um-gap', this.#parseGap(this.config.gap));
+
+                this.config.draggable ? this.root.classList.add('um-cursor-grab') : this.root.classList.remove('um-cursor-grab');
+                this.root.style.setProperty('--um-gap', typeof this.config.gap === 'number' ? `${this.config.gap}px` : this.config.gap);
                 this.root.style.setProperty('--um-direction', this.config.direction);
             }
 
-            #createItemNode(item, index) {
-    // 1. Dapatkan hasil dari renderItem (bisa String atau Element)
-    let content = this.config.renderItem(item, index);
-    let node;
-
-    // 2. Cek tipe datanya
-    if (content instanceof Element) {
-      // Jika user me-return document.createElement(...)
-      node = content;
-    } else {
-      // Jika user me-return String HTML atau Teks biasa
-      // Kita bungkus dengan div (atau span) dan gunakan innerHTML
-      node = document.createElement('div');
-      node.innerHTML = String(content);
-      
-      // Opsional: Jika wrapper menghasilkan extra spacing, atur display
-      // node.style.display = 'contents'; // Hati-hati browser support
-    }
-
-    // 3. Tambahkan class wajib library
-    node.classList.add('um-item');
-    return node;
-  }
-            #createSeparatorNode() {
-                const sep = document.createElement('span'); sep.className = 'um-separator';
-                if (this.config.separator instanceof Node) sep.appendChild(this.config.separator.cloneNode(true));
-                else sep.innerHTML = this.config.separator; return sep;
+            #attachEvents() {
+                if (this.config.hoverBehavior === 'pause') {
+                    this.root.addEventListener('mouseenter', () => !this._drag.active && this.root.classList.add('um-paused'));
+                    this.root.addEventListener('mouseleave', () => !this._drag.active && !this._isManualPaused && this.root.classList.remove('um-paused'));
+                }
+                if (this.config.draggable) this.#initDraggable();
             }
-            #sanitizeIds(node) { if (node.id) node.removeAttribute('id'); if (node.querySelectorAll) node.querySelectorAll('[id]').forEach(el => el.removeAttribute('id')); }
-            #parseGap(gap) { return typeof gap === 'number' ? `${gap}px` : gap; }
-            async #waitForAssets() {
-                const images = Array.from(this.root.querySelectorAll('img'));
-                if (images.length === 0) return Promise.resolve();
-                const promises = images.map(img => {
-                    if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
-                    return new Promise(resolve => { img.onload = () => resolve(); img.onerror = () => resolve(); });
-                });
-                await Promise.all(promises);
-            }
+
             #attachObservers() {
-                const io = new IntersectionObserver((entries) => {
-                    if (this._isManualPaused) return;
-                    this.root.style.setProperty('--um-play-state', entries[0].isIntersecting ? 'running' : 'paused');
-                }, { threshold: 0.01 });
-                io.observe(this.root);
-                this._observers.push(io);
-                const ro = new ResizeObserver((entries) => {
+                const ro = new ResizeObserver(entries => {
                     if (entries[0].contentRect.width === 0) return;
                     clearTimeout(this._resizeTimer);
-                    this._resizeTimer = setTimeout(() => this.#evaluateResponsive(), 150);
+                    this._resizeTimer = setTimeout(() => { this.#evaluateResponsive(); this.#syncPhysics(); }, 150);
                 });
                 ro.observe(this.root);
                 this._observers.push(ro);
+
+                if (this.config.pauseOnInvisibility) {
+                    const io = new IntersectionObserver(entries => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting && !this._isManualPaused) {
+                                this.root.classList.remove('um-paused');
+                            } else if (!entry.isIntersecting) {
+                                this.root.classList.add('um-paused');
+                            }
+                        });
+                    });
+                    io.observe(this.root);
+                    this._observers.push(io);
+                }
             }
+
+            #initScrollTrigger() {
+                let lastY = window.scrollY;
+                const onScroll = () => {
+                    const currY = window.scrollY;
+                    const delta = currY - lastY;
+                    lastY = currY;
+                    this._scroll.targetOffset -= delta * 1.5;
+                    if (!this._scroll.rafId) this._scroll.rafId = requestAnimationFrame(this.#updateScrollPhysics.bind(this));
+                };
+                window.addEventListener('scroll', onScroll, { passive: true });
+                this._scrollListener = onScroll;
+            }
+
+            #updateScrollPhysics() {
+                this._scroll.currentOffset += (this._scroll.targetOffset - this._scroll.currentOffset) * 0.1;
+                this.root.style.setProperty('--um-scroll-boost', `${this._scroll.currentOffset}px`);
+                this._scroll.targetOffset *= 0.9;
+                if (Math.abs(this._scroll.currentOffset) < 0.5 && Math.abs(this._scroll.targetOffset) < 0.5) {
+                    this._scroll.currentOffset = 0; this._scroll.targetOffset = 0;
+                    this.root.style.setProperty('--um-scroll-boost', `0px`);
+                    this._scroll.rafId = null;
+                } else {
+                    this._scroll.rafId = requestAnimationFrame(this.#updateScrollPhysics.bind(this));
+                }
+            }
+
+            #initDraggable() {
+                const start = (e) => {
+                    if (e.button === 2) return;
+                    if (this._rafId) cancelAnimationFrame(this._rafId);
+                    this._drag.active = true; this._drag.hasMoved = false; this._drag.velocity = 0;
+                    this._drag.startX = (e.touches ? e.touches[0].clientX : e.clientX);
+                    this._drag.lastTime = performance.now();
+                    const style = window.getComputedStyle(this.track);
+                    this._drag.lastTranslate = (new WebKitCSSMatrix(style.transform)).m41;
+                    this._drag.currentX = this._drag.lastTranslate;
+                    this.root.classList.remove('um-animating');
+                    this.root.classList.add('um-dragging', 'um-cursor-grabbing');
+                    this.root.classList.remove('um-cursor-grab');
+                    this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
+                    if(this.config.onDragStart) this.config.onDragStart();
+                };
+                const move = (e) => {
+                    if (!this._drag.active) return;
+                    e.preventDefault();
+                    const now = performance.now();
+                    const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                    const delta = (clientX - this._drag.startX) * this.config.dragSpeed;
+                    if (now - this._drag.lastTime > 0) this._drag.velocity = (this._drag.velocity * 0.5) + ((delta / (now - this._drag.lastTime)) * 0.5);
+                    const newPos = this._drag.lastTranslate + delta;
+                    this.track.style.transform = `translate3d(${newPos}px, 0, 0)`;
+                    this._drag.currentX = newPos; this._drag.lastTime = now;
+                    if (Math.abs(delta) > 5) this._drag.hasMoved = true;
+                };
+                const end = () => {
+                    if (!this._drag.active) return;
+                    this._drag.active = false;
+                    this.root.classList.remove('um-dragging', 'um-cursor-grabbing');
+                    this.root.classList.add('um-cursor-grab');
+                    if (this.config.dragMomentum && Math.abs(this._drag.velocity) > 0.1) this.#startMomentum();
+                    else this.#snapToCSS();
+                    if(this.config.onDragEnd) this.config.onDragEnd();
+                };
+                this.root.addEventListener('mousedown', start); this.root.addEventListener('touchstart', start, {passive:false});
+                window.addEventListener('mousemove', move); window.addEventListener('touchmove', move, {passive:false});
+                window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
+                this._dragListeners = { start, move, end };
+            }
+
+            #removeDragListeners() {
+                if(!this._dragListeners) return;
+                const { start, move, end } = this._dragListeners;
+                this.root.removeEventListener('mousedown', start); this.root.removeEventListener('touchstart', start);
+                window.removeEventListener('mousemove', move); window.removeEventListener('touchmove', move);
+                window.removeEventListener('mouseup', end); window.removeEventListener('touchend', end);
+            }
+
+            #startMomentum() {
+                const loop = () => {
+                    this._drag.velocity *= 0.95;
+                    this._drag.currentX += this._drag.velocity * 16;
+                    this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
+                    if (Math.abs(this._drag.velocity) < 0.01) this.#snapToCSS();
+                    else this._rafId = requestAnimationFrame(loop);
+                };
+                loop();
+            }
+
+            #snapToCSS() {
+                const loopLen = this.track.scrollWidth / 2;
+                let norm = this._drag.currentX % loopLen;
+                if (norm > 0) norm -= loopLen;
+                const dur = parseFloat(getComputedStyle(this.root).getPropertyValue('--um-duration')) || 0;
+                this.root.style.setProperty('--um-delay', `${-1 * (Math.abs(norm) / loopLen) * dur}s`);
+                this.track.style.transform = '';
+                this.root.classList.add('um-animating');
+                if (this.config.hoverBehavior === 'pause' && this.root.matches(':hover')) this.root.classList.add('um-paused');
+            }
+
+            #createItemNode(item, i) {
+                const w = document.createElement('div'); w.className = 'um-item';
+                const c = this.config.renderItem(item, i);
+                if (typeof c === 'string') w.innerHTML = c; else w.appendChild(c);
+                if (this.config.onItemClick) {
+                    w.style.cursor = 'pointer';
+                    w.addEventListener('click', (e) => {
+                        if (this.config.draggable && this._drag.hasMoved) { e.preventDefault(); e.stopPropagation(); return; }
+                        this.config.onItemClick(item, i, e);
+                    });
+                }
+                return w;
+            }
+            #createSeparatorNode() {
+                const s = document.createElement('span'); s.className = 'um-separator';
+                this.config.separator instanceof Node ? s.appendChild(this.config.separator.cloneNode(true)) : s.innerHTML = this.config.separator;
+                return s;
+            }
+            #sanitizeIds(n) { if (n.id) n.removeAttribute('id'); n.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); }
+            async #waitForAssets() {
+                await Promise.all(Array.from(this.root.querySelectorAll('img')).map(i => {
+                    if(i.complete) return; return new Promise(r => { i.onload=i.onerror=r });
+                }));
+                if (document.fonts) try { await document.fonts.ready; } catch(e){}
+            }
+            #evaluateResponsive() {
+                const w = window.innerWidth;
+                let cfg = { ...UniversalMarquee.#DEFAULTS, ...this.userOptions };
+                if (this.userOptions.responsive) {
+                    Object.keys(this.userOptions.responsive).map(Number).sort((a,b)=>a-b).forEach(bp => {
+                        if(w>=bp) cfg = { ...cfg, ...this.userOptions.responsive[bp] };
+                    });
+                }
+                this.config = cfg; this.#applyConfigStyles();
+            }
+            
+            pause() { this._isManualPaused=true; this.root.classList.add('um-paused'); }
+            play() { this._isManualPaused=false; this.root.classList.remove('um-paused'); }
         }
 
-        // --- DEMO INITIALIZATION ---
+        /* --- INITIALIZATION --- */
 
-        // Demo 1: News Ticker (Standard)
-        const news = new UniversalMarquee('#marquee-news', {
-            speed: 30, // Default Mobile Speed
+        // 1. Logo Marquee
+        const brands = ['NextJS', 'React', 'Vue', 'Svelte', 'Angular', 'Node', 'Deno', 'Bun', 'Vite'];
+        new UniversalMarquee('#marquee-logos', {
+            items: brands,
+            speed: 40,
+            gap: '3rem',
+            renderItem: (name) => `<div class="logo-box">${name}</div>`,
+            maskSide: 'both'
+        });
+
+        // 2. Testimonial Cards (Draggable)
+        const testimonials = [
+            { name: 'Sarah', role: 'Dev', text: 'Momentum drag feels native!' },
+            { name: 'James', role: 'CTO', text: 'Performance is outstanding.' },
+            { name: 'Annie', role: 'Designer', text: 'Seamless looping is magic.' },
+            { name: 'Pabel', role: 'Manager', text: 'Responsive config saves time.' },
+            { name: 'Mila', role: 'User', text: 'Very smooth animations.' }
+        ];
+        new UniversalMarquee('#marquee-cards', {
+            items: testimonials,
+            speed: 30,
+            draggable: true,
+            dragMomentum: true, // Enable Inertia
+            dragSpeed: 1.5,
+            gap: '1.5rem',
+            renderItem: (data) => `
+                <div class="card-testimonial">
+                    <h4>${data.name} <span style="font-size:0.7em; color:#64748b">(${data.role})</span></h4>
+                    <p>"${data.text}"</p>
+                </div>
+            `
+        });
+
+        // 3. Image Gallery (Scroll Velocity & Randomize)
+        // Using colored divs for offline safety, but mimicking images
+        const colors = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#34d399', '#22d3ee', '#818cf8', '#e879f9'];
+        new UniversalMarquee('#marquee-photos', {
+            items: colors,
+            speed: 60,
             gap: '1rem',
-            items: [
-                "Breaking News: UniversalMarquee v2.2 Released",
-                "Technology: AI Development Accelerates",
-                "Market: Crypto hits new All Time High",
-                "Weather: Sunny skies expected all week"
-            ],
-            renderItem: (text) => {
-                const div = document.createElement('div');
-                div.className = 'news-item';
-                div.innerHTML = `<span class="tag-live">LIVE</span> ${text}`;
-                return div;
-            },
-            separator: ' • ',
-            responsive: {
-                768: { speed: 60, gap: '3rem' } // Faster on Desktop
-            }
+            scrollVelocity: true, // Boost speed on scroll
+            randomize: true,      // Shuffle on reload
+            renderItem: (color) => `<div class="photo-item" style="background:${color}"></div>`
         });
 
-        // Demo 2: Song Player (Auto Reverse / Ping Pong)
-        const songMarquee = new UniversalMarquee('#marquee-song', {
-            autoReverse: true, // AKTIFKAN PING PONG
-            
-            items: ["Bohemian Rhapsody - Queen (2011 Remaster)"], // Teks panjang
-            
-            speed: 30, // Kecepatan gerak
-            delay: 1500, // Diam 1.5 detik di ujung sebelum balik arah
-            maskWidth: '20px',
-            
-            renderItem: (text) => {
-                return `<span class="song-icon">🎵</span><span class="song-item">${text}</span>`;
-            }
+        // 4. RTL & Alignment
+        const arabicWords = ['مرحبا', 'أهلا', 'تصميم', 'إبداع', 'سرعة', 'أداء'];
+        new UniversalMarquee('#marquee-rtl', {
+            items: arabicWords,
+            rtl: true,
+            speed: 40,
+            gap: '2rem',
+            mask: false, // Turn off mask to see edges
+            renderItem: (word) => `<div class="rtl-text">${word}</div>`
         });
-
-        // Helper untuk Demo 2
-        function changeSong() {
-            const songs = [
-                "Hotel California - Eagles (Live at The Capital Centre)",
-                "Stairway to Heaven - Led Zeppelin (Remastered)",
-                "Sweet Child O' Mine - Guns N' Roses"
-            ];
-            // Pick random song
-            const randomSong = songs[Math.floor(Math.random() * songs.length)];
-            songMarquee.updateItems([randomSong]);
-        }
 
     </script>
 </body>

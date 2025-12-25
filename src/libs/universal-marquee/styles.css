@@ -1,115 +1,104 @@
 /**
- * UniversalMarquee v3.0 Styles
- * Features: GPU Acceleration, Drag/Swipe, Dynamic Masking, Callbacks
+ * UniversalMarquee v5.1
+ * Features: Grouped Config, GPU Accel, Smart Cloning, Scroll Reverse, A11y, Breakpoints
  */
 
 .um-host {
+  /* --- Layout & Context --- */
   display: flex;
   width: 100%;
   overflow: hidden;
   position: relative;
+  direction: var(--um-direction-attr, ltr);
   contain: layout paint;
   
-  /* Defaults */
+  /* --- Default Variables --- */
   --um-mask-width: 5%;
   --um-gap: 2rem;
+  
+  /* Animation Physics */
   --um-duration: 0s;
+  --um-direction: normal; 
+  --um-easing: linear;        
+  --um-iteration: infinite;   
+  --um-init-delay: 0s;        
   --um-play-state: running;
-  --um-direction: normal;
-  --um-delay: 0s;
+  
+  /* Internal Physics */
+  --um-delay: 0s;             
+  --um-scroll-boost: 0px;     
+  --um-align: center;
   
   /* UX */
   user-select: none;
-  touch-action: pan-y; /* Allow vertical scroll, block horizontal for drag */
+  touch-action: pan-y;
   -webkit-user-drag: none;
 }
 
+/* Cursor States */
 .um-host.um-cursor-grab { cursor: grab; }
 .um-host.um-cursor-grabbing { cursor: grabbing; }
 
 /* --- Masking Logic --- */
-/* Mask: Both */
 .um-host[data-mask="both"] {
   mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
 }
-/* Mask: Start Only */
 .um-host[data-mask="start"] {
   mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black 100%);
 }
-/* Mask: End Only */
 .um-host[data-mask="end"] {
   mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
 }
-/* No Mask */
 .um-host.um-no-mask, .um-host[data-mask="none"] {
-  mask-image: none;
-  -webkit-mask-image: none;
+  mask-image: none; -webkit-mask-image: none;
 }
 
+/* --- Track & Animation --- */
 .um-track {
   display: flex;
   width: max-content;
   flex-shrink: 0;
   gap: var(--um-gap);
+  align-items: var(--um-align);
   
   will-change: transform;
-  /* Transform dikontrol oleh Animation ATAU Dragging (JS) */
-  transform: translate3d(0, 0, 0); 
+  transform: translate3d(var(--um-scroll-boost), 0, 0);
 }
 
-/* Class ini aktif saat animasi berjalan otomatis */
+/* State: Animating */
 .um-animating .um-track {
   animation-name: um-scroll;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-duration: var(--um-duration);
-  animation-play-state: var(--um-play-state);
+  /* Feature D: Dynamic Hover Speed works by changing this var */
+  animation-duration: var(--um-duration); 
   animation-direction: var(--um-direction);
-  animation-delay: var(--um-delay);
+  animation-play-state: var(--um-play-state);
+  
+  animation-timing-function: var(--um-easing);
+  animation-iteration-count: var(--um-iteration);
+  animation-delay: calc(var(--um-delay) + var(--um-init-delay));
 }
 
-/* Saat dragging, matikan animasi CSS agar JS bisa mengontrol transform */
-.um-dragging .um-track {
-  animation: none !important;
-}
+/* State: Dragging */
+.um-dragging .um-track { animation: none !important; }
 
-/* Hover Speed Factor: Slow Motion */
-/* Note: Mengubah duration mid-flight di CSS bisa menyebabkan jump. 
-   Kita gunakan scale pseudo-logic atau pause. Di sini kita support pause via class. */
-.um-host.um-paused .um-track {
-  animation-play-state: paused;
-}
+/* State: Paused (Used by Hover: Pause) */
+.um-host.um-paused .um-track { animation-play-state: paused; }
 
+/* Keyframes */
 @keyframes um-scroll {
-  0%   { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0); }
+  0%   { transform: translate3d(calc(0px + var(--um-scroll-boost)), 0, 0); }
+  100% { transform: translate3d(calc(-50% - (var(--um-gap) / 2) + var(--um-scroll-boost)), 0, 0); }
 }
 
-/* Reverse Mode Animation */
-@keyframes um-scroll-reverse {
-  0%   { transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-
-.um-host.um-mode-reverse .um-track {
-  /* Logic reverse ditangani via animation-direction atau keyframes berbeda */
-}
-
+/* Items */
 .um-item {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  /* Prevent image dragging interfering with marquee dragging */
-  pointer-events: auto; 
+  display: flex; flex-shrink: 0; pointer-events: auto; height: 100%;
 }
-.um-item img { pointer-events: none; }
+.um-item img { pointer-events: none; -webkit-user-drag: none; }
 
 .um-separator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }

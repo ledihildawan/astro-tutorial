@@ -234,6 +234,8 @@ const initApp = () => {
     speed: 35,
     gap: 'var(--products-gap)', // Menggunakan variabel CSS yang baru
     pauseOnHover: true,
+    draggable: true,
+    dragMomentum: false
   });
   const stocks = [
     {
