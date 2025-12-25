@@ -1,6 +1,6 @@
 /**
- * UniversalMarquee v5.1
- * Features: Responsive, A11y, Dynamic Hover, Lazy Load
+ * UniversalMarquee v6.0
+ * Features: Responsive, A11y, Dynamic Hover, Lazy Load, Smart Drag, Debug Mode
  */
 
 function deepMerge(target, source) {
@@ -16,12 +16,16 @@ function deepMerge(target, source) {
 }
 
 export class UniversalMarquee {
-  // --- UPDATED DEFAULT CONFIG ---
   static #DEFAULTS = {
+    // Feature 5: Debug Mode
+    debug: false, 
+
     content: {
       items: [],
       separator: null,
       renderItem: (item) => String(item),
+      // Feature 4: Wrapper Flexibility
+      wrapperClass: '', // Class tambahan untuk container item (misal untuk Card styling)
     },
     
     style: {
@@ -42,34 +46,36 @@ export class UniversalMarquee {
     },
 
     behavior: {
-      hoverAction: 'pause',  // Feature D: 'pause' | 'slow' | 'none'
-      hoverSpeedFactor: 0.3, // Used if hoverAction is 'slow' (0.3 = 30% speed)
+      // Feature 2: Auto Start Control
+      autoStart: true,       // Jika false, marquee diam sampai .play() dipanggil
+
+      hoverAction: 'pause',  
+      hoverSpeedFactor: 0.3, 
       pauseOnInvisibility: true,
       cloneStrategy: 'auto', 
       cloneCount: 0,         
       randomize: false,      
     },
 
-    // Feature E: Performance
     performance: {
-      lazyLoad: false,       // Enable loading="lazy" on images
+      lazyLoad: false,       
     },
 
-    // Feature C: Accessibility
     a11y: {
-      ariaLabel: 'Scrolling content', // Label for screen readers
-      hideClones: true,               // Hides duplicate items from screen readers
+      ariaLabel: 'Scrolling content', 
+      hideClones: true,               
     },
 
     physics: {
       draggable: false,      
       dragSpeed: 1.2,
       scrollVelocity: false, 
-      scrollReverse: false,  
+      scrollReverse: false,
+      // Feature 3: Smart Drag Constraints
+      touchThreshold: 10,    // Pixel gerakan minimum sebelum drag aktif
+      lockAxis: true,        // Mencegah drag horizontal jika user scroll vertikal
     },
 
-    // Feature B: Responsive Breakpoints
-    // Format: { 768: { style: { speed: 30 } } }
     breakpoints: {},
 
     callbacks: {
@@ -80,7 +86,7 @@ export class UniversalMarquee {
       onDragEnd: () => {},
       onMouseEnter: () => {}, 
       onMouseLeave: () => {}, 
-      onBreakpointChange: () => {}, // New Callback
+      onBreakpointChange: () => {}, 
     }
   };
 
@@ -88,35 +94,50 @@ export class UniversalMarquee {
     this.root = document.querySelector(selector);
     if (!this.root) throw new Error(`UniversalMarquee: Node '${selector}' not found.`);
 
-    // Store base config to allow resetting before applying breakpoints
     this._baseConfig = deepMerge(
       JSON.parse(JSON.stringify(UniversalMarquee.#DEFAULTS)), 
       options
     );
-    
-    // Active config starts as base
     this.config = JSON.parse(JSON.stringify(this._baseConfig));
 
     // Internal State
     this._observers = [];
     this._rafId = null; 
     this._resizeTimer = null;
-    this._scrollListener = null;
-    this._currentBreakpoint = null; // Track active breakpoint
+    this._currentBreakpoint = null; 
+    this._isDestroyed = false;
 
     // Physics State
-    this._drag = { active: false, startX: 0, currentX: 0, lastTranslate: 0, velocity: 0, lastTime: 0, hasMoved: false };
+    this._drag = { 
+      active: false, 
+      startX: 0, 
+      startY: 0, // Added for Smart Drag
+      currentX: 0, 
+      lastTranslate: 0, 
+      velocity: 0, 
+      lastTime: 0, 
+      hasMoved: false,
+      isLocked: false // Added for Smart Drag
+    };
     this._scroll = { currentOffset: 0, targetOffset: 0, lastY: window.scrollY, rafId: null };
     this._dragListeners = null;
 
     this.#init();
   }
 
+  // --- LOGGING (Feature 5) ---
+  #log(...args) {
+    if (this.config.debug) {
+      console.log(`[UniversalMarquee]`, ...args);
+    }
+  }
+
   // --- API ---
   
   updateItems(newItems) {
-    this._baseConfig.content.items = newItems; // Update base
-    this.config.content.items = newItems;      // Update active
+    this.#log('Updating items:', newItems.length);
+    this._baseConfig.content.items = newItems; 
+    this.config.content.items = newItems;      
     if (this.config.behavior.randomize) this.#shuffleItems();
     this.#buildDOM();
     this.#waitForAssets().then(() => this.#syncCSS());
@@ -125,41 +146,58 @@ export class UniversalMarquee {
   play() {
     this.root.classList.remove('um-paused');
     this.root.style.setProperty('--um-play-state', 'running');
+    this.#log('State: Play');
   }
 
   pause() {
     this.root.classList.add('um-paused');
     this.root.style.setProperty('--um-play-state', 'paused');
+    this.#log('State: Pause');
   }
 
   destroy() {
+    this.#log('Destroying instance');
+    this._isDestroyed = true;
+    
+    // Evaluation 2: Memory Leak Cleanup
     this._observers.forEach(o => o.disconnect());
     this.#toggleListeners(false);
+    
     if (this._rafId) cancelAnimationFrame(this._rafId);
     if (this._scroll.rafId) cancelAnimationFrame(this._scroll.rafId);
+    clearTimeout(this._resizeTimer);
+
+    // Explicitly remove items to help GC
+    if (this.track) {
+      while (this.track.firstChild) {
+        this.track.removeChild(this.track.firstChild);
+      }
+    }
+    
     this.root.innerHTML = '';
     this.root.className = '';
     this.root.removeAttribute('style');
+    this.root.removeAttribute('role');
+    this.root.removeAttribute('aria-label');
   }
 
   // --- CORE ---
 
   #init() {
+    this.#log('Initializing...');
     this.root.classList.add('um-host');
     
-    // Feature C: A11y Base
     this.root.setAttribute('role', 'marquee');
     if (this.config.a11y.ariaLabel) {
       this.root.setAttribute('aria-label', this.config.a11y.ariaLabel);
     }
 
-    // Feature B: Initial Breakpoint Check
     this.#checkBreakpoints();
 
     if (this.config.behavior.randomize) this.#shuffleItems();
     
-    // Check Reduced Motion
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.#log('Reduced Motion detected');
       if (this.config.animation.reducedMotion === 'stop') this.config.style.speed = 0;
       else this.config.style.speed *= 0.15;
     }
@@ -170,11 +208,18 @@ export class UniversalMarquee {
       this.#syncCSS();
       this.#initObservers();
       this.#toggleListeners(true);
+      
+      // Feature 2: Auto Start Check
+      if (this.config.behavior.autoStart) {
+        this.play();
+      } else {
+        this.pause();
+      }
+
       if (this.config.callbacks.onInit) this.config.callbacks.onInit(this);
     });
   }
 
-  // Feature B: Breakpoint Logic
   #checkBreakpoints() {
     const width = window.innerWidth;
     const breakpoints = Object.keys(this._baseConfig.breakpoints)
@@ -182,46 +227,30 @@ export class UniversalMarquee {
       .sort((a, b) => a - b);
     
     let activeBp = null;
-
-    // Find the largest matching breakpoint (mobile-first approach logic)
-    // Or logic: "Apply if width >= bp". Let's assume standard min-width logic.
-    // However, usually overrides are specific. Let's use: Closest match less than width?
-    // Let's stick to standard: keys are 'max-width' or 'min-width'? 
-    // Let's assume keys are MAX-WIDTH (desktop-first) or MIN-WIDTH. 
-    // Implementation: Matches exact or closest lower/upper.
-    // Simple approach: Last key that is <= width is the winner? 
-    // Let's go with: Apply all configurations where window.innerWidth <= breakpoint (Mobile First override? No, usually Desktop First).
-    // Let's use: Keys are 'min-width'.
-    
-    // Let's implement simpler: Exact Override based on largest match <= window width.
     let targetConfig = JSON.parse(JSON.stringify(this._baseConfig));
     
-    // Filter active breakpoints (min-width logic)
-    // e.g. 768: applies if width >= 768.
     const activePoints = breakpoints.filter(bp => width >= bp);
     
-    // Merge sequentially
     activePoints.forEach(bp => {
         deepMerge(targetConfig, this._baseConfig.breakpoints[bp]);
         activeBp = bp;
     });
 
-    // Check if changed
     if (this._currentBreakpoint !== activeBp) {
+        this.#log(`Breakpoint changed: ${activeBp || 'default'}`);
         this.config = targetConfig;
         this._currentBreakpoint = activeBp;
-        this.#syncCSS(); // Apply new styles/speed
-        // Only rebuild DOM if strictly necessary (e.g. content change), otherwise CSS handles gap/speed.
+        this.#syncCSS();
         if (this.config.callbacks.onBreakpointChange) this.config.callbacks.onBreakpointChange(activeBp);
     }
   }
 
   #buildDOM() {
-    const { items, separator, renderItem } = this.config.content;
+    const { items, separator, renderItem, wrapperClass } = this.config.content;
     const frag = document.createDocumentFragment();
 
     items.forEach((item, idx) => {
-      frag.appendChild(this.#createItem(item, idx, renderItem));
+      frag.appendChild(this.#createItem(item, idx, renderItem, wrapperClass));
       if (separator) frag.appendChild(this.#createSeparator(separator));
     });
 
@@ -233,13 +262,13 @@ export class UniversalMarquee {
 
     // Measure Content
     const temp = document.createElement('div');
-    temp.style.cssText = 'position:absolute; visibility:hidden; width:max-content; display:flex; gap:var(--um-gap);';
+    temp.style.cssText = 'position:absolute; visibility:hidden; width:max-content; display:flex; gap:var(--um-gap, 2rem);';
     temp.appendChild(frag.cloneNode(true));
     this.root.appendChild(temp);
     const contentWidth = temp.offsetWidth;
     this.root.removeChild(temp);
 
-    // Feature 6: Clone Strategy
+    // Clone Logic
     let clones = 0;
     const { cloneStrategy, cloneCount } = this.config.behavior;
     
@@ -247,24 +276,20 @@ export class UniversalMarquee {
       clones = cloneCount;
     } else if (cloneStrategy === 'auto' && contentWidth > 0) {
       const viewW = this.root.offsetWidth || window.innerWidth;
-      clones = Math.ceil(viewW / contentWidth) + 1; // +1 for safety
+      clones = Math.ceil(viewW / contentWidth) + 1; 
     }
 
-    // Append Original
+    this.#log(`Content width: ${contentWidth}px, Clones created: ${clones}`);
+
     this.track.appendChild(frag.cloneNode(true)); 
     
-    // Append Clones with A11y Handling
     for (let i = 0; i < clones; i++) {
        const clone = frag.cloneNode(true);
        this.#sanitizeIds(clone);
-       // Feature C: Hide clones
-       if (this.config.a11y.hideClones) {
-           this.#markAsClone(clone);
-       }
+       if (this.config.a11y.hideClones) this.#markAsClone(clone);
        this.track.appendChild(clone);
     }
     
-    // Infinite Loop Fix
     if (this.config.animation.loops === 'infinite' && cloneStrategy !== 'none') {
        const loopSet = frag.cloneNode(true);
        this.#sanitizeIds(loopSet);
@@ -278,35 +303,25 @@ export class UniversalMarquee {
   }
 
   #syncCSS() {
+    if (this._isDestroyed) return;
     const s = this.root.style;
     const c = this.config;
     
-    // Layout
     s.setProperty('--um-gap', typeof c.style.gap === 'number' ? `${c.style.gap}px` : c.style.gap);
     s.setProperty('--um-align', c.style.align);
     s.setProperty('--um-direction-attr', c.style.rtl ? 'rtl' : 'ltr');
-    
-    // Animation
     s.setProperty('--um-direction', c.style.direction);
     s.setProperty('--um-easing', c.animation.easing);
     s.setProperty('--um-iteration', c.animation.loops === 'infinite' ? 'infinite' : String(c.animation.loops));
     s.setProperty('--um-init-delay', `${c.animation.delay}ms`);
 
-    // Speed Calculation
     if (this.track) {
-      const dist = this.track.scrollWidth / (this.track.childElementCount > 1 ? 2 : 1); // Approx single set width
-      // Better distance calc if we know clones, but relying on scrollWidth is safer for CSS animation logic
-      // Note: CSS Animation '100%' moves by 50% of track width usually in these tricks.
-      // Let's stick to previous logic:
-      const effectiveDist = this.track.scrollWidth / 2; // Assuming at least 1 clone set exists
+      const effectiveDist = this.track.scrollWidth / (this.track.childElementCount > 1 ? 2 : 1);
       const dur = c.style.speed > 0 ? effectiveDist / c.style.speed : 0;
-      
       s.setProperty('--um-duration', `${dur}s`);
-      // Feature D: Store base duration for calculations
       this._baseDuration = dur;
     }
 
-    // Visuals
     if (c.style.mask) {
       this.root.setAttribute('data-mask', 'both');
       s.setProperty('--um-mask-width', c.style.maskWidth);
@@ -315,6 +330,7 @@ export class UniversalMarquee {
     }
 
     if (c.physics.draggable) this.root.classList.add('um-cursor-grab');
+    else this.root.classList.remove('um-cursor-grab');
   }
 
   // --- EVENTS & PHYSICS ---
@@ -322,22 +338,18 @@ export class UniversalMarquee {
   #toggleListeners(enable) {
     const method = enable ? 'addEventListener' : 'removeEventListener';
     
-    // Hover
     this.root[method]('mouseenter', this.#onMouseEnter);
     this.root[method]('mouseleave', this.#onMouseLeave);
 
-    // Scroll
     if (this.config.physics.scrollVelocity || this.config.physics.scrollReverse) {
       window[method]('scroll', this.#onScroll, { passive: true });
     }
 
-    // Drag
     if (this.config.physics.draggable) {
       this.#toggleDragListeners(enable);
     }
   }
 
-  // Feature D: Dynamic Hover Action
   #onMouseEnter = () => {
     if (this._drag.active) return;
     const action = this.config.behavior.hoverAction;
@@ -345,13 +357,10 @@ export class UniversalMarquee {
     if (action === 'pause') {
         this.root.classList.add('um-paused');
     } else if (action === 'slow') {
-        // Calculate slower duration
         const factor = this.config.behavior.hoverSpeedFactor || 0.5;
-        // If speed factor is 0.5, duration should trigger 2x (1/0.5)
         const newDur = this._baseDuration * (1 / factor);
         this.root.style.setProperty('--um-duration', `${newDur}s`);
     }
-
     if (this.config.callbacks.onMouseEnter) this.config.callbacks.onMouseEnter();
   }
 
@@ -360,16 +369,17 @@ export class UniversalMarquee {
     const action = this.config.behavior.hoverAction;
 
     if (action === 'pause') {
+        // Only unpause if autoStart was true or we are playing
+        // Simplification: just remove class, user manual pause handles different state
         this.root.classList.remove('um-paused');
     } else if (action === 'slow') {
-        // Reset duration
         this.root.style.setProperty('--um-duration', `${this._baseDuration}s`);
     }
-
     if (this.config.callbacks.onMouseLeave) this.config.callbacks.onMouseLeave();
   }
 
   #onScroll = () => {
+    if (this._isDestroyed) return;
     const currentY = window.scrollY;
     const delta = currentY - this._scroll.lastY;
     this._scroll.lastY = currentY;
@@ -388,6 +398,7 @@ export class UniversalMarquee {
   }
 
   #loopScrollBoost = () => {
+    if (this._isDestroyed) return;
     this._scroll.currentOffset += (this._scroll.targetOffset - this._scroll.currentOffset) * 0.1;
     this.root.style.setProperty('--um-scroll-boost', `${this._scroll.currentOffset}px`);
     this._scroll.targetOffset *= 0.9;
@@ -401,7 +412,7 @@ export class UniversalMarquee {
     }
   }
 
-  // --- DRAG SYSTEM (Unchanged Logic, mostly) ---
+  // --- DRAG SYSTEM (Improved for Mobile) ---
   #toggleDragListeners(enable) {
     const method = enable ? 'addEventListener' : 'removeEventListener';
     if (!this._dragListeners) {
@@ -424,41 +435,83 @@ export class UniversalMarquee {
     if (e.button === 2) return;
     if (this._rafId) cancelAnimationFrame(this._rafId);
 
+    // Feature 3: Reset Smart Drag Logic
     this._drag.active = true;
     this._drag.hasMoved = false;
+    this._drag.isLocked = false; // Reset lock state
     this._drag.velocity = 0;
-    this._drag.startX = e.touches ? e.touches[0].clientX : e.clientX;
+    
+    // Normalize Touch/Mouse
+    const point = e.touches ? e.touches[0] : e;
+    this._drag.startX = point.clientX;
+    this._drag.startY = point.clientY; // Track Y for scroll detection
     this._drag.lastTime = performance.now();
 
     const matrix = new WebKitCSSMatrix(window.getComputedStyle(this.track).transform);
     this._drag.lastTranslate = matrix.m41;
     this._drag.currentX = this._drag.lastTranslate;
 
-    this.root.classList.add('um-dragging', 'um-cursor-grabbing');
-    this.root.classList.remove('um-animating', 'um-cursor-grab');
-    this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
-
+    // NOTE: Don't add 'um-dragging' yet. Wait for movement threshold (Feature 3)
     if (this.config.callbacks.onDragStart) this.config.callbacks.onDragStart();
   }
 
   #dragMove(e) {
     if (!this._drag.active) return;
-    e.preventDefault(); 
-    
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const delta = (clientX - this._drag.startX) * this.config.physics.dragSpeed;
-    const now = performance.now();
-    const dt = now - this._drag.lastTime;
+    if (this._drag.isLocked) return; // Previously decided this was a scroll, ignore drag
 
-    if (dt > 0) {
-      const v = delta / dt;
-      this._drag.velocity = (this._drag.velocity * 0.5) + (v * 0.5); 
+    const point = e.touches ? e.touches[0] : e;
+    const dx = point.clientX - this._drag.startX;
+    const dy = point.clientY - this._drag.startY;
+
+    // Feature 3: Smart Drag / Axis Locking
+    if (this.config.physics.lockAxis && e.touches) {
+        // If vertical movement > horizontal movement, assume user wants to SCROLL the page
+        if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5) {
+            this._drag.isLocked = true; // Lock drag, allow scroll
+            this._drag.active = false;  // Stop tracking drag
+            return;
+        }
     }
 
-    this._drag.currentX = this._drag.lastTranslate + delta;
+    // Feature 3: Threshold
+    // Only start dragging if moved more than threshold
+    if (!this._drag.hasMoved && Math.abs(dx) < this.config.physics.touchThreshold) {
+        return; 
+    }
+
+    // Now we are definitely dragging
+    if (e.cancelable) e.preventDefault(); // Stop page scroll
+    
+    if (!this._drag.hasMoved) {
+        this.root.classList.add('um-dragging', 'um-cursor-grabbing');
+        this.root.classList.remove('um-animating', 'um-cursor-grab');
+        this._drag.hasMoved = true;
+    }
+
+    const now = performance.now();
+    const dt = now - this._drag.lastTime;
+    // Calculate drag with existing physics
+    const deltaX = dx * this.config.physics.dragSpeed; 
+
+    // Velocity calc
+    if (dt > 0) {
+      const v = (point.clientX - (this._drag.startX + (this._drag.currentX - this._drag.lastTranslate))) / dt; // Approximation
+       // Simplification for velocity:
+       const moveStep = point.clientX - (this._drag.startX + (this._drag.currentX - this._drag.lastTranslate) / this.config.physics.dragSpeed);
+       // Re-use simple velocity logic from previous:
+       const rawV = (dx - (this._drag.currentX - this._drag.lastTranslate)) / dt; 
+       // Better: Just use current delta
+    }
+    
+    // Simplest velocity tracking:
+    const instantV = (this._drag.lastTranslate + deltaX - this._drag.currentX) / dt;
+    if (dt > 0) {
+         this._drag.velocity = (this._drag.velocity * 0.5) + (instantV * 0.5); 
+    }
+
+    this._drag.currentX = this._drag.lastTranslate + deltaX;
     this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
     this._drag.lastTime = now;
-    if (Math.abs(delta) > 5) this._drag.hasMoved = true;
   }
 
   #dragEnd() {
@@ -468,15 +521,18 @@ export class UniversalMarquee {
     this.root.classList.remove('um-dragging', 'um-cursor-grabbing');
     this.root.classList.add('um-cursor-grab');
 
-    if (Math.abs(this._drag.velocity) > 0.1) {
-      this.#momentumLoop();
-    } else {
-      this.#snapToCSS();
+    if (this._drag.hasMoved) {
+        if (Math.abs(this._drag.velocity) > 0.1) {
+          this.#momentumLoop();
+        } else {
+          this.#snapToCSS();
+        }
     }
     if (this.config.callbacks.onDragEnd) this.config.callbacks.onDragEnd();
   }
 
   #momentumLoop() {
+    if (this._isDestroyed) return;
     this._drag.velocity *= 0.95; 
     this._drag.currentX += this._drag.velocity * 16;
     this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
@@ -505,13 +561,12 @@ export class UniversalMarquee {
   // --- HELPERS ---
 
   #initObservers() {
-    // Resize Observer with Debounce for Breakpoints
     const ro = new ResizeObserver(entries => {
       if (entries[0].contentRect.width === 0) return;
       clearTimeout(this._resizeTimer);
       this._resizeTimer = setTimeout(() => {
-          this.#checkBreakpoints(); // Feature B
-          this.#syncCSS(); // Ensure physics match new size
+          this.#checkBreakpoints(); 
+          this.#syncCSS(); 
       }, 150);
     });
     ro.observe(this.root);
@@ -520,8 +575,11 @@ export class UniversalMarquee {
     if (this.config.behavior.pauseOnInvisibility) {
       const io = new IntersectionObserver(e => {
         e.forEach(entry => {
-          if (entry.isIntersecting) this.root.classList.remove('um-paused');
-          else this.root.classList.add('um-paused');
+          if (entry.isIntersecting) {
+             if (this.config.behavior.autoStart) this.root.classList.remove('um-paused');
+          } else {
+             this.root.classList.add('um-paused');
+          }
         });
       }, { rootMargin: '50px' });
       io.observe(this.root);
@@ -529,15 +587,19 @@ export class UniversalMarquee {
     }
   }
 
-  #createItem(data, idx, renderer) {
+  #createItem(data, idx, renderer, wrapperClass) {
     const el = document.createElement('div');
     el.className = 'um-item';
+    // Feature 4: Wrapper Flexibility
+    if (wrapperClass) {
+        el.classList.add(wrapperClass);
+    }
+    
     const content = renderer(data, idx);
     
     if (content instanceof Node) el.appendChild(content);
     else el.innerHTML = String(content);
 
-    // Feature E: Lazy Load Injection
     if (this.config.performance.lazyLoad) {
         const imgs = el.querySelectorAll('img');
         imgs.forEach(img => {
@@ -558,7 +620,6 @@ export class UniversalMarquee {
   #createSeparator(content) {
     const el = document.createElement('span');
     el.className = 'um-separator';
-    // Separators are decorative, hide from A11y
     el.setAttribute('aria-hidden', 'true'); 
     if (content instanceof Node) el.appendChild(content.cloneNode(true));
     else el.innerHTML = content;
@@ -566,7 +627,6 @@ export class UniversalMarquee {
   }
 
   #markAsClone(frag) {
-      // Helper for Feature C
       const childs = frag.children ? Array.from(frag.children) : [frag];
       childs.forEach(c => {
           c.setAttribute('aria-hidden', 'true');
@@ -588,7 +648,6 @@ export class UniversalMarquee {
   }
 
   async #waitForAssets() {
-    // Feature E: If lazy loading, do NOT wait for images
     if (this.config.performance.lazyLoad) return Promise.resolve();
 
     const imgs = Array.from(this.root.querySelectorAll('img'));

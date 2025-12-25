@@ -1,6 +1,6 @@
 /**
- * UniversalMarquee v5.1
- * Features: Grouped Config, GPU Accel, Smart Cloning, Scroll Reverse, A11y, Breakpoints
+ * UniversalMarquee v6.0
+ * Features: Grouped Config, GPU Accel, Smart Cloning, Scroll Reverse, A11y, Breakpoints, Smart Drag, Debug
  */
 
 .um-host {
@@ -12,9 +12,9 @@
   direction: var(--um-direction-attr, ltr);
   contain: layout paint;
   
-  /* --- Default Variables --- */
+  /* --- Default Variables with Fallbacks --- */
   --um-mask-width: 5%;
-  --um-gap: 2rem;
+  --um-gap: 2rem; 
   
   /* Animation Physics */
   --um-duration: 0s;
@@ -31,7 +31,8 @@
   
   /* UX */
   user-select: none;
-  touch-action: pan-y;
+  /* Gunakan pan-y agar browser menangani scroll vertikal, kita tangani horizontal */
+  touch-action: pan-y; 
   -webkit-user-drag: none;
 }
 
@@ -41,16 +42,16 @@
 
 /* --- Masking Logic --- */
 .um-host[data-mask="both"] {
-  mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
 }
 .um-host[data-mask="start"] {
-  mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black 100%);
 }
 .um-host[data-mask="end"] {
-  mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
+  mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
 }
 .um-host.um-no-mask, .um-host[data-mask="none"] {
   mask-image: none; -webkit-mask-image: none;
@@ -61,41 +62,41 @@
   display: flex;
   width: max-content;
   flex-shrink: 0;
-  gap: var(--um-gap);
-  align-items: var(--um-align);
+  gap: var(--um-gap, 2rem); /* Added Fallback */
+  align-items: var(--um-align, center); /* Added Fallback */
   
   will-change: transform;
-  transform: translate3d(var(--um-scroll-boost), 0, 0);
+  transform: translate3d(var(--um-scroll-boost, 0px), 0, 0);
 }
 
 /* State: Animating */
 .um-animating .um-track {
   animation-name: um-scroll;
-  /* Feature D: Dynamic Hover Speed works by changing this var */
-  animation-duration: var(--um-duration); 
-  animation-direction: var(--um-direction);
-  animation-play-state: var(--um-play-state);
+  animation-duration: var(--um-duration, 10s); /* Added Fallback */
+  animation-direction: var(--um-direction, normal);
+  animation-play-state: var(--um-play-state, running);
   
-  animation-timing-function: var(--um-easing);
-  animation-iteration-count: var(--um-iteration);
-  animation-delay: calc(var(--um-delay) + var(--um-init-delay));
+  animation-timing-function: var(--um-easing, linear);
+  animation-iteration-count: var(--um-iteration, infinite);
+  animation-delay: calc(var(--um-delay, 0s) + var(--um-init-delay, 0s));
 }
 
 /* State: Dragging */
 .um-dragging .um-track { animation: none !important; }
 
-/* State: Paused (Used by Hover: Pause) */
+/* State: Paused */
 .um-host.um-paused .um-track { animation-play-state: paused; }
 
 /* Keyframes */
 @keyframes um-scroll {
-  0%   { transform: translate3d(calc(0px + var(--um-scroll-boost)), 0, 0); }
-  100% { transform: translate3d(calc(-50% - (var(--um-gap) / 2) + var(--um-scroll-boost)), 0, 0); }
+  0%   { transform: translate3d(calc(0px + var(--um-scroll-boost, 0px)), 0, 0); }
+  100% { transform: translate3d(calc(-50% - (var(--um-gap, 2rem) / 2) + var(--um-scroll-boost, 0px)), 0, 0); }
 }
 
 /* Items */
 .um-item {
   display: flex; flex-shrink: 0; pointer-events: auto; height: 100%;
+  box-sizing: border-box;
 }
 .um-item img { pointer-events: none; -webkit-user-drag: none; }
 
