@@ -1,6 +1,6 @@
 /**
- * UniversalMarquee v6.0
- * Features: Responsive, A11y, Dynamic Hover, Lazy Load, Smart Drag, Debug Mode
+ * UniversalMarquee v7.0
+ * Features: Center-if-Short, Scroll Parallax, Custom Easing, Rich API, Smart Drag
  */
 
 function deepMerge(target, source) {
@@ -17,15 +17,13 @@ function deepMerge(target, source) {
 
 export class UniversalMarquee {
   static #DEFAULTS = {
-    // Feature 5: Debug Mode
     debug: false, 
 
     content: {
       items: [],
       separator: null,
       renderItem: (item) => String(item),
-      // Feature 4: Wrapper Flexibility
-      wrapperClass: '', // Class tambahan untuk container item (misal untuk Card styling)
+      wrapperClass: '', 
     },
     
     style: {
@@ -41,14 +39,16 @@ export class UniversalMarquee {
     animation: {
       delay: 0,              
       loops: 'infinite',     
+      // Feature 4: Supports 'linear', 'ease', or 'cubic-bezier(0.25, 1, 0.5, 1)'
       easing: 'linear',      
       reducedMotion: 'stop', 
     },
 
     behavior: {
-      // Feature 2: Auto Start Control
-      autoStart: true,       // Jika false, marquee diam sampai .play() dipanggil
-
+      autoStart: true,       
+      // Feature 2: Center content if shorter than viewport (no scroll)
+      centerIfShort: true,   
+      
       hoverAction: 'pause',  
       hoverSpeedFactor: 0.3, 
       pauseOnInvisibility: true,
@@ -69,11 +69,16 @@ export class UniversalMarquee {
     physics: {
       draggable: false,      
       dragSpeed: 1.2,
-      scrollVelocity: false, 
-      scrollReverse: false,
-      // Feature 3: Smart Drag Constraints
-      touchThreshold: 10,    // Pixel gerakan minimum sebelum drag aktif
-      lockAxis: true,        // Mencegah drag horizontal jika user scroll vertikal
+      
+      // Feature 3: Scroll-Based Velocity (Parallax)
+      scrollSync: {
+        enabled: false,
+        factor: 2.5, // Sensitivity: higher = faster reaction to scroll
+        reverse: false // If true, scrolling down reverses direction
+      },
+
+      touchThreshold: 10,    
+      lockAxis: true,        
     },
 
     breakpoints: {},
@@ -106,18 +111,19 @@ export class UniversalMarquee {
     this._resizeTimer = null;
     this._currentBreakpoint = null; 
     this._isDestroyed = false;
+    this._isCentered = false; // Track Feature 2 state
 
     // Physics State
     this._drag = { 
       active: false, 
       startX: 0, 
-      startY: 0, // Added for Smart Drag
+      startY: 0, 
       currentX: 0, 
       lastTranslate: 0, 
       velocity: 0, 
       lastTime: 0, 
       hasMoved: false,
-      isLocked: false // Added for Smart Drag
+      isLocked: false 
     };
     this._scroll = { currentOffset: 0, targetOffset: 0, lastY: window.scrollY, rafId: null };
     this._dragListeners = null;
@@ -125,14 +131,14 @@ export class UniversalMarquee {
     this.#init();
   }
 
-  // --- LOGGING (Feature 5) ---
+  // --- LOGGING ---
   #log(...args) {
     if (this.config.debug) {
       console.log(`[UniversalMarquee]`, ...args);
     }
   }
 
-  // --- API ---
+  // --- PUBLIC API (Feature 5) ---
   
   updateItems(newItems) {
     this.#log('Updating items:', newItems.length);
@@ -143,7 +149,21 @@ export class UniversalMarquee {
     this.#waitForAssets().then(() => this.#syncCSS());
   }
 
+  // Feature 5: Set Speed Dynamically
+  setSpeed(speed) {
+    this.config.style.speed = speed;
+    this.#syncCSS();
+  }
+
+  // Feature 5: Reverse Direction
+  reverse() {
+    const current = this.config.style.direction;
+    this.config.style.direction = current === 'normal' ? 'reverse' : 'normal';
+    this.#syncCSS();
+  }
+
   play() {
+    if (this._isCentered) return; // Cannot play if centered
     this.root.classList.remove('um-paused');
     this.root.style.setProperty('--um-play-state', 'running');
     this.#log('State: Play');
@@ -159,7 +179,6 @@ export class UniversalMarquee {
     this.#log('Destroying instance');
     this._isDestroyed = true;
     
-    // Evaluation 2: Memory Leak Cleanup
     this._observers.forEach(o => o.disconnect());
     this.#toggleListeners(false);
     
@@ -167,7 +186,6 @@ export class UniversalMarquee {
     if (this._scroll.rafId) cancelAnimationFrame(this._scroll.rafId);
     clearTimeout(this._resizeTimer);
 
-    // Explicitly remove items to help GC
     if (this.track) {
       while (this.track.firstChild) {
         this.track.removeChild(this.track.firstChild);
@@ -184,7 +202,7 @@ export class UniversalMarquee {
   // --- CORE ---
 
   #init() {
-    this.#log('Initializing...');
+    this.#log('Initializing v7.0...');
     this.root.classList.add('um-host');
     
     this.root.setAttribute('role', 'marquee');
@@ -197,7 +215,6 @@ export class UniversalMarquee {
     if (this.config.behavior.randomize) this.#shuffleItems();
     
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.#log('Reduced Motion detected');
       if (this.config.animation.reducedMotion === 'stop') this.config.style.speed = 0;
       else this.config.style.speed *= 0.15;
     }
@@ -209,8 +226,7 @@ export class UniversalMarquee {
       this.#initObservers();
       this.#toggleListeners(true);
       
-      // Feature 2: Auto Start Check
-      if (this.config.behavior.autoStart) {
+      if (this.config.behavior.autoStart && !this._isCentered) {
         this.play();
       } else {
         this.pause();
@@ -241,6 +257,14 @@ export class UniversalMarquee {
         this.config = targetConfig;
         this._currentBreakpoint = activeBp;
         this.#syncCSS();
+        
+        // Re-evaluate logic (e.g., centerIfShort might change if screen gets bigger)
+        if (this.track) {
+           // Simple re-check via buildDOM or just CSS sync? 
+           // Better to rebuild to recalc clones if width changed significantly
+           this.#buildDOM(); 
+        }
+
         if (this.config.callbacks.onBreakpointChange) this.config.callbacks.onBreakpointChange(activeBp);
     }
   }
@@ -267,6 +291,21 @@ export class UniversalMarquee {
     this.root.appendChild(temp);
     const contentWidth = temp.offsetWidth;
     this.root.removeChild(temp);
+    
+    // Feature 2: Center if Short Logic
+    const viewW = this.root.offsetWidth || window.innerWidth;
+    if (this.config.behavior.centerIfShort && contentWidth < viewW) {
+        this.#log('Content shorter than viewport. Centering enabled.');
+        this._isCentered = true;
+        this.root.classList.add('um-centered');
+        this.track.appendChild(frag.cloneNode(true)); // Append once, no clones
+        this.root.innerHTML = '';
+        this.root.appendChild(this.track);
+        return; // STOP HERE
+    } else {
+        this._isCentered = false;
+        this.root.classList.remove('um-centered');
+    }
 
     // Clone Logic
     let clones = 0;
@@ -275,11 +314,8 @@ export class UniversalMarquee {
     if (cloneStrategy === 'exact') {
       clones = cloneCount;
     } else if (cloneStrategy === 'auto' && contentWidth > 0) {
-      const viewW = this.root.offsetWidth || window.innerWidth;
       clones = Math.ceil(viewW / contentWidth) + 1; 
     }
-
-    this.#log(`Content width: ${contentWidth}px, Clones created: ${clones}`);
 
     this.track.appendChild(frag.cloneNode(true)); 
     
@@ -311,11 +347,12 @@ export class UniversalMarquee {
     s.setProperty('--um-align', c.style.align);
     s.setProperty('--um-direction-attr', c.style.rtl ? 'rtl' : 'ltr');
     s.setProperty('--um-direction', c.style.direction);
+    // Feature 4: Custom Easing maps directly here
     s.setProperty('--um-easing', c.animation.easing);
     s.setProperty('--um-iteration', c.animation.loops === 'infinite' ? 'infinite' : String(c.animation.loops));
     s.setProperty('--um-init-delay', `${c.animation.delay}ms`);
 
-    if (this.track) {
+    if (this.track && !this._isCentered) {
       const effectiveDist = this.track.scrollWidth / (this.track.childElementCount > 1 ? 2 : 1);
       const dur = c.style.speed > 0 ? effectiveDist / c.style.speed : 0;
       s.setProperty('--um-duration', `${dur}s`);
@@ -329,7 +366,7 @@ export class UniversalMarquee {
       this.root.removeAttribute('data-mask');
     }
 
-    if (c.physics.draggable) this.root.classList.add('um-cursor-grab');
+    if (c.physics.draggable && !this._isCentered) this.root.classList.add('um-cursor-grab');
     else this.root.classList.remove('um-cursor-grab');
   }
 
@@ -341,7 +378,11 @@ export class UniversalMarquee {
     this.root[method]('mouseenter', this.#onMouseEnter);
     this.root[method]('mouseleave', this.#onMouseLeave);
 
-    if (this.config.physics.scrollVelocity || this.config.physics.scrollReverse) {
+    // Feature 3: Scroll Sync Binding
+    const scrollEnabled = this.config.physics.scrollSync && this.config.physics.scrollSync.enabled;
+    const reverseEnabled = this.config.physics.scrollSync && this.config.physics.scrollSync.reverse;
+
+    if (scrollEnabled || reverseEnabled) {
       window[method]('scroll', this.#onScroll, { passive: true });
     }
 
@@ -351,7 +392,7 @@ export class UniversalMarquee {
   }
 
   #onMouseEnter = () => {
-    if (this._drag.active) return;
+    if (this._drag.active || this._isCentered) return;
     const action = this.config.behavior.hoverAction;
 
     if (action === 'pause') {
@@ -365,12 +406,10 @@ export class UniversalMarquee {
   }
 
   #onMouseLeave = () => {
-    if (this._drag.active) return;
+    if (this._drag.active || this._isCentered) return;
     const action = this.config.behavior.hoverAction;
 
     if (action === 'pause') {
-        // Only unpause if autoStart was true or we are playing
-        // Simplification: just remove class, user manual pause handles different state
         this.root.classList.remove('um-paused');
     } else if (action === 'slow') {
         this.root.style.setProperty('--um-duration', `${this._baseDuration}s`);
@@ -379,17 +418,21 @@ export class UniversalMarquee {
   }
 
   #onScroll = () => {
-    if (this._isDestroyed) return;
+    if (this._isDestroyed || this._isCentered) return;
     const currentY = window.scrollY;
     const delta = currentY - this._scroll.lastY;
     this._scroll.lastY = currentY;
 
-    if (this.config.physics.scrollVelocity) {
-      this._scroll.targetOffset -= delta * 2;
+    // Feature 3: Scroll Sync (Parallax) Implementation
+    const { enabled, factor, reverse } = this.config.physics.scrollSync;
+
+    if (enabled) {
+      // Multiply delta by factor to determine speed boost
+      this._scroll.targetOffset -= delta * factor;
       if (!this._scroll.rafId) this._scroll.rafId = requestAnimationFrame(this.#loopScrollBoost);
     }
 
-    if (this.config.physics.scrollReverse && Math.abs(delta) > 2) {
+    if (reverse && Math.abs(delta) > 2) {
       const baseDir = this.config.style.direction;
       const isDown = delta > 0;
       const newDir = isDown ? baseDir : (baseDir === 'normal' ? 'reverse' : 'normal');
@@ -399,6 +442,7 @@ export class UniversalMarquee {
 
   #loopScrollBoost = () => {
     if (this._isDestroyed) return;
+    // Ease out the boost
     this._scroll.currentOffset += (this._scroll.targetOffset - this._scroll.currentOffset) * 0.1;
     this.root.style.setProperty('--um-scroll-boost', `${this._scroll.currentOffset}px`);
     this._scroll.targetOffset *= 0.9;
@@ -412,7 +456,7 @@ export class UniversalMarquee {
     }
   }
 
-  // --- DRAG SYSTEM (Improved for Mobile) ---
+  // --- DRAG SYSTEM ---
   #toggleDragListeners(enable) {
     const method = enable ? 'addEventListener' : 'removeEventListener';
     if (!this._dragListeners) {
@@ -432,55 +476,48 @@ export class UniversalMarquee {
   }
 
   #dragStart(e) {
+    if (this._isCentered) return;
     if (e.button === 2) return;
     if (this._rafId) cancelAnimationFrame(this._rafId);
 
-    // Feature 3: Reset Smart Drag Logic
     this._drag.active = true;
     this._drag.hasMoved = false;
-    this._drag.isLocked = false; // Reset lock state
+    this._drag.isLocked = false; 
     this._drag.velocity = 0;
     
-    // Normalize Touch/Mouse
     const point = e.touches ? e.touches[0] : e;
     this._drag.startX = point.clientX;
-    this._drag.startY = point.clientY; // Track Y for scroll detection
+    this._drag.startY = point.clientY; 
     this._drag.lastTime = performance.now();
 
     const matrix = new WebKitCSSMatrix(window.getComputedStyle(this.track).transform);
     this._drag.lastTranslate = matrix.m41;
     this._drag.currentX = this._drag.lastTranslate;
 
-    // NOTE: Don't add 'um-dragging' yet. Wait for movement threshold (Feature 3)
     if (this.config.callbacks.onDragStart) this.config.callbacks.onDragStart();
   }
 
   #dragMove(e) {
-    if (!this._drag.active) return;
-    if (this._drag.isLocked) return; // Previously decided this was a scroll, ignore drag
+    if (!this._drag.active || this._isCentered) return;
+    if (this._drag.isLocked) return; 
 
     const point = e.touches ? e.touches[0] : e;
     const dx = point.clientX - this._drag.startX;
     const dy = point.clientY - this._drag.startY;
 
-    // Feature 3: Smart Drag / Axis Locking
     if (this.config.physics.lockAxis && e.touches) {
-        // If vertical movement > horizontal movement, assume user wants to SCROLL the page
         if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5) {
-            this._drag.isLocked = true; // Lock drag, allow scroll
-            this._drag.active = false;  // Stop tracking drag
+            this._drag.isLocked = true; 
+            this._drag.active = false;  
             return;
         }
     }
 
-    // Feature 3: Threshold
-    // Only start dragging if moved more than threshold
     if (!this._drag.hasMoved && Math.abs(dx) < this.config.physics.touchThreshold) {
         return; 
     }
 
-    // Now we are definitely dragging
-    if (e.cancelable) e.preventDefault(); // Stop page scroll
+    if (e.cancelable) e.preventDefault(); 
     
     if (!this._drag.hasMoved) {
         this.root.classList.add('um-dragging', 'um-cursor-grabbing');
@@ -490,20 +527,9 @@ export class UniversalMarquee {
 
     const now = performance.now();
     const dt = now - this._drag.lastTime;
-    // Calculate drag with existing physics
     const deltaX = dx * this.config.physics.dragSpeed; 
 
-    // Velocity calc
-    if (dt > 0) {
-      const v = (point.clientX - (this._drag.startX + (this._drag.currentX - this._drag.lastTranslate))) / dt; // Approximation
-       // Simplification for velocity:
-       const moveStep = point.clientX - (this._drag.startX + (this._drag.currentX - this._drag.lastTranslate) / this.config.physics.dragSpeed);
-       // Re-use simple velocity logic from previous:
-       const rawV = (dx - (this._drag.currentX - this._drag.lastTranslate)) / dt; 
-       // Better: Just use current delta
-    }
-    
-    // Simplest velocity tracking:
+    // Instant Velocity Calculation
     const instantV = (this._drag.lastTranslate + deltaX - this._drag.currentX) / dt;
     if (dt > 0) {
          this._drag.velocity = (this._drag.velocity * 0.5) + (instantV * 0.5); 
@@ -576,7 +602,7 @@ export class UniversalMarquee {
       const io = new IntersectionObserver(e => {
         e.forEach(entry => {
           if (entry.isIntersecting) {
-             if (this.config.behavior.autoStart) this.root.classList.remove('um-paused');
+             if (this.config.behavior.autoStart && !this._isCentered) this.root.classList.remove('um-paused');
           } else {
              this.root.classList.add('um-paused');
           }
@@ -590,10 +616,7 @@ export class UniversalMarquee {
   #createItem(data, idx, renderer, wrapperClass) {
     const el = document.createElement('div');
     el.className = 'um-item';
-    // Feature 4: Wrapper Flexibility
-    if (wrapperClass) {
-        el.classList.add(wrapperClass);
-    }
+    if (wrapperClass) el.classList.add(wrapperClass);
     
     const content = renderer(data, idx);
     

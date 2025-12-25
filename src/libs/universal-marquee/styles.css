@@ -1,6 +1,6 @@
 /**
- * UniversalMarquee v6.0
- * Features: Grouped Config, GPU Accel, Smart Cloning, Scroll Reverse, A11y, Breakpoints, Smart Drag, Debug
+ * UniversalMarquee v7.0
+ * Features: Smart Drag, Parallax Scroll, Center-if-Short, API Control, A11y, Debug
  */
 
 .um-host {
@@ -12,7 +12,7 @@
   direction: var(--um-direction-attr, ltr);
   contain: layout paint;
   
-  /* --- Default Variables with Fallbacks --- */
+  /* --- Variables with Fallbacks --- */
   --um-mask-width: 5%;
   --um-gap: 2rem; 
   
@@ -31,7 +31,6 @@
   
   /* UX */
   user-select: none;
-  /* Gunakan pan-y agar browser menangani scroll vertikal, kita tangani horizontal */
   touch-action: pan-y; 
   -webkit-user-drag: none;
 }
@@ -39,6 +38,14 @@
 /* Cursor States */
 .um-host.um-cursor-grab { cursor: grab; }
 .um-host.um-cursor-grabbing { cursor: grabbing; }
+
+/* --- Feature 2: Center if Short State --- */
+.um-host.um-centered .um-track {
+  width: 100%;
+  justify-content: center;
+  transform: none !important; /* Matikan efek scroll/drag */
+  animation: none !important;
+}
 
 /* --- Masking Logic --- */
 .um-host[data-mask="both"] {
@@ -62,8 +69,8 @@
   display: flex;
   width: max-content;
   flex-shrink: 0;
-  gap: var(--um-gap, 2rem); /* Added Fallback */
-  align-items: var(--um-align, center); /* Added Fallback */
+  gap: var(--um-gap, 2rem); 
+  align-items: var(--um-align, center); 
   
   will-change: transform;
   transform: translate3d(var(--um-scroll-boost, 0px), 0, 0);
@@ -72,7 +79,7 @@
 /* State: Animating */
 .um-animating .um-track {
   animation-name: um-scroll;
-  animation-duration: var(--um-duration, 10s); /* Added Fallback */
+  animation-duration: var(--um-duration, 10s); 
   animation-direction: var(--um-direction, normal);
   animation-play-state: var(--um-play-state, running);
   
