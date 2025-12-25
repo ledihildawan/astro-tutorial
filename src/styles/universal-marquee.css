@@ -1,0 +1,61 @@
+.um-container {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  /* Modern Performance Boosts */
+  contain: layout paint size;
+  content-visibility: auto;
+
+  /* Gradasi halus untuk transisi */
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.um-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--um-gap, 2rem);
+  align-items: center;
+  min-width: 100%;
+
+  /* High Performance Animation */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+
+  /* Subpixel anti-aliasing */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.um-track > * {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  /* Menghindari paint ulang saat hover */
+  transform: translateZ(0);
+}
+
+.um-item-separator {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 0.5rem;
+  white-space: pre;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .um-track {
+    animation: none !important;
+    overflow-x: auto;
+    transform: none !important;
+    will-change: auto;
+  }
+  .um-container {
+    mask-image: none;
+    -webkit-mask-image: none;
+    contain: initial;
+  }
+}

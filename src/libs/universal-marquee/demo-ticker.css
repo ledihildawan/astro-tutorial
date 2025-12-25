@@ -1,0 +1,159 @@
+#demo-ticker {
+  --neon-up: #00ffcc;
+  --neon-down: #ff2d55;
+  --card-w: 320px;
+  --card-h: 140px;
+
+  background: #02040a;
+  padding: 6rem 0; /* Ruang sangat lega untuk bayangan & tilt */
+  perspective: 1200px; /* Memberikan kedalaman 3D pada seluruh container */
+}
+
+.god-tier-card {
+  position: relative;
+  width: var(--card-w);
+  height: var(--card-h);
+  transition: all 0.7s cubic-bezier(0.15, 0.85, 0.35, 1);
+  transform-style: preserve-3d;
+}
+
+.card-main {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+/* 3D Edge Effect */
+.card-edge {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  border-radius: 28px;
+  transform: translateZ(-10px);
+  filter: blur(20px);
+  opacity: 0.15;
+  transition: opacity 0.5s;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+}
+
+.symbol-icon {
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.symbol-meta {
+  display: flex;
+  flex-direction: column;
+}
+.sym-text {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+.full-name {
+  font-size: 0.7rem;
+  color: #484f58;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pill {
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid currentColor;
+  letter-spacing: 1px;
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+}
+.current-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+.price-diff {
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.visual-trend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.mini-chart {
+  width: 80px;
+  height: 35px;
+  filter: drop-shadow(0 0 10px currentColor);
+}
+.percentage-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.is-up {
+  color: var(--neon-up);
+}
+.is-down {
+  color: var(--neon-down);
+}
+
+/* --- THE HOVER MAGIC --- */
+.god-tier-card:hover {
+  transform: translateZ(50px) rotateX(10deg) rotateY(-5deg); /* Efek Tilt 3D */
+  z-index: 100;
+}
+
+.god-tier-card:hover .card-main {
+  border-color: currentColor;
+  background: rgba(13, 17, 23, 0.95);
+  box-shadow:
+    0 30px 60px -12px rgba(0, 0, 0, 0.8),
+    0 0 30px -5px currentColor;
+}
+
+.god-tier-card:hover .card-edge {
+  opacity: 0.6;
+}
