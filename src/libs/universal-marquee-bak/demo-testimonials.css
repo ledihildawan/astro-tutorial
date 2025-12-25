@@ -1,0 +1,190 @@
+/**
+ * DEMO TESTIMONIALS STYLES
+ * File: demo-testimonials.css
+ * Deskripsi: Panel testimonial dengan efek glassmorphism dan tipografi yang tajam.
+ */
+
+#demo-testimonials {
+  /* --- local Variables --- */
+  --testimonials-gap: 3rem;
+  --testimonials-padding-v: calc(var(--spacing-xl) + 1rem);
+  --testimonials-card-width: 400px;
+
+  /* --- Layout & Background --- */
+  position: relative;
+  overflow: hidden;
+  padding: var(--testimonials-padding-v) 0;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+}
+
+/* Background Ornament */
+#demo-testimonials::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 70%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Testimonial Card --- */
+
+.testimonial-card {
+  /* Box Model */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: var(--testimonials-card-width);
+  padding: calc(var(--spacing-lg) + 0.5rem);
+  
+  /* Visuals */
+  background: var(--bg-card);
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  overflow: hidden;
+  
+  /* Transition */
+  transition: var(--transition-slow);
+}
+
+/* Decorative Quote Mark */
+.testimonial-card::before {
+  content: '"';
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  z-index: 0;
+  font-size: 12rem;
+  font-family: serif;
+  color: rgba(34, 211, 238, 0.08);
+  line-height: 1;
+  pointer-events: none;
+  transition: var(--transition-normal);
+}
+
+.testimonial-card:hover {
+  transform: translateY(-16px) scale(1.04);
+  border-color: var(--color-accent-primary);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(34, 211, 238, 0.3);
+}
+
+.testimonial-card:hover::before {
+  color: rgba(34, 211, 238, 0.15);
+  transform: scale(1.1);
+}
+
+/* --- Card Content --- */
+
+.t-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.t-avatar {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 3px solid rgba(34, 211, 238, 0.3);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+  transition: var(--transition-normal);
+}
+
+.t-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.testimonial-card:hover .t-avatar {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.6);
+  transform: scale(1.1);
+}
+
+.t-profile {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.t-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text-main);
+  font-family: var(--font-family-heading);
+}
+
+.t-handle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.t-role-company {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.t-body {
+  position: relative;
+  z-index: 1;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--color-text-main);
+  opacity: 0.95;
+}
+
+.t-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(34, 211, 238, 0.15);
+  gap: var(--spacing-sm);
+}
+
+.t-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.t-icon {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  transition: var(--transition-normal);
+}
+
+.testimonial-card:hover .t-icon {
+  transform: scale(1.2);
+  color: var(--color-accent-primary);
+}
+
+.t-stars {
+  color: #fbbf24;
+  font-size: 1.3rem;
+  letter-spacing: 4px;
+}

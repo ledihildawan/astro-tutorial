@@ -1,1213 +1,393 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Marquee - Seamless Infinite Horizontal Marquee JavaScript Library</title>
-    <meta
-      name="description"
-      content="Create smooth, accessible, infinite scrolling marquees with Universal Marquee. A lightweight Vanilla JS library with zero dependencies. Works with any content."
-    />
-    <meta
-      name="keywords"
-      content="vanilla js marquee, infinite scroll, javascript ticker, accessible marquee, lightweight js library, no dependency"
-    />
-    <meta name="author" content="Ledi Hildawan" />
-    <meta property="og:title" content="Universal Marquee - The Lightweight JS Scroll Library" />
-    <meta
-      property="og:description"
-      content="Zero dependencies. Fully accessible. Works with text, images, or any custom HTML."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://universal-marquee.example.com" />
-    <meta property="og:image" content="https://placehold.co/1200x630/0f172a/e0f2fe?text=Universal+Marquee" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💫</text></svg>"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Luckiest+Guy&display=swap"
-      rel="stylesheet"
-    />
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Marquee v2.2 Demo</title>
     <style>
-      :root {
-        --radius-xs: 6px;
-        --radius-sm: 12px;
-        --radius-md: 20px;
-        --radius-lg: 24px;
-        --radius-xl: 30px;
-        --radius-pill: 60px;
-        --font-family-primary: 'Outfit', system-ui, sans-serif;
-        --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
-        --font-family-fun: 'Luckiest Guy', sans-serif;
-        --font-family-mono: 'Space Mono', monospace;
-        --font-size-xs: 0.8rem;
-        --font-size-sm: 0.85rem;
-        --font-size-code: 0.9rem;
-        --font-size-h3-card: 1.75rem;
-        --spacing-sm: 1rem;
-        --spacing-md: 1.5rem;
-        --spacing-lg: 2.5rem;
-        --spacing-xl: 4rem;
-        --section-spacing: 6rem;
-        --avatar-size: 48px;
-        --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        --shadow-card-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-        --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.5);
-        --border-dark: #334155;
-        --color-twitter: #1da1f2;
-        --color-linkedin: #0a66c2;
-        --color-ph: #da552f;
-        --color-verified: #3b82f6;
-        --color-stars: #fbbf24;
-        --color-accent-primary: #22d3ee;
-        --color-bg-page: #030712;
-        --color-bg-surface: #0f172a;
-        --color-border-strong: #1e293b;
-        --color-text-primary: #e0f2fe;
-        --color-text-secondary: #94a3b8;
-        --layout-max-width: 1200px;
-        --layout-vertical-spacing: 5rem;
-        --um-gap-default: 2rem;
-        --um-overlay-width: 120px;
-        --code-bg: #0f172a;
-        --code-header-bg: #1e293b;
-        --code-dot-red: #ff5f56;
-        --code-dot-yellow: #ffbd2e;
-        --code-dot-green: #27c93f;
-      }
-    </style>
-    <style data-label="CORE_STYLES">
-      .um-container {
-        display: flex;
-        overflow: hidden;
-        user-select: none;
-        width: 100%;
-        position: relative;
-        transform: translate3d(0, 0, 0);
-      }
-      .um-sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-      }
-      .um-track {
-        display: flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        gap: var(--um-gap, var(--um-gap-default));
-        will-change: transform;
-      }
-      .um-track > div {
-        display: flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        flex-shrink: 0;
-        gap: var(--um-gap, var(--um-gap-default));
-      }
-      .um-img-skeleton {
-        position: relative;
-        background: var(--color-border-strong);
-        overflow: hidden;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-card-dark);
-        width: 400px;
-        height: 300px;
-        min-width: 400px;
-      }
-      .um-img-skeleton::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        transform: translateX(-100%);
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-        animation: shimmer 2s infinite;
-      }
-      @keyframes shimmer {
-        100% {
-          transform: translateX(100%);
+        /* --- 1. PAGE STYLING (Hanya untuk kosmetik demo) --- */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0f172a; /* Slate 900 */
+            color: #f1f5f9;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+            max-width: 800px;
+            margin-inline: auto;
         }
-      }
-      .um-img-skeleton img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        opacity: 0;
-        transition: opacity 0.5s ease-in;
-      }
-      .um-img-skeleton img.loaded {
-        opacity: 1;
-      }
-      .um-img-skeleton.loaded::after {
-        display: none;
-      }
-      .um-container.um-overflow-left::before,
-      .um-container.um-overflow-right::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: var(--um-overlay-width);
-        pointer-events: none;
-        z-index: 2;
-      }
-      .um-container.um-overflow-left::before {
-        left: 0;
-        background: linear-gradient(to right, var(--color-bg-surface), transparent);
-      }
-      .um-container.um-overflow-right::after {
-        right: 0;
-        background: linear-gradient(to left, var(--color-bg-surface), transparent);
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .um-container {
-          overflow-x: auto !important;
-          -webkit-overflow-scrolling: touch;
+
+        section {
+            border-bottom: 1px solid #334155;
+            padding-bottom: 2rem;
         }
+
+        h2 { margin-bottom: 0.5rem; color: #38bdf8; }
+        .badge { 
+            background: #f59e0b; color: #000; padding: 2px 6px; 
+            border-radius: 4px; font-size: 0.8rem; vertical-align: middle; 
+        }
+        p { margin-top: 0; color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.5rem; }
+
+        /* Container styling untuk demo */
+        .marquee-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+
+        /* --- 2. UNIVERSAL MARQUEE v2.2 CSS --- */
+        
+        .um-host {
+            display: flex;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            contain: layout paint;
+            
+            /* CSS Variables Defaults */
+            --um-mask-width: 5%;
+            --um-gap: 2rem;
+            --um-bounce-dist: 0px; /* Variabel dinamis untuk mode Ping-Pong */
+            
+            /* Masking (Fade Edges) */
+            mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+            
+            user-select: none;
+            touch-action: pan-y;
+        }
+
+        .um-host.um-no-mask { mask-image: none; -webkit-mask-image: none; }
+
         .um-track {
-          transform: none !important;
-          animation: none !important;
-          width: max-content !important;
+            display: flex;
+            width: max-content;
+            flex-shrink: 0;
+            gap: var(--um-gap);
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            
+            animation-duration: var(--um-duration, 0s);
+            animation-play-state: var(--um-play-state, running);
+            animation-direction: var(--um-direction, normal);
+            animation-delay: var(--um-delay, 0s);
+            animation-iteration-count: infinite;
+            
+            /* Default: Infinite Loop */
+            animation-name: um-scroll;
+            animation-timing-function: linear;
         }
-      }
+
+        /* Mode 1: Infinite Loop */
+        @keyframes um-scroll {
+            from { transform: translate3d(0, 0, 0); }
+            to   { transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0); }
+        }
+
+        /* Mode 2: Auto-Reverse (Ping-Pong) */
+        .um-host.um-mode-reverse .um-track {
+            animation-name: um-bounce;
+            animation-direction: alternate; /* Bolak-balik */
+            animation-timing-function: ease-in-out; /* Gerakan natural */
+        }
+
+        @keyframes um-bounce {
+            0%   { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(calc(var(--um-bounce-dist) * -1), 0, 0); }
+        }
+
+        /* Interaction */
+        .um-host.um-pause-hover:hover .um-track { animation-play-state: paused; }
+        .um-host.um-pause-click:active .um-track { animation-play-state: paused; }
+
+        .um-item { display: flex; align-items: center; flex-shrink: 0; }
+        .um-separator { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* --- 3. CUSTOM ITEM STYLES --- */
+        .news-item { font-weight: 600; white-space: nowrap; }
+        .tag-live { background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-right: 8px; text-transform: uppercase; }
+        
+        .song-item { font-family: 'Courier New', monospace; font-size: 1.2rem; color: #a5f3fc; }
+        .song-icon { margin-right: 10px; }
+
     </style>
-    <style data-label="ROOT_LAYOUT">
-      html {
-        scroll-behavior: smooth;
-        scroll-padding-top: calc(var(--layout-vertical-spacing) + 2rem);
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: var(--font-family-primary);
-        background: var(--color-bg-page);
-        color: var(--color-text-primary);
-        min-height: 100vh;
-        -webkit-font-smoothing: antialiased;
-      }
-      body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 9999;
-        opacity: 0.04;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      }
-      ::selection {
-        background: var(--color-accent-primary);
-        color: #030712;
-      }
-      .root-layout {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      .root-layout-container {
-        width: calc(100% - (var(--spacing-md) * 2));
-        max-width: var(--layout-max-width);
-        margin-inline: auto;
-        padding-top: var(--layout-vertical-spacing);
-        padding-bottom: var(--layout-vertical-spacing);
-        box-sizing: border-box;
-      }
-      main {
-        display: flex;
-        flex-direction: column;
-        gap: 6rem;
-        margin-block: var(--spacing-xl);
-      }
-      .intro {
-        font-size: 1.25rem;
-        line-height: 1.7;
-        max-width: 760px;
-        margin: var(--spacing-md) auto 0;
-        text-align: center;
-        color: var(--color-text-secondary);
-      }
-      .section > h2 {
-        font-size: 2.25rem;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: var(--spacing-lg);
-        letter-spacing: -0.03em;
-        font-family: var(--font-family-heading);
-      }
-      .examples-grid {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xl);
-        max-width: 1000px;
-        margin: 0 auto;
-      }
-      .usage-example {
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border-strong);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-lg);
-        box-shadow: var(--shadow-card-dark);
-        transition: var(--transition-normal);
-      }
-      .usage-example:hover {
-        box-shadow: var(--shadow-elevated);
-        transform: translateY(-4px);
-      }
-      .usage-example h3 {
-        font-size: var(--font-size-h3-card);
-        margin: 0 0 var(--spacing-sm);
-        font-weight: 700;
-        font-family: var(--font-family-heading);
-      }
-      .code-window {
-        margin-top: var(--spacing-lg);
-        background: var(--code-bg);
-        border-radius: var(--radius-lg);
-        box-shadow:
-          0 10px 30px -10px rgba(0, 0, 0, 0.6),
-          0 0 0 1px rgba(34, 211, 238, 0.1);
-        overflow: hidden;
-      }
-      .code-header {
-        background: var(--code-header-bg);
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid var(--color-border-strong);
-      }
-      .window-controls {
-        display: flex;
-        gap: 8px;
-      }
-      .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-      }
-      .dot.red {
-        background: var(--code-dot-red);
-      }
-      .dot.yellow {
-        background: var(--code-dot-yellow);
-      }
-      .dot.green {
-        background: var(--code-dot-green);
-      }
-      .file-name {
-        color: var(--color-text-secondary);
-        font-size: var(--font-size-sm);
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        opacity: 0.8;
-      }
-      .copy-btn {
-        background: transparent;
-        border: 1px solid transparent;
-        color: var(--color-text-secondary);
-        border-radius: var(--radius-xs);
-        padding: 6px;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .copy-btn:hover {
-        background: rgba(34, 211, 238, 0.15);
-        color: var(--color-accent-primary);
-        border-color: var(--color-accent-primary);
-      }
-      .code-content {
-        padding: var(--spacing-md);
-        overflow-x: auto;
-      }
-      .code-content code {
-        font-family: var(--font-family-mono);
-        font-size: var(--font-size-code);
-        line-height: 1.6;
-        color: var(--color-text-primary);
-        white-space: pre;
-      }
-      .main-title {
-        text-align: center;
-        font-size: clamp(3rem, 7vw, 5rem);
-        margin: 0;
-        letter-spacing: -0.04em;
-        font-family: var(--font-family-heading);
-        font-weight: 800;
-        background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.15));
-      }
-      .inline-code {
-        background: var(--color-bg-surface);
-        padding: 1rem 1.5rem;
-        border-radius: var(--radius-lg);
-        font-family: var(--font-family-mono);
-        font-size: 0.9em;
-        border: 1px solid var(--color-border-strong);
-        display: inline-flex;
-        align-items: center;
-        color: var(--color-accent-primary);
-        box-shadow: var(--shadow-card-dark);
-      }
-      .inline-code::before {
-        content: '$';
-        margin-right: 12px;
-        color: var(--color-accent-primary);
-        opacity: 0.8;
-      }
-      .inline-code:hover {
-        transform: translateY(-2px);
-        border-color: var(--color-accent-primary);
-        color: #fff;
-        box-shadow: 0 10px 30px rgba(34, 211, 238, 0.2);
-      }
-    </style>
-    <style data-label="DEMO_STYLES">
-      #features {
-        background: linear-gradient(90deg, #6366f1, #ec4899, #8b5cf6, #06b6d4, #6366f1);
-        background-size: 300% 100%;
-        animation: rainbowShift 15s linear infinite;
-        padding: var(--spacing-xl) 0;
-        border-radius: var(--radius-xl);
-        box-shadow:
-          var(--shadow-elevated),
-          inset 0 0 0 1px rgba(255, 255, 255, 0.15);
-        overflow: hidden;
-        margin: var(--spacing-xl) auto;
-        max-width: 95%;
-        position: relative;
-      }
-      @keyframes rainbowShift {
-        0% {
-          background-position: 0% 50%;
-        }
-        100% {
-          background-position: 300% 50%;
-        }
-      }
-      #features .um-item {
-        font-family: var(--font-family-fun);
-        font-weight: 700;
-        font-size: clamp(2rem, 5vw, 3.5rem);
-        letter-spacing: 2px;
-        text-shadow:
-          3px 3px 0 #000,
-          0 0 15px rgba(255, 255, 255, 0.5);
-        border-radius: var(--radius-pill);
-        background: rgba(15, 15, 30, 0.9);
-        box-shadow:
-          0 8px 25px rgba(0, 0, 0, 0.6),
-          inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-        padding: var(--spacing-sm) var(--spacing-lg);
-      }
-      #features .um-item:nth-child(odd) {
-        color: #ffff54;
-      }
-      #features .um-item:nth-child(even) {
-        color: #00ffff;
-      }
-      #features .um-item:nth-child(3n) {
-        color: #ff44ff;
-      }
-      #features .um-item:nth-child(4n) {
-        color: #44ff44;
-      }
-      #features .um-item-separator {
-        font-size: 4.5rem;
-        margin: 0 var(--spacing-md);
-        animation: spinSlow 8s linear infinite;
-      }
-      @keyframes spinSlow {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      #features:hover .um-item-separator {
-        animation: spinFast 1s linear infinite;
-      }
-      @keyframes spinFast {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      #features::before {
-        content: '✨ 🎉 ✨ 🎈 ✨ 🎊 ✨';
-        position: absolute;
-        top: 10%;
-        width: 100%;
-        font-size: 3rem;
-        text-align: center;
-        opacity: 0.5;
-        animation: floatUp 12s linear infinite;
-        pointer-events: none;
-        z-index: 1;
-      }
-      @keyframes floatUp {
-        0% {
-          transform: translateY(100px);
-          opacity: 0;
-        }
-        20%,
-        80% {
-          opacity: 0.5;
-        }
-        100% {
-          transform: translateY(-100px);
-          opacity: 0;
-        }
-      }
+</head>
+<body>
 
-      #demo-testimonials {
-        --um-gap: 2rem;
-        padding: 3rem 0;
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--color-border-strong);
-      }
-      .testimonial-card {
-        background: var(--color-bg-page);
-        border: 1px solid var(--color-border-strong);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-md);
-        width: 380px;
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-sm);
-        box-shadow: var(--shadow-card-dark);
-        transition: var(--transition-normal);
-        position: relative;
-        overflow: hidden;
-      }
-      .testimonial-card:hover {
-        transform: translateY(-6px);
-        box-shadow: var(--shadow-elevated);
-        border-color: var(--color-accent-primary);
-      }
-      .testimonial-card::before {
-        content: '"';
-        position: absolute;
-        top: -10px;
-        right: 20px;
-        font-size: 8rem;
-        font-family: serif;
-        color: var(--color-text-primary);
-        opacity: 0.04;
-        pointer-events: none;
-      }
-      .t-avatar {
-        width: var(--avatar-size);
-        height: var(--avatar-size);
-        border-radius: 50%;
-        overflow: hidden;
-        border: 2px solid var(--color-accent-primary);
-        box-shadow: 0 0 0 3px var(--color-bg-page);
-      }
-      .t-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .t-name {
-        font-weight: 700;
-        font-size: 1rem;
-      }
-      .t-body {
-        font-size: 0.95rem;
-        line-height: 1.6;
-        opacity: 0.9;
-      }
-      .t-stars {
-        color: var(--color-stars);
-        font-size: 1.1rem;
-        letter-spacing: 2px;
-      }
+    <h1>UniversalMarquee v2.2 Demo</h1>
 
-      #demo-products {
-        --um-gap: 1rem;
-        padding: var(--spacing-xl) 0;
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--color-border-strong);
-      }
-      .product-view-card {
-        width: 400px;
-        height: 300px;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        position: relative;
-        background: var(--color-bg-page);
-        box-shadow: var(--shadow-card-dark);
-        transition: var(--transition-normal);
-      }
-      .product-view-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-elevated);
-      }
-      .product-view-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform var(--transition-slow);
-      }
-      .product-view-card:hover img {
-        transform: scale(1.08);
-      }
-      .view-label {
-        position: absolute;
-        bottom: 16px;
-        left: 16px;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        padding: 6px 14px;
-        border-radius: var(--radius-xl);
-        font-size: 0.7rem;
-        font-weight: 800;
-        color: #111827;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-      }
+    <section>
+        <h2>1. News Ticker (Standard Mode)</h2>
+        <p>Fitur: Infinite Loop, Mobile First Responsive (Cepat di Desktop, Lambat di HP), Pause on Hover.</p>
+        
+        <div id="marquee-news" class="marquee-container"></div>
+    </section>
 
-      #demo-ticker {
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border-strong);
-        border-radius: var(--radius-lg);
-        padding: 1.25rem 0;
-        font-family: var(--font-family-mono);
-        font-size: 0.9rem;
-        box-shadow: var(--shadow-card-dark);
-        --um-gap: 3rem;
-        position: relative;
-      }
-      #demo-ticker::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 15%;
-        bottom: 15%;
-        width: 4px;
-        background: var(--color-accent-primary);
-        border-radius: 0 4px 4px 0;
-        box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
-      }
-      .ticker-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-      .ticker-sym {
-        font-weight: 800;
-        color: var(--color-text-primary);
-      }
-      .ticker-val {
-        font-weight: 700;
-        color: var(--color-text-primary);
-      }
-      .ticker-change {
-        padding: 0.2rem 0.6rem;
-        border-radius: var(--radius-xs);
-        font-size: 0.75rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .t-up {
-        background: rgba(34, 211, 238, 0.15);
-        color: #22d3ee;
-        border: 1px solid rgba(34, 211, 238, 0.3);
-      }
-      .t-down {
-        background: rgba(239, 68, 68, 0.15);
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-      }
-    </style>
-    <style data-label="AMBIENT">
-      .ambient-background {
-        position: fixed;
-        inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: -1;
-      }
-      .blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(80px);
-        opacity: 0.35;
-        animation: floatBlob 20s infinite alternate ease-in-out;
-      }
-      .blob-1 {
-        top: -10%;
-        left: -10%;
-        width: 50vw;
-        height: 50vw;
-        background: radial-gradient(circle, #6366f1, transparent 70%);
-      }
-      .blob-2 {
-        bottom: -10%;
-        right: -10%;
-        width: 60vw;
-        height: 60vw;
-        background: radial-gradient(circle, #22d3ee, transparent 70%);
-        animation-delay: -5s;
-      }
-      .blob-3 {
-        top: 40%;
-        left: 30%;
-        width: 40vw;
-        height: 40vw;
-        background: radial-gradient(circle, #a855f7, transparent 70%);
-        animation-delay: -10s;
-        opacity: 0.25;
-      }
-      @keyframes floatBlob {
-        0% {
-          transform: translate(0, 0) scale(1);
-        }
-        50% {
-          transform: translate(30px, 50px) scale(1.1);
-        }
-        100% {
-          transform: translate(-20px, -30px) scale(0.95);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="ambient-background" aria-hidden="true">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
-    </div>
+    <section>
+        <h2>2. Song Title <span class="badge">NEW v2.2</span></h2>
+        <p>Fitur: <b>Auto Reverse</b>. Teks bergerak sampai ujung, diam sebentar (delay), lalu kembali. Cocok untuk teks panjang tunggal.</p>
+        
+        <div id="marquee-song" class="marquee-container" style="max-width: 300px; margin: 0 auto; border-color: #0ea5e9;"></div>
+        
+        <div style="text-align: center; margin-top: 1rem;">
+            <button onclick="changeSong()" style="padding: 8px 16px; cursor: pointer;">Ganti Lagu (Hot Swap)</button>
+        </div>
+    </section>
 
-    <div class="root-layout">
-      <div class="root-layout-container">
-        <main>
-          <section class="hero-section" style="text-align: center; padding-top: 4rem">
-            <h1 class="main-title">Universal Marquee</h1>
-            <p class="intro">
-              A zero-dependency Vanilla JS library for smooth, accessible, infinite scrolling.<br />
-              Lightweight and compatible with text, images, or any custom HTML.
-            </p>
-          </section>
+    <script>
+        /**
+         * UNIVERSAL MARQUEE LIBRARY v2.2
+         * (Auto-Reverse & Mobile First Included)
+         */
+        class UniversalMarquee {
+            static #DEFAULTS = {
+                speed: 50, gap: '2rem', direction: 'normal', delay: 0,
+                autoReverse: false, // v2.2 Feature
+                pauseOnHover: true, pauseOnClick: false,
+                mask: true, maskWidth: '5%',
+                responsive: {}, items: [], separator: null,
+                renderItem: (item) => document.createTextNode(String(item)),
+            };
 
-          <section class="section">
-            <h2>Why Universal Marquee?</h2>
-            <div id="features" role="region" aria-label="Key features marquee"></div>
-          </section>
-
-          <section class="section">
-            <h2>Get Started</h2>
-            <p style="text-align: center; max-width: 800px; margin: auto">
-              Simply include the script and initialize.<br /><br />
-              <code class="inline-code">new UniversalMarquee('#my-element', { speed: 50 });</code>
-            </p>
-          </section>
-
-          <section class="section examples">
-            <h2>Real-World Examples</h2>
-            <div class="examples-grid">
-              <article class="usage-example">
-                <h3>Scrolling Testimonials</h3>
-                <p>Build social proof with smooth customer reviews.</p>
-                <div id="demo-testimonials" role="region" aria-label="Testimonials marquee"></div>
-                <figure class="code-window">
-                  <div class="code-header">
-                    <div class="window-controls">
-                      <span class="dot red"></span>
-                      <span class="dot yellow"></span>
-                      <span class="dot green"></span>
-                    </div>
-                    <span class="file-name">testimonials.html</span>
-                    <button class="copy-btn" aria-label="Copy code">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <pre class="code-content"><code>&lt;div id="testimonials"&gt;&lt;/div&gt;
-&lt;script type="module"&gt;
-  new UniversalMarquee('#testimonials', {
-    items: [ /* array of review objects */ ],
-    renderItem: item =&gt; {
-      const card = document.createElement('div');
-      card.className = 'testimonial-card';
-      card.innerHTML = `...`; // full card markup
-      return card;
-    },
-    speed: 25,
-    gap: '2rem',
-    pauseOnHover: true
-  });
-&lt;/script&gt;</code></pre>
-                </figure>
-              </article>
-
-              <article class="usage-example">
-                <h3>Immersive Product Gallery</h3>
-                <p>Showcase product angles smoothly.</p>
-                <div id="demo-products" role="region" aria-label="Product gallery marquee"></div>
-                <figure class="code-window">
-                  <div class="code-header">
-                    <div class="window-controls">
-                      <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    </div>
-                    <span class="file-name">gallery.html</span>
-                    <button class="copy-btn" aria-label="Copy code">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <pre class="code-content"><code>&lt;div id="products"&gt;&lt;/div&gt;
-&lt;script type="module"&gt;
-  new UniversalMarquee('#products', {
-    items: [ /* array of {img, alt} */ ],
-    renderItem: item =&gt; {
-      const div = document.createElement('div');
-      div.className = 'product-view-card um-img-skeleton';
-      div.innerHTML = `&lt;img src="${item.img}" alt="${item.alt}" loading="lazy"&gt;`;
-      return div;
-    },
-    speed: 30,
-    gap: '1rem',
-    pauseOnHover: true
-  });
-&lt;/script&gt;</code></pre>
-                </figure>
-              </article>
-
-              <article class="usage-example">
-                <h3>Live Stock Ticker</h3>
-                <p>Display fast-moving updates or prices.</p>
-                <div id="demo-ticker" role="region" aria-label="Ticker marquee"></div>
-                <figure class="code-window">
-                  <div class="code-header">
-                    <div class="window-controls">
-                      <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    </div>
-                    <span class="file-name">ticker.html</span>
-                    <button class="copy-btn" aria-label="Copy code">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                    </button>
-                  </div>
-                  <pre class="code-content"><code>&lt;div id="ticker"&gt;&lt;/div&gt;
-&lt;script type="module"&gt;
-  new UniversalMarquee('#ticker', {
-    items: [ /* array of stock objects */ ],
-    renderItem: item =&gt; {
-      const el = document.createElement('div');
-      el.className = 'ticker-item';
-      el.innerHTML = `...`; // ticker markup
-      return el;
-    },
-    separator: '&lt;span class="ticker-separator"&gt;|&lt;/span&gt;',
-    speed: 70
-  });
-&lt;/script&gt;</code></pre>
-                </figure>
-              </article>
-            </div>
-          </section>
-        </main>
-      </div>
-      <footer style="padding: 2rem; text-align: center; color: var(--color-text-secondary); font-size: 0.9rem">
-        © 2025 Universal Marquee by
-        <a
-          href="#"
-          style="color: inherit; text-decoration: underline; text-decoration-color: var(--color-accent-primary)"
-          >Ledi Hildawan</a
-        >
-      </footer>
-    </div>
-
-    <!-- Universal Marquee Library -->
-    <script type="module">
-      class ContentBuilder {
-        constructor(options) {
-          this._opts = options;
-        }
-        #buildSeparatorNode(separator) {
-          if (!separator) return null;
-          const span = document.createElement('span');
-          span.className = 'um-item-separator';
-          span.setAttribute('aria-hidden', 'true');
-          if (typeof separator === 'string') span.innerHTML = separator;
-          else if (separator instanceof Node) span.appendChild(separator.cloneNode(true));
-          else span.textContent = String(separator);
-          return span;
-        }
-        buildCycleContent(forSR = false) {
-          const frag = document.createDocumentFragment();
-          const items = this._opts.items || [];
-          for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (forSR) {
-              const li = document.createElement('li');
-              li.textContent = item.alt || item.text || String(item);
-              frag.appendChild(li);
-            } else {
-              let node = this._opts.renderItem(item, i);
-              if (!(node instanceof Element)) {
-                const wrapper = document.createElement('span');
-                wrapper.appendChild(node);
-                node = wrapper;
-              }
-              const clone = node.cloneNode(true);
-              const img = clone.querySelector('img');
-              if (img) {
-                const loaded = () => {
-                  img.classList.add('loaded');
-                  clone.classList.add('loaded');
-                };
-                if (img.complete && img.naturalWidth) loaded();
-                else {
-                  img.onload = loaded;
-                  img.onerror = loaded;
-                }
-              }
-              frag.appendChild(clone);
-              if (i < items.length - 1) {
-                const sep = this.#buildSeparatorNode(this._opts.separator);
-                if (sep) frag.appendChild(sep);
-              }
+            constructor(selector, options = {}) {
+                this.root = document.querySelector(selector);
+                if (!this.root) throw new Error(`Node '${selector}' not found.`);
+                this.userOptions = options;
+                this.config = { ...UniversalMarquee.#DEFAULTS, ...options };
+                this._observers = [];
+                this._resizeTimer = null;
+                this._isManualPaused = false;
+                this.#init();
             }
-          }
-          return frag;
-        }
-        buildCycleContainer() {
-          const div = document.createElement('div');
-          div.appendChild(this.buildCycleContent());
-          return div;
-        }
-        measureCycleMetrics(root) {
-          if (!this._opts.items?.length) return { width: 0, gap: 0 };
-          const temp = document.createElement('div');
-          temp.className = 'um-track';
-          temp.style.position = 'absolute';
-          temp.style.visibility = 'hidden';
-          temp.style.setProperty('--um-gap', this._opts.gap || '2rem');
-          const cycle = this.buildCycleContainer();
-          temp.appendChild(cycle);
-          root.appendChild(temp);
-          const width = cycle.offsetWidth;
-          const gap = parseFloat(getComputedStyle(temp).gap) || 0;
-          root.removeChild(temp);
-          return { width, gap };
-        }
-      }
 
-      class AnimationController {
-        constructor(track, opts) {
-          this.track = track;
-          this.opts = opts;
+            updateItems(newItems) {
+                this.config.items = newItems;
+                this.#buildDOM();
+                this.#waitForAssets().then(() => this.#syncPhysics());
+            }
+
+            pause() { this._isManualPaused = true; this.root.style.setProperty('--um-play-state', 'paused'); }
+            play() { this._isManualPaused = false; this.root.style.setProperty('--um-play-state', 'running'); }
+            set direction(val) { this.config.direction = val; this.root.style.setProperty('--um-direction', val); }
+            set speed(pxPerSecond) { this.config.speed = pxPerSecond; this.#syncPhysics(); }
+
+            destroy() {
+                this._observers.forEach(obs => obs.disconnect());
+                this.root.classList.remove('um-host', 'um-pause-hover', 'um-pause-click', 'um-no-mask', 'um-mode-reverse');
+                this.root.innerHTML = '';
+            }
+
+            #init() {
+                this.root.classList.add('um-host');
+                this.#evaluateResponsive(); 
+                this.#buildDOM();
+                this.#waitForAssets().then(() => { this.#syncPhysics(); this.#attachObservers(); });
+            }
+
+            #buildDOM() {
+                const singleSet = document.createDocumentFragment();
+                this.config.items.forEach((item, index) => {
+                    singleSet.appendChild(this.#createItemNode(item, index));
+                    if (this.config.separator) singleSet.appendChild(this.#createSeparatorNode());
+                });
+
+                this.track = document.createElement('div');
+                this.track.className = 'um-track';
+
+                // --- v2.2 LOGIC: Auto Reverse vs Loop ---
+                if (this.config.autoReverse) {
+                    this.root.classList.add('um-mode-reverse');
+                    this.track.appendChild(singleSet.cloneNode(true));
+                } else {
+                    this.root.classList.remove('um-mode-reverse');
+                    const temp = document.createElement('div');
+                    temp.style.cssText = 'position:absolute; visibility:hidden; width:max-content; display:flex; gap:var(--um-gap);';
+                    temp.appendChild(singleSet.cloneNode(true));
+                    this.root.appendChild(temp);
+                    const contentW = temp.offsetWidth;
+                    const viewportW = this.root.offsetWidth || window.innerWidth;
+                    this.root.removeChild(temp);
+
+                    if (contentW > 0) {
+                        const coverage = Math.ceil(viewportW / contentW) + 1;
+                        const filled = document.createDocumentFragment();
+                        for (let i = 0; i < coverage; i++) filled.appendChild(singleSet.cloneNode(true));
+                        const groupA = document.createElement('div');
+                        groupA.style.display = 'flex'; groupA.style.gap = 'var(--um-gap)';
+                        groupA.appendChild(filled.cloneNode(true));
+                        const groupB = groupA.cloneNode(true);
+                        this.#sanitizeIds(groupB);
+                        this.track.appendChild(groupA);
+                        this.track.appendChild(groupB);
+                    }
+                }
+                this.root.innerHTML = '';
+                this.root.appendChild(this.track);
+            }
+
+            #syncPhysics() {
+                if (!this.track) return;
+                let distance = 0;
+
+                if (this.config.autoReverse) {
+                    const contentW = this.track.scrollWidth;
+                    const containerW = this.root.offsetWidth;
+                    // Jarak = Seberapa banyak konten "tumpah" keluar container
+                    distance = (contentW > containerW) ? contentW - containerW : 0;
+                    this.root.style.setProperty('--um-bounce-dist', `${distance}px`);
+                } else {
+                    distance = this.track.scrollWidth / 2;
+                }
+
+                if (distance <= 0) {
+                    this.root.style.setProperty('--um-duration', '0s');
+                } else {
+                    const duration = distance / this.config.speed;
+                    this.root.style.setProperty('--um-duration', `${duration}s`);
+                }
+            }
+
+            #evaluateResponsive() {
+                const width = window.innerWidth;
+                let targetConfig = { ...UniversalMarquee.#DEFAULTS, ...this.userOptions };
+                if (this.userOptions.responsive) {
+                    const bps = Object.keys(this.userOptions.responsive).map(Number).sort((a, b) => a - b);
+                    for (const bp of bps) {
+                        if (width >= bp) targetConfig = { ...targetConfig, ...this.userOptions.responsive[bp] };
+                    }
+                }
+                
+                const modeChanged = this.config.autoReverse !== targetConfig.autoReverse;
+                this.config = targetConfig;
+                this.#applyConfigStyles();
+                if (modeChanged) this.#buildDOM();
+                this.#syncPhysics();
+            }
+
+            #applyConfigStyles() {
+                this.root.style.setProperty('--um-delay', `${this.config.delay}ms`);
+                if (this.config.mask) {
+                    this.root.classList.remove('um-no-mask');
+                    this.root.style.setProperty('--um-mask-width', this.config.maskWidth);
+                } else { this.root.classList.add('um-no-mask'); }
+                this.root.classList.toggle('um-pause-hover', this.config.pauseOnHover);
+                this.root.classList.toggle('um-pause-click', this.config.pauseOnClick);
+                this.root.style.setProperty('--um-gap', this.#parseGap(this.config.gap));
+                this.root.style.setProperty('--um-direction', this.config.direction);
+            }
+
+            #createItemNode(item, index) {
+    // 1. Dapatkan hasil dari renderItem (bisa String atau Element)
+    let content = this.config.renderItem(item, index);
+    let node;
+
+    // 2. Cek tipe datanya
+    if (content instanceof Element) {
+      // Jika user me-return document.createElement(...)
+      node = content;
+    } else {
+      // Jika user me-return String HTML atau Teks biasa
+      // Kita bungkus dengan div (atau span) dan gunakan innerHTML
+      node = document.createElement('div');
+      node.innerHTML = String(content);
+      
+      // Opsional: Jika wrapper menghasilkan extra spacing, atur display
+      // node.style.display = 'contents'; // Hati-hati browser support
+    }
+
+    // 3. Tambahkan class wajib library
+    node.classList.add('um-item');
+    return node;
+  }
+            #createSeparatorNode() {
+                const sep = document.createElement('span'); sep.className = 'um-separator';
+                if (this.config.separator instanceof Node) sep.appendChild(this.config.separator.cloneNode(true));
+                else sep.innerHTML = this.config.separator; return sep;
+            }
+            #sanitizeIds(node) { if (node.id) node.removeAttribute('id'); if (node.querySelectorAll) node.querySelectorAll('[id]').forEach(el => el.removeAttribute('id')); }
+            #parseGap(gap) { return typeof gap === 'number' ? `${gap}px` : gap; }
+            async #waitForAssets() {
+                const images = Array.from(this.root.querySelectorAll('img'));
+                if (images.length === 0) return Promise.resolve();
+                const promises = images.map(img => {
+                    if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+                    return new Promise(resolve => { img.onload = () => resolve(); img.onerror = () => resolve(); });
+                });
+                await Promise.all(promises);
+            }
+            #attachObservers() {
+                const io = new IntersectionObserver((entries) => {
+                    if (this._isManualPaused) return;
+                    this.root.style.setProperty('--um-play-state', entries[0].isIntersecting ? 'running' : 'paused');
+                }, { threshold: 0.01 });
+                io.observe(this.root);
+                this._observers.push(io);
+                const ro = new ResizeObserver((entries) => {
+                    if (entries[0].contentRect.width === 0) return;
+                    clearTimeout(this._resizeTimer);
+                    this._resizeTimer = setTimeout(() => this.#evaluateResponsive(), 150);
+                });
+                ro.observe(this.root);
+                this._observers.push(ro);
+            }
         }
-        start(width, gap) {
-          if (this.anim) this.anim.cancel();
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-          const distance = width + gap;
-          if (!distance) return;
-          const duration = this.opts.duration ? this.opts.duration * 1000 : (distance / (this.opts.speed || 50)) * 1000;
-          const keyframes =
-            this.opts.direction === 'right'
-              ? [{ transform: `translate3d(-${distance}px,0,0)` }, { transform: 'translate3d(0,0,0)' }]
-              : [{ transform: 'translate3d(0,0,0)' }, { transform: `translate3d(-${distance}px,0,0)` }];
-          this.anim = this.track.animate(keyframes, { duration, iterations: Infinity, easing: 'linear' });
-        }
-        pause() {
-          this.anim?.pause();
-        }
-        play() {
-          this.anim?.play();
-        }
-        cancel() {
-          this.anim?.cancel();
-        }
-      }
 
-      class UniversalMarquee {
-        constructor(selector, opts = {}) {
-          this.root = document.querySelector(selector);
-          if (!this.root) return;
-          this.opts = {
-            speed: 50,
-            gap: '2rem',
-            direction: 'left',
-            items: [],
-            separator: '',
-            renderItem: (item) => document.createTextNode(String(item)),
-            pauseOnHover: true,
-            gradientOverlay: 'auto',
-            ...opts,
-          };
-          this.root.classList.add('um-container');
-          this.builder = new ContentBuilder(this.opts);
-          this.setup();
-          this.initObservers();
-          this.initInteractivity();
-        }
-        setup() {
-          this.root.innerHTML = '';
-          this.track = document.createElement('div');
-          this.track.className = 'um-track';
-          this.track.setAttribute('aria-hidden', 'true');
-          this.root.appendChild(this.track);
-          this.reflow();
-        }
-        reflow() {
-          const { width, gap } = this.builder.measureCycleMetrics(this.root);
-          if (!width) return;
-          if (this.controller) this.controller.cancel();
-          const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          const cycles = reduced ? 1 : Math.max(Math.ceil(this.root.offsetWidth / (width + gap)) + 1, 3);
-          this.track.innerHTML = '';
-          const frag = document.createDocumentFragment();
-          for (let i = 0; i < cycles; i++) frag.appendChild(this.builder.buildCycleContainer());
-          this.track.appendChild(frag);
+        // --- DEMO INITIALIZATION ---
 
-          const showOverlay =
-            this.opts.gradientOverlay === true ||
-            (this.opts.gradientOverlay === 'auto' && !reduced && this.track.scrollWidth > this.root.offsetWidth);
-          this.root.classList.toggle('um-overflow-left', showOverlay);
-          this.root.classList.toggle('um-overflow-right', showOverlay);
-          if (showOverlay) {
-            const color = this.opts.gradientColor || getComputedStyle(this.root).backgroundColor;
-            this.root.style.setProperty('--gradient-overlay-color', color);
-          }
-
-          if (!reduced) {
-            this.controller = new AnimationController(this.track, this.opts);
-            this.controller.start(width, gap);
-          }
-        }
-        initInteractivity() {
-          if (this.opts.pauseOnHover) {
-            ['mouseenter', 'focusin', 'touchstart'].forEach((ev) =>
-              this.root.addEventListener(ev, () => this.controller?.pause())
-            );
-            ['mouseleave', 'focusout', 'touchend'].forEach((ev) =>
-              this.root.addEventListener(ev, () => this.controller?.play())
-            );
-          }
-        }
-        initObservers() {
-          this.resizeObs = new ResizeObserver(() => {
-            clearTimeout(this.resizeTimer);
-            this.resizeTimer = setTimeout(() => this.reflow(), 100);
-          });
-          this.resizeObs.observe(this.root);
-        }
-      }
-      window.UniversalMarquee = UniversalMarquee;
-    </script>
-
-    <!-- Demo Data & Init -->
-    <script type="module">
-      const features = [
-        'Seamless infinite marquee',
-        'Dynamic duplication',
-        'Speed or duration control',
-        'Direction control',
-        'Custom gap',
-        'Separator support',
-        'renderItem function',
-        'Lazy loading',
-        'Gradient overlay',
-        'Pause on hover/focus',
-        'Visibility auto-pause',
-        'Reduced motion support',
-        'Full accessibility',
-        'Web Animations API',
-        'Zero dependencies',
-        'Fully responsive',
-      ];
-
-      new UniversalMarquee('#features', {
-        items: features,
-        speed: 45,
-        gap: 0,
-        separator: ' 🎊 ',
-        renderItem: (text, i) => {
-          const div = document.createElement('div');
-          div.className = 'um-item';
-          div.textContent = text;
-          const scales = [1.1, 0.95, 1.2, 1.05];
-          const scale = scales[i % 4] || 1;
-          div.style.paddingInline = `${2.5 * scale}rem`;
-          div.style.transform = `scale(${scale})`;
-          return div;
-        },
-        gradientOverlay: false,
-      });
-
-      const reviews = [
-        {
-          name: 'Sarah Jenkins',
-          handle: '@sarah_dev',
-          text: 'Game-changer on mobile!',
-          avatar: 'https://i.pravatar.cc/150?u=sarah',
-          stars: 5,
-        },
-        {
-          name: 'Michael Chen',
-          handle: '@mchen',
-          text: 'Perfect accessibility support.',
-          avatar: 'https://i.pravatar.cc/150?u=michael',
-          stars: 5,
-        },
-        {
-          name: 'Alex Rivera',
-          handle: '@arivera',
-          text: 'Increased engagement by 15%.',
-          avatar: 'https://i.pravatar.cc/150?u=alex',
-          stars: 4,
-        },
-        {
-          name: 'Emily Watson',
-          handle: '@emily_w',
-          text: 'Zero deps — perfect fit.',
-          avatar: 'https://i.pravatar.cc/150?u=emily',
-          stars: 5,
-        },
-        {
-          name: 'David Kim',
-          handle: '@dkim',
-          text: 'Smart seamless looping.',
-          avatar: 'https://i.pravatar.cc/150?u=david',
-          stars: 5,
-        },
-      ];
-
-      new UniversalMarquee('#demo-testimonials', {
-        items: reviews,
-        speed: 25,
-        gap: '2rem',
-        pauseOnHover: true,
-        renderItem: (item) => {
-          const card = document.createElement('div');
-          card.className = 'testimonial-card';
-          card.innerHTML = `
-            <div style="display:flex;gap:1rem;align-items:center;">
-              <div class="t-avatar"><img src="${item.avatar}" alt="${item.name}" loading="lazy"></div>
-              <div>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                  <span class="t-name">${item.name}</span>
-                </div>
-                <span style="color:var(--color-text-secondary);font-size:0.85rem;">${item.handle}</span>
-              </div>
-            </div>
-            <div class="t-body">"${item.text}"</div>
-            <div class="t-stars">${'★'.repeat(item.stars)}</div>
-          `;
-          return card;
-        },
-      });
-
-      const products = [
-        {
-          img: 'https://i.ebayimg.com/images/g/F8IAAOSwmKJnQKiy/s-l1600.webp',
-          alt: 'Side view',
-          label: 'Side Profile',
-        },
-        { img: 'https://i.ebayimg.com/images/g/i-gAAOSw2epnQKi0/s-l1600.webp', alt: 'Top view', label: 'Top-Down' },
-        { img: 'https://i.ebayimg.com/images/g/7BEAAOSwbHdnQKiz/s-l1600.webp', alt: 'Toe box', label: 'Toe Box' },
-        { img: 'https://i.ebayimg.com/images/g/jOcAAOSwPzVnQKiz/s-l1600.webp', alt: 'On foot', label: 'On-Foot' },
-        { img: 'https://i.ebayimg.com/images/g/OFMAAOSw0A9nQKiz/s-l1600.webp', alt: 'Heel', label: 'Heel' },
-        { img: 'https://i.ebayimg.com/images/g/CcoAAOSwlohnQKiz/s-l1600.webp', alt: 'Angle', label: 'Perspective' },
-      ];
-
-      new UniversalMarquee('#demo-products', {
-        items: products,
-        speed: 30,
-        gap: '1rem',
-        pauseOnHover: true,
-        renderItem: (item) => {
-          const div = document.createElement('div');
-          div.className = 'product-view-card um-img-skeleton';
-          div.innerHTML = `<img src="${item.img}" alt="${item.alt}" loading="lazy">
-            <div class="view-label">${item.label}</div>`;
-          return div;
-        },
-      });
-
-      const stocks = [
-        { sym: 'BTC', val: '$86,000', change: '3.0%', up: false },
-        { sym: 'ETH', val: '$3,000', change: '5.0%', up: false },
-        { sym: 'SOL', val: '$127', change: '3.8%', up: false },
-        { sym: 'NVDA', val: '$177', change: '1.2%', up: true },
-        { sym: 'TSLA', val: '$475', change: '3.6%', up: true },
-        { sym: 'AAPL', val: '$274', change: '1.5%', up: false },
-      ];
-
-      new UniversalMarquee('#demo-ticker', {
-        items: stocks,
-        speed: 70,
-        separator: '<span class="ticker-separator">|</span>',
-        renderItem: (item) => {
-          const div = document.createElement('div');
-          div.className = 'ticker-item';
-          const arrow = item.up ? '↗' : '↘';
-          const cls = item.up ? 't-up' : 't-down';
-          const sign = item.up ? '+' : '-';
-          div.innerHTML = `<span class="ticker-sym">${item.sym}</span>
-            <span class="ticker-val">${item.val}</span>
-            <span class="ticker-change ${cls}">${arrow} ${sign}${item.change}</span>`;
-          return div;
-        },
-      });
-    </script>
-
-    <!-- Copy Button -->
-    <script type="module">
-      document.querySelectorAll('.copy-btn').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          const code = btn.closest('.code-window').querySelector('code').textContent.trim();
-          const original = btn.innerHTML;
-          try {
-            await navigator.clipboard.writeText(code);
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#27c93f" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
-          } catch {
-            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff5f56" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg>`;
-          }
-          setTimeout(() => (btn.innerHTML = original), 2000);
+        // Demo 1: News Ticker (Standard)
+        const news = new UniversalMarquee('#marquee-news', {
+            speed: 30, // Default Mobile Speed
+            gap: '1rem',
+            items: [
+                "Breaking News: UniversalMarquee v2.2 Released",
+                "Technology: AI Development Accelerates",
+                "Market: Crypto hits new All Time High",
+                "Weather: Sunny skies expected all week"
+            ],
+            renderItem: (text) => {
+                const div = document.createElement('div');
+                div.className = 'news-item';
+                div.innerHTML = `<span class="tag-live">LIVE</span> ${text}`;
+                return div;
+            },
+            separator: ' • ',
+            responsive: {
+                768: { speed: 60, gap: '3rem' } // Faster on Desktop
+            }
         });
-      });
+
+        // Demo 2: Song Player (Auto Reverse / Ping Pong)
+        const songMarquee = new UniversalMarquee('#marquee-song', {
+            autoReverse: true, // AKTIFKAN PING PONG
+            
+            items: ["Bohemian Rhapsody - Queen (2011 Remaster)"], // Teks panjang
+            
+            speed: 30, // Kecepatan gerak
+            delay: 1500, // Diam 1.5 detik di ujung sebelum balik arah
+            maskWidth: '20px',
+            
+            renderItem: (text) => {
+                return `<span class="song-icon">🎵</span><span class="song-item">${text}</span>`;
+            }
+        });
+
+        // Helper untuk Demo 2
+        function changeSong() {
+            const songs = [
+                "Hotel California - Eagles (Live at The Capital Centre)",
+                "Stairway to Heaven - Led Zeppelin (Remastered)",
+                "Sweet Child O' Mine - Guns N' Roses"
+            ];
+            // Pick random song
+            const randomSong = songs[Math.floor(Math.random() * songs.length)];
+            songMarquee.updateItems([randomSong]);
+        }
+
     </script>
-  </body>
+</body>
 </html>

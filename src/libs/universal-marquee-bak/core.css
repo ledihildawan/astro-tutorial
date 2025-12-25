@@ -1,0 +1,115 @@
+/**
+ * CORE STYLES
+ * File: core.css
+ * Deskripsi: Variabel global, token desain, dan animasi dasar.
+ */
+
+:root {
+  /* --- Typography --- */
+  --font-family-primary: 'Outfit', system-ui, sans-serif;
+  --font-family-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-family-fun: 'Luckiest Guy', sans-serif;
+  --font-family-mono: 'Space Mono', monospace;
+
+  /* --- Colors & Gradients --- */
+  --bg-dark: #030712;
+  --color-text-main: #e0f2fe;
+  --color-text-muted: #94a3b8;
+  --color-accent-primary: #22d3ee;
+  --gradient-accent-1: #6366f1;
+  --gradient-accent-2: #a855f7;
+  --gradient-rainbow: linear-gradient(90deg, var(--gradient-accent-1), #ec4899, #8b5cf6, #06b6d4, var(--gradient-accent-1));
+
+  /* --- Spacing System --- */
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2.5rem;
+  --spacing-xl: 4rem;
+  --section-spacing: 6rem;
+
+  /* --- Borders & Radii --- */
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
+  --radius-pill: 60px;
+
+  /* --- Animation Tokens --- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* --- Layout & Marquee Specifics --- */
+  --layout-max-width: 1200px;
+  --layout-gutter: var(--spacing-md);
+  --layout-vertical-spacing: 5rem;
+  --layout-guide-width: 1px;
+  --layout-guide-style: solid;
+  --um-overlay-width: 120px;
+  --um-gallery-item-width: 420px;
+  --um-gallery-item-height: 280px;
+  
+  /* --- UI Component Colors --- */
+  --code-bg: #1e1e1e;
+  --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Global Keyframe Animations --- */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rainbowShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+@keyframes titleEntry {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes floatBlob {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 50px) scale(1.1); }
+  100% { transform: translate(-20px, -30px) scale(0.95); }
+}
+
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(var(--features-rotate)) skewX(var(--features-skew)) scale(1);
+  }
+  25% {
+    transform: rotate(calc(var(--features-rotate) + 1.5deg)) skewX(calc(var(--features-skew) + 2deg)) scale(1.03);
+  }
+  75% {
+    transform: rotate(calc(var(--features-rotate) - 1.5deg)) skewX(calc(var(--features-skew) - 2deg)) scale(1.03);
+  }
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(100px); opacity: 0; }
+  20%, 80% { opacity: 0.6; }
+  100% { transform: translateY(-100px); opacity: 0; }
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 20px var(--ticker-accent-glow), 0 0 40px var(--ticker-accent-glow); }
+  100% { box-shadow: 0 0 30px var(--ticker-accent-glow), 0 0 60px var(--ticker-accent-glow); }
+}

@@ -1,80 +1,115 @@
 /**
- * UniversalMarquee Styles
- * Teknik: CSS Variable Driven Animation & Alpha Compositing.
+ * UniversalMarquee v3.0 Styles
+ * Features: GPU Acceleration, Drag/Swipe, Dynamic Masking, Callbacks
  */
 
-.um-container {
+.um-host {
   display: flex;
   width: 100%;
   overflow: hidden;
   position: relative;
-
-  /* Layout Isolation: Mencegah efek reflow marquee keluar ke elemen parent */
   contain: layout paint;
-  content-visibility: auto;
-
-  /* Masking: Menggunakan linear-gradient untuk transisi opacity pada edge */
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-
-  touch-action: pan-y;
+  
+  /* Defaults */
+  --um-mask-width: 5%;
+  --um-gap: 2rem;
+  --um-duration: 0s;
+  --um-play-state: running;
+  --um-direction: normal;
+  --um-delay: 0s;
+  
+  /* UX */
   user-select: none;
+  touch-action: pan-y; /* Allow vertical scroll, block horizontal for drag */
+  -webkit-user-drag: none;
+}
+
+.um-host.um-cursor-grab { cursor: grab; }
+.um-host.um-cursor-grabbing { cursor: grabbing; }
+
+/* --- Masking Logic --- */
+/* Mask: Both */
+.um-host[data-mask="both"] {
+  mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
+}
+/* Mask: Start Only */
+.um-host[data-mask="start"] {
+  mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black 100%);
+}
+/* Mask: End Only */
+.um-host[data-mask="end"] {
+  mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
+}
+/* No Mask */
+.um-host.um-no-mask, .um-host[data-mask="none"] {
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 .um-track {
   display: flex;
+  width: max-content;
   flex-shrink: 0;
-  width: max-content; /* Mendukung ekspansi dimensi konten secara dinamis */
-  gap: var(--um-gap, 2rem);
-  align-items: center;
-
-  /* Compositor Thread Optimization: Memicu Layer Promotion pada GPU */
+  gap: var(--um-gap);
+  
   will-change: transform;
-  animation: um-linear-translation var(--um-duration, 30s) linear infinite;
-  animation-play-state: var(--um-play-state, running);
-  animation-direction: var(--um-direction, normal);
-  transform: translateZ(0); /* Force 3D rendering context */
+  /* Transform dikontrol oleh Animation ATAU Dragging (JS) */
+  transform: translate3d(0, 0, 0); 
 }
 
-.um-content-wrapper {
-  display: flex;
-  align-items: center;
-  gap: var(--um-gap, 2rem);
-  flex-shrink: 0;
+/* Class ini aktif saat animasi berjalan otomatis */
+.um-animating .um-track {
+  animation-name: um-scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--um-duration);
+  animation-play-state: var(--um-play-state);
+  animation-direction: var(--um-direction);
+  animation-delay: var(--um-delay);
 }
 
-@keyframes um-linear-translation {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    /* Offset sebesar 50% (buffer pertama) untuk menciptakan efek infinite loop */
-    transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0);
-  }
+/* Saat dragging, matikan animasi CSS agar JS bisa mengontrol transform */
+.um-dragging .um-track {
+  animation: none !important;
 }
 
-/* User Interaction State */
-.um-container:hover .um-track {
+/* Hover Speed Factor: Slow Motion */
+/* Note: Mengubah duration mid-flight di CSS bisa menyebabkan jump. 
+   Kita gunakan scale pseudo-logic atau pause. Di sini kita support pause via class. */
+.um-host.um-paused .um-track {
   animation-play-state: paused;
 }
 
-/* UI Elements */
-.um-item-separator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+@keyframes um-scroll {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0); }
 }
 
-/* System-level Accessibility Compliance */
-@media (prefers-reduced-motion: reduce) {
-  .um-track {
-    animation: none !important;
-    overflow-x: auto;
-    transform: none !important;
-    will-change: auto;
-  }
-  .um-container {
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
+/* Reverse Mode Animation */
+@keyframes um-scroll-reverse {
+  0%   { transform: translate3d(calc(-50% - (var(--um-gap) / 2)), 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.um-host.um-mode-reverse .um-track {
+  /* Logic reverse ditangani via animation-direction atau keyframes berbeda */
+}
+
+.um-item {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  /* Prevent image dragging interfering with marquee dragging */
+  pointer-events: auto; 
+}
+.um-item img { pointer-events: none; }
+
+.um-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }

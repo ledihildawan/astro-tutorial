@@ -1,0 +1,178 @@
+/**
+ * DEMO TICKER STYLES
+ * File: demo-ticker.css
+ * Deskripsi: Marquee bergaya bursa saham (Stock Ticker) dengan efek tilt 3D dan neon.
+ */
+
+#demo-ticker {
+  /* --- Local Variables --- */
+  --neon-up: #00ffcc;
+  --neon-down: #ff2d55;
+  --card-w: 320px;
+  --card-h: 140px;
+
+  /* --- Layout & Perspective --- */
+  padding: var(--section-spacing) 0;
+  background: var(--bg-dark); /* Menggunakan variabel core */
+  perspective: 1200px; /* Memberikan kedalaman 3D */
+}
+
+/* --- God Tier Card Component --- */
+
+.god-tier-card {
+  position: relative;
+  width: var(--card-w);
+  height: var(--card-h);
+  transform-style: preserve-3d;
+  transition: var(--transition-slow); /* Menggunakan variabel core */
+}
+
+.card-main {
+  /* Layout */
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+
+  /* Visuals */
+  background: var(--bg-card); /* Menggunakan variabel core */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+/* 3D Edge Glow Effect */
+.card-edge {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: currentColor;
+  border-radius: var(--radius-lg);
+  transform: translateZ(-10px);
+  filter: blur(20px);
+  opacity: 0.15;
+  transition: opacity var(--transition-normal);
+}
+
+/* --- Card Header Section --- */
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+}
+
+.symbol-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-weight: 800;
+}
+
+.symbol-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.sym-text {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.full-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.status-pill {
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+/* --- Card Bottom Section --- */
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.current-price {
+  font-family: var(--font-family-mono); /* Menggunakan variabel core */
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text-main);
+}
+
+.price-diff {
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.visual-trend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.mini-chart {
+  width: 80px;
+  height: 35px;
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.percentage-label {
+  font-family: var(--font-family-mono);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* --- Dynamic States --- */
+
+.is-up { color: var(--neon-up); }
+.is-down { color: var(--neon-down); }
+
+/* --- Interactivity (Hover Magic) --- */
+
+.god-tier-card:hover {
+  z-index: 100;
+  /* Efek Tilt 3D Premium */
+  transform: translateZ(50px) rotateX(10deg) rotateY(-5deg);
+}
+
+.god-tier-card:hover .card-main {
+  background: rgba(13, 17, 23, 0.95);
+  border-color: currentColor;
+  box-shadow:
+    0 30px 60px -12px rgba(0, 0, 0, 0.8),
+    0 0 30px -5px currentColor;
+}
+
+.god-tier-card:hover .card-edge {
+  opacity: 0.6;
+}

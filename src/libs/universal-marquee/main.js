@@ -1,127 +1,318 @@
 /**
- * UniversalMarquee
- * Arsitektur: Stateless UI dengan Dynamic Velocity Calculation.
+ * UniversalMarquee v2.2
+ * Features: Mobile First Responsive, Hot-Swap, Auto-Reverse (PingPong)
  */
 export class UniversalMarquee {
+  static #DEFAULTS = {
+    // Physics & Timing
+    speed: 50, // px per second
+    gap: '2rem',
+    direction: 'normal', // 'normal' | 'reverse'
+    delay: 0, // ms
+    
+    // NEW FEATURE v2.2: Ping-Pong Mode
+    autoReverse: false, // true = bounce back and forth (good for long text)
+
+    // Interaction
+    pauseOnHover: true,
+    pauseOnClick: false,
+
+    // Visuals
+    mask: true,
+    maskWidth: '5%',
+
+    // Responsive (Mobile First / Min-Width)
+    responsive: {}, 
+
+    // Data
+    items: [],
+    separator: null,
+    renderItem: (item) => document.createTextNode(String(item)),
+  };
+
   constructor(selector, options = {}) {
-    this._node = document.querySelector(selector);
-    if (!this._node) return;
+    this.root = document.querySelector(selector);
+    if (!this.root) throw new Error(`UniversalMarquee: Node '${selector}' not found.`);
 
-    this._state = {
-      speed: options.speed || 50, // pixels per second
-      gap: options.gap || '2rem',
-      direction: options.direction || 'normal',
-      items: options.items || [],
-      separator: options.separator || '',
-      renderItem:
-        options.renderItem ||
-        ((item) => {
-          const el = document.createElement('span');
-          el.textContent = String(item);
-          return el;
-        }),
-    };
-
-    this._observers = new Set();
-    this.#setupComponent();
+    this.userOptions = options;
+    this.config = { ...UniversalMarquee.#DEFAULTS, ...options };
+    
+    this._observers = [];
+    this._resizeTimer = null;
+    this._isManualPaused = false;
+    
+    this.#init();
   }
 
-  /**
-   * Mengatur nilai kecepatan secara dinamis tanpa re-inisialisasi DOM.
-   * @param {number} value - Kecepatan dalam pixel per detik.
-   */
-  set speed(value) {
-    this._state.speed = value;
-    this.#computeAnimationMetrics();
+  // --- Public API ---
+
+  updateItems(newItems) {
+    this.config.items = newItems;
+    this.#buildDOM(); // Rebuild structure
+    this.#waitForAssets().then(() => this.#syncPhysics());
   }
 
-  #setupComponent() {
-    this._node.classList.add('um-container');
-
-    this._track = document.createElement('div');
-    this._track.className = 'um-track';
-
-    const gapValue = typeof this._state.gap === 'number' ? `${this._state.gap}px` : this._state.gap;
-    this._node.style.setProperty('--um-gap', gapValue);
-    this._node.style.setProperty('--um-direction', this._state.direction);
-
-    this.#commitContentUpdate();
-    this.#initializeObservers();
+  pause() {
+    this._isManualPaused = true;
+    this.root.style.setProperty('--um-play-state', 'paused');
   }
 
-  #commitContentUpdate() {
-    const fragment = document.createDocumentFragment();
-    const contentBuffer = document.createElement('div');
-    contentBuffer.className = 'um-content-wrapper';
+  play() {
+    this._isManualPaused = false;
+    this.root.style.setProperty('--um-play-state', 'running');
+  }
 
-    this._state.items.forEach((item, idx) => {
-      let itemNode = this._state.renderItem(item, idx);
+  set direction(val) {
+    this.config.direction = val;
+    this.root.style.setProperty('--um-direction', val);
+  }
 
-      if (!(itemNode instanceof Element)) {
-        const wrapper = document.createElement('span');
-        wrapper.appendChild(itemNode);
-        itemNode = wrapper;
-      }
+  set speed(pxPerSecond) {
+    this.config.speed = pxPerSecond;
+    this.#syncPhysics();
+  }
 
-      // DOM Sanitization: Mencegah collision pada accessibility tree
-      itemNode.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
-      if (itemNode.id) itemNode.removeAttribute('id');
+  destroy() {
+    this._observers.forEach(obs => obs.disconnect());
+    this.root.classList.remove('um-host', 'um-pause-hover', 'um-pause-click', 'um-no-mask', 'um-mode-reverse');
+    this.root.style = '';
+    this.root.innerHTML = '';
+  }
 
-      contentBuffer.appendChild(itemNode);
+  // --- Core Lifecycle ---
 
-      if (this._state.separator) {
-        const sepNode = document.createElement('span');
-        sepNode.className = 'um-item-separator';
-        sepNode.setAttribute('aria-hidden', 'true');
+  #init() {
+    this.root.classList.add('um-host');
+    this.#evaluateResponsive(); 
+    this.#buildDOM();
+    
+    this.#waitForAssets().then(() => {
+      this.#syncPhysics();
+      this.#attachObservers();
+    });
+  }
 
-        if (this._state.separator instanceof Node) {
-          sepNode.appendChild(this._state.separator.cloneNode(true));
-        } else {
-          sepNode.innerHTML = this._state.separator;
-        }
-        contentBuffer.appendChild(sepNode);
+  #buildDOM() {
+    // Stage 1: Create Item Fragment
+    const singleSet = document.createDocumentFragment();
+    this.config.items.forEach((item, index) => {
+      const node = this.#createItemNode(item, index);
+      singleSet.appendChild(node);
+      
+      if (this.config.separator) {
+        singleSet.appendChild(this.#createSeparatorNode());
       }
     });
 
-    // Mirroring content untuk seamless linear translation
-    this._track.innerHTML = '';
-    this._track.appendChild(contentBuffer);
-    this._track.appendChild(contentBuffer.cloneNode(true));
-    this._node.appendChild(this._track);
+    this.track = document.createElement('div');
+    this.track.className = 'um-track';
+
+    // --- LOGIC BRANCH: Auto Reverse vs Infinite Loop ---
+    if (this.config.autoReverse) {
+        // MODE A: Auto Reverse (Ping-Pong)
+        // Tidak perlu cloning ganda. Cukup render apa adanya.
+        this.root.classList.add('um-mode-reverse');
+        this.track.appendChild(singleSet.cloneNode(true));
+    } else {
+        // MODE B: Infinite Loop (Standard)
+        this.root.classList.remove('um-mode-reverse');
+
+        // Measure Context
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = 'position:absolute; visibility:hidden; width:max-content; display:flex; gap:var(--um-gap);';
+        tempContainer.appendChild(singleSet.cloneNode(true));
+        this.root.appendChild(tempContainer);
+        
+        const contentWidth = tempContainer.offsetWidth;
+        const viewportWidth = this.root.offsetWidth || window.innerWidth;
+        this.root.removeChild(tempContainer);
+
+        if (contentWidth > 0) {
+            // Fill Screen + Clone A & B
+            const coverageNeeded = Math.ceil(viewportWidth / contentWidth) + 1;
+            const filledContent = document.createDocumentFragment();
+            for (let i = 0; i < coverageNeeded; i++) filledContent.appendChild(singleSet.cloneNode(true));
+
+            const groupA = document.createElement('div');
+            groupA.style.display = 'flex';
+            groupA.style.gap = 'var(--um-gap)';
+            groupA.appendChild(filledContent.cloneNode(true));
+            
+            const groupB = groupA.cloneNode(true);
+            this.#sanitizeIds(groupB);
+
+            this.track.appendChild(groupA);
+            this.track.appendChild(groupB);
+        }
+    }
+    
+    this.root.innerHTML = '';
+    this.root.appendChild(this.track);
   }
 
-  #initializeObservers() {
-    // ResizeObserver: Menangani kalkulasi ulang durasi saat terjadi Layout Reflow
-    const ro = new ResizeObserver(() => this.#computeAnimationMetrics());
-    ro.observe(this._track);
+  #syncPhysics() {
+    if (!this.track) return;
 
-    // IntersectionObserver: Mengoptimalkan pemrosesan GPU berdasarkan visibilitas viewport
-    const io = new IntersectionObserver(
-      (entries) => {
-        const isVisible = entries[0].isIntersecting;
-        this._node.style.setProperty('--um-play-state', isVisible ? 'running' : 'paused');
-      },
-      { threshold: 0.01 }
-    );
-    io.observe(this._node);
+    let distanceToTravel = 0;
 
-    this._observers.add(ro).add(io);
+    if (this.config.autoReverse) {
+        // Physics: Bounce
+        // Hitung selisih antara konten penuh dan lebar container
+        const contentWidth = this.track.scrollWidth;
+        const containerWidth = this.root.offsetWidth;
+
+        if (contentWidth <= containerWidth) {
+            // Jika konten lebih kecil dari layar, tidak perlu gerak
+            distanceToTravel = 0;
+            this.root.style.setProperty('--um-bounce-dist', '0px');
+        } else {
+            distanceToTravel = contentWidth - containerWidth;
+            this.root.style.setProperty('--um-bounce-dist', `${distanceToTravel}px`);
+        }
+    } else {
+        // Physics: Infinite Loop
+        // Jarak tempuh adalah setengah dari total track (karena diduplikasi)
+        distanceToTravel = this.track.scrollWidth / 2;
+    }
+    
+    // Set Duration
+    if (distanceToTravel <= 0) {
+         this.root.style.setProperty('--um-duration', '0s');
+    } else {
+         const duration = distanceToTravel / this.config.speed;
+         this.root.style.setProperty('--um-duration', `${duration}s`);
+    }
   }
 
-  #computeAnimationMetrics() {
-    // Formula: T = d / v (Time = Distance / Velocity)
-    const halfWidth = this._track.scrollWidth / 2;
-    const duration = halfWidth / this._state.speed;
+  #evaluateResponsive() {
+    const width = window.innerWidth;
+    
+    // Mobile First Logic: Start with base, stack changes
+    let targetConfig = { ...UniversalMarquee.#DEFAULTS, ...this.userOptions };
 
-    this._node.style.setProperty('--um-duration', `${duration}s`);
+    if (this.userOptions.responsive) {
+        const breakpoints = Object.keys(this.userOptions.responsive)
+            .map(Number)
+            .sort((a, b) => a - b);
+
+        for (const bp of breakpoints) {
+            if (width >= bp) {
+                targetConfig = { ...targetConfig, ...this.userOptions.responsive[bp] };
+            }
+        }
+    }
+
+    // Jika mode berubah drastis (misal responsive menyalakan autoReverse),
+    // kita perlu rebuild DOM. Cek flag sebelum update.
+    const modeChanged = this.config.autoReverse !== targetConfig.autoReverse;
+    this.config = targetConfig;
+    
+    this.#applyConfigStyles();
+    
+    if (modeChanged) {
+        this.#buildDOM();
+    }
+    this.#syncPhysics();
   }
 
-  /**
-   * Membersihkan instance dan memutuskan koneksi observers.
-   */
-  destroy() {
-    this._observers.forEach((obs) => obs.disconnect());
-    this._observers.clear();
-    this._node.innerHTML = '';
+  #applyConfigStyles() {
+    this.root.style.setProperty('--um-delay', `${this.config.delay}ms`);
+    
+    if (this.config.mask) {
+      this.root.classList.remove('um-no-mask');
+      this.root.style.setProperty('--um-mask-width', this.config.maskWidth);
+    } else {
+      this.root.classList.add('um-no-mask');
+    }
+
+    this.root.classList.toggle('um-pause-hover', this.config.pauseOnHover);
+    this.root.classList.toggle('um-pause-click', this.config.pauseOnClick);
+
+    this.root.style.setProperty('--um-gap', this.#parseGap(this.config.gap));
+    this.root.style.setProperty('--um-direction', this.config.direction);
+  }
+
+  // --- Helpers ---
+
+  #createItemNode(item, index) {
+    // 1. Dapatkan hasil dari renderItem (bisa String atau Element)
+    let content = this.config.renderItem(item, index);
+    let node;
+
+    // 2. Cek tipe datanya
+    if (content instanceof Element) {
+      // Jika user me-return document.createElement(...)
+      node = content;
+    } else {
+      // Jika user me-return String HTML atau Teks biasa
+      // Kita bungkus dengan div (atau span) dan gunakan innerHTML
+      node = document.createElement('div');
+      node.innerHTML = String(content);
+      
+      // Opsional: Jika wrapper menghasilkan extra spacing, atur display
+      // node.style.display = 'contents'; // Hati-hati browser support
+    }
+
+    // 3. Tambahkan class wajib library
+    node.classList.add('um-item');
+    return node;
+  }
+
+  #createSeparatorNode() {
+    const sep = document.createElement('span');
+    sep.className = 'um-separator';
+    if (this.config.separator instanceof Node) {
+      sep.appendChild(this.config.separator.cloneNode(true));
+    } else {
+      sep.innerHTML = this.config.separator;
+    }
+    return sep;
+  }
+
+  #sanitizeIds(node) {
+    if (node.id) node.removeAttribute('id');
+    if (node.querySelectorAll) {
+      node.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    }
+  }
+
+  #parseGap(gap) {
+    return typeof gap === 'number' ? `${gap}px` : gap;
+  }
+
+  async #waitForAssets() {
+    const images = Array.from(this.root.querySelectorAll('img'));
+    if (images.length === 0) return;
+    const promises = images.map(img => {
+      if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      });
+    });
+    await Promise.all(promises);
+  }
+
+  #attachObservers() {
+    const io = new IntersectionObserver((entries) => {
+      if (this._isManualPaused) return;
+      const isVisible = entries[0].isIntersecting;
+      this.root.style.setProperty('--um-play-state', isVisible ? 'running' : 'paused');
+    }, { threshold: 0.01 });
+    io.observe(this.root);
+    this._observers.push(io);
+
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      const width = entry.contentRect.width;
+      if (width === 0) return;
+
+      clearTimeout(this._resizeTimer);
+      this._resizeTimer = setTimeout(() => {
+         this.#evaluateResponsive();
+      }, 150);
+    });
+    ro.observe(this.root);
+    this._observers.push(ro);
   }
 }
