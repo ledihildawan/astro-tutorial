@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complete Layout Showcase</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&family=Kalam:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Press+Start+2P&family=Space+Grotesk:wght@400;700&family=VT323&family=Pacifico&display=swap" rel="stylesheet">
+
+    <style>
+      /* =================================================================
+         1. BASE VARIABLES & THEME ENGINE
+         ================================================================= */
+      :root {
+        --max-width: 1200px;       
+        --gutter: 2rem;
+        --header-h: 5rem;
+        --footer-h: 5rem;
+        --body-bg: #f8fafc; --body-text: #334155; --surface-bg: #ffffff; --accent-color: #0f172a; --font-family: 'Inter', sans-serif;
+        --line-width: 1px; --line-opacity: 1; --line-color: #cbd5e1; --line-filter: none;
+        --line-bg-vert: var(--line-color); --line-bg-horz: var(--line-color);
+        --flip-top: 1; --flip-bottom: 1; --flip-left: 1; --flip-right: 1;
+      }
+      @media (max-width: 768px) { :root { --gutter: 1.25rem; } }
+
+      /* DIRECTION LOGIC */
+      [data-direction="flow"] { --flip-top: 1; --flip-bottom: 1; --flip-left: 1; --flip-right: 1; }
+      [data-direction="inward"] { --flip-top: 1; --flip-bottom: -1; --flip-left: 1; --flip-right: -1; }
+      [data-direction="outward"] { --flip-top: -1; --flip-bottom: 1; --flip-left: -1; --flip-right: 1; }
+
+      /* THEME DEFINITIONS (Simplified for brevity but fully working) */
+      [data-theme="neon"] { --body-bg:#09090b; --body-text:#e2e8f0; --surface-bg:#18181b; --accent-color:#22d3ee; --line-width:2px; --line-color:#06b6d4; --line-filter:drop-shadow(0 0 4px #06b6d4); }
+      [data-theme="blueprint"] { --body-bg:#1e3a8a; --body-text:#bfdbfe; --surface-bg:#172554; --font-family:'JetBrains Mono'; --line-width:1px; --line-opacity:0.6; --line-bg-vert:repeating-linear-gradient(to bottom, #fff 0, #fff 4px, transparent 4px, transparent 8px); --line-bg-horz:repeating-linear-gradient(to right, #fff 0, #fff 4px, transparent 4px, transparent 8px); }
+      [data-theme="brutalist"] { --body-bg:#fff; --body-text:#000; --surface-bg:#facc15; --font-family:'Space Grotesk'; --line-width:4px; --line-color:#000; }
+      [data-theme="luxury"] { --body-bg:#1c1917; --body-text:#e7e5e4; --surface-bg:#292524; --accent-color:#d4af37; --font-family:'Playfair Display'; --line-color:#d4af37; }
+      [data-theme="terminal"] { --body-bg:#000; --body-text:#4af626; --surface-bg:#111; --font-family:'VT323'; --line-bg-vert:repeating-linear-gradient(to bottom, #004400 0, #004400 2px, transparent 2px, transparent 4px); --line-bg-horz:repeating-linear-gradient(to right, #004400 0, #004400 2px, transparent 2px, transparent 4px); }
+      [data-theme="vaporwave"] { --body-bg:#2e003e; --body-text:#ff71ce; --surface-bg:#3b0764; --accent-color:#01cdfe; --line-width:2px; --line-bg-vert:linear-gradient(to bottom, #ff71ce, #01cdfe); --line-bg-horz:linear-gradient(to right, #ff71ce, #01cdfe); }
+      [data-theme="pixel"] { --body-bg:#e5e5e5; --body-text:#2d2d2d; --surface-bg:#fff; --accent-color:#ff0055; --font-family:'Press Start 2P'; --line-width:4px; --line-bg-vert:repeating-linear-gradient(to bottom, #2d2d2d 0, #2d2d2d 4px, transparent 4px, transparent 8px); --line-bg-horz:repeating-linear-gradient(to right, #2d2d2d 0, #2d2d2d 4px, transparent 4px, transparent 8px); }
+      [data-theme="corporate"] { --body-bg:#f0f4f8; --body-text:#334155; --surface-bg:#fff; --accent-color:#0c4a6e; --line-width:3px; --line-bg-vert:repeating-linear-gradient(to right, #0c4a6e 0, #0c4a6e 1px, transparent 1px, transparent 3px); --line-bg-horz:repeating-linear-gradient(to bottom, #0c4a6e 0, #0c4a6e 1px, transparent 1px, transparent 3px); }
+      
+      /* Abstract Themes */
+      [data-theme="sketch"] { --body-bg:#fffbeb; --body-text:#451a03; --surface-bg:#fff7ed; --font-family:'Kalam'; --line-width:6px; --line-opacity:0.8; --line-bg-vert: url('data:image/svg+xml;utf8,<svg width="6" height="20" viewBox="0 0 6 20" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 Q6 10 0 20" stroke="%2378350f" fill="none" stroke-width="1.5"/></svg>'); --line-bg-horz: url('data:image/svg+xml;utf8,<svg width="20" height="6" viewBox="0 0 20 6" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 Q10 6 20 0" stroke="%2378350f" fill="none" stroke-width="1.5"/></svg>'); }
+      [data-theme="airmail"] { --body-bg: #fff; --body-text: #1e293b; --surface-bg: #f1f5f9; --accent-color: #ef4444; --font-family: 'JetBrains Mono'; --line-width: 15px; --pattern: repeating-linear-gradient(45deg, #ef4444 0, #ef4444 10px, transparent 10px, transparent 20px, #3b82f6 20px, #3b82f6 30px, transparent 30px, transparent 40px); --line-bg-horz: var(--pattern); --line-bg-vert: var(--pattern); }
+      [data-theme="ruler"] { --body-bg: #fdf6e3; --body-text: #657b83; --surface-bg: #eee8d5; --accent-color: #b58900; --font-family: 'Inter'; --line-width: 15px; --line-bg-horz: url('data:image/svg+xml;utf8,<svg width="40" height="15" viewBox="0 0 40 15" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="40" y2="0" stroke="%23657b83" stroke-width="2"/><line x1="0" y1="0" x2="0" y2="15" stroke="%23657b83"/><line x1="10" y1="0" x2="10" y2="8" stroke="%23657b83"/><line x1="20" y1="0" x2="20" y2="12" stroke="%23657b83"/><line x1="30" y1="0" x2="30" y2="8" stroke="%23657b83"/></svg>'); --line-bg-vert: url('data:image/svg+xml;utf8,<svg width="15" height="40" viewBox="0 0 15 40" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="0" y2="40" stroke="%23657b83" stroke-width="2"/><line x1="0" y1="0" x2="15" y2="0" stroke="%23657b83"/><line x1="0" y1="10" x2="8" y2="10" stroke="%23657b83"/><line x1="0" y1="20" x2="12" y2="20" stroke="%23657b83"/><line x1="0" y1="30" x2="8" y2="30" stroke="%23657b83"/></svg>'); }
+      [data-theme="circuit"] { --body-bg: #111827; --body-text: #10b981; --surface-bg: #1f2937; --accent-color: #10b981; --font-family: 'Space Grotesk'; --line-width: 16px; --line-opacity: 0.6; --line-bg-vert: url('data:image/svg+xml;utf8,<svg width="16" height="40" viewBox="0 0 16 40" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="2" height="40" fill="%2310b981"/><path d="M2 10 L8 10 M2 30 L8 30" stroke="%2310b981"/><rect x="8" y="5" width="6" height="10" fill="%23065f46"/><rect x="8" y="25" width="6" height="10" fill="%23065f46"/></svg>'); --line-bg-horz: url('data:image/svg+xml;utf8,<svg width="40" height="16" viewBox="0 0 40 16" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="40" height="2" fill="%2310b981"/><path d="M10 2 L10 8 M30 2 L30 8" stroke="%2310b981"/><rect x="5" y="8" width="10" height="6" fill="%23065f46"/><rect x="25" y="8" width="10" height="6" fill="%23065f46"/></svg>'); }
+      [data-theme="topography"] { --body-bg: #44403c; --body-text: #d6d3d1; --surface-bg: #57534e; --accent-color: #a8a29e; --font-family: 'Inter'; --line-width: 8px; --line-opacity: 0.5; --line-bg-vert: url('data:image/svg+xml;utf8,<svg width="8" height="40" viewBox="0 0 8 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C 8 10 8 30 0 40" stroke="%23d6d3d1" fill="none"/></svg>'); --line-bg-horz: url('data:image/svg+xml;utf8,<svg width="40" height="8" viewBox="0 0 40 8" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 C 10 8 30 8 40 0" stroke="%23d6d3d1" fill="none"/></svg>'); }
+      [data-theme="memphis"] { --body-bg: #fff1f2; --body-text: #be123c; --surface-bg: #ffe4e6; --accent-color: #f43f5e; --font-family: 'Pacifico'; --line-width: 14px; --line-bg-vert: url('data:image/svg+xml;utf8,<svg width="14" height="20" viewBox="0 0 14 20" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 12,10 0,20" fill="%23f43f5e"/></svg>'); --line-bg-horz: url('data:image/svg+xml;utf8,<svg width="20" height="14" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg"><polygon points="0,0 10,12 20,0" fill="%23f43f5e"/></svg>'); }
+
+      /* =================================================================
+         2. CORE LAYOUT
+         ================================================================= */
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: var(--body-bg); color: var(--body-text); font-family: var(--font-family); transition: all 0.4s ease; overflow-x: hidden; line-height: 1.6; }
+      img { display: block; max-width: 100%; }
+      .layout-shell { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+      .layout-container { width: 100%; max-width: var(--max-width); margin-inline: auto; padding-inline: var(--gutter); position: relative; display: flex; flex-direction: column; flex: 1; }
+
+      /* DECORATIVE LINES */
+      .layout-shell::before, .layout-shell::after, .layout-container::before, .layout-container::after {
+        content: ''; position: absolute; pointer-events: none; filter: var(--line-filter); opacity: var(--line-opacity); transition: all 0.4s ease;
+      }
+      .layout-shell::before { left: 0; right: 0; height: var(--line-width); z-index: 10; background: var(--line-bg-horz); top: var(--header-h); transform: scaleY(var(--flip-top)); }
+      .layout-shell::after { left: 0; right: 0; height: var(--line-width); z-index: 10; background: var(--line-bg-horz); bottom: var(--footer-h); transform: scaleY(var(--flip-bottom)); }
+      @media (min-width: 768px) {
+        .layout-container::before { top: 0; bottom: 0; width: var(--line-width); z-index: 0; background: var(--line-bg-vert); left: 0; transform: scaleX(var(--flip-left)); }
+        .layout-container::after { top: 0; bottom: 0; width: var(--line-width); z-index: 0; background: var(--line-bg-vert); right: 0; transform: scaleX(var(--flip-right)); }
+      }
+
+      /* =================================================================
+         3. SECTION VARIANTS (LENGKAP)
+         ================================================================= */
+      
+      /* A. Standard */
+      .section-std { padding-block: 4rem; position: relative; z-index: 1; }
+
+      /* B. Inner Full (Touching Borders) */
+      .section-inner {
+        margin-inline: calc(var(--gutter) * -1); 
+        padding-inline: var(--gutter); 
+        padding-block: 5rem; 
+        position: relative; z-index: 1;
+      }
+
+      /* C. Full Bleed (Breakout) */
+      .section-bleed { 
+        width: 100vw; margin-left: -50vw; left: 50%; 
+        padding-block: 6rem; position: relative; z-index: 2; 
+      }
+      .bleed-wrapper { width: 100%; max-width: var(--max-width); margin: 0 auto; padding-inline: var(--gutter); }
+
+      /* D. Flush (Full Width inside Grid) */
+      .section-flush { 
+        margin-inline: calc(var(--gutter) * -1); 
+        width: calc(100% + (var(--gutter) * 2)); 
+        position: relative; z-index: 1; margin-block: 2rem; 
+      }
+
+      /* E. Boxed (Safe Container) */
+      .section-boxed {
+        background-color: var(--surface-bg);
+        border: 1px solid var(--line-color, rgba(0,0,0,0.1));
+        padding: 3rem; margin-block: 4rem; position: relative; z-index: 1;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px;
+        transition: all 0.4s ease;
+      }
+      /* Theme overrides for Boxed */
+      [data-theme="airmail"] .section-boxed { border: 2px solid #ef4444; border-radius: 0; box-shadow: 8px 8px 0 rgba(59, 130, 246, 0.2); }
+      [data-theme="memphis"] .section-boxed { border: 2px solid #000; border-radius: 20px; box-shadow: 5px 5px 0 #000; }
+      [data-theme="circuit"] .section-boxed { border: 1px solid #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.1); }
+
+      /* F. Split Grid (Flush Right) */
+      .split-grid-flush {
+        display: grid; grid-template-columns: 1fr 1fr;
+        margin-inline: calc(var(--gutter) * -1);
+        width: calc(100% + (var(--gutter) * 2));
+        border-top: 1px solid var(--line-color);
+        border-bottom: 1px solid var(--line-color);
+      }
+      @media(max-width: 768px) { .split-grid-flush { grid-template-columns: 1fr; } }
+
+
+      /* =================================================================
+         4. UI & COMPONENTS
+         ================================================================= */
+      .theme-toggle-btn {
+        position: fixed; bottom: 2rem; right: 2rem; z-index: 10000;
+        width: 3.5rem; height: 3.5rem; border-radius: 50%;
+        background: var(--accent-color); color: var(--body-bg); border: none; cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; transition: transform 0.2s;
+      }
+      .theme-toggle-btn:hover { transform: scale(1.1); }
+      
+      .theme-panel {
+        position: fixed; bottom: 6.5rem; right: 2rem; z-index: 9999;
+        background: var(--surface-bg); color: var(--body-text);
+        border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2); padding: 1.5rem; width: 340px;
+        opacity: 0; visibility: hidden; transform: translateY(20px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 80vh; overflow-y: auto;
+      }
+      .theme-panel.is-open { opacity: 1; visibility: visible; transform: translateY(0); }
+      .panel-section { margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; }
+      .panel-title { font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.8rem; opacity: 0.6; letter-spacing: 1px; font-weight: 700; }
+      
+      .dir-controls { display: flex; gap: 0.5rem; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 8px; }
+      .dir-btn { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--body-text); }
+      .dir-btn.active { background: var(--surface-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--accent-color); }
+      
+      .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .theme-swatch { background: transparent; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 0.5rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+      .theme-swatch.active { border-color: var(--accent-color); background: rgba(0,0,0,0.05); font-weight: bold; }
+      .color-preview { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+      .theme-name { font-size: 0.7rem; text-align: center; }
+
+      .site-header { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; }
+      .site-footer { height: var(--footer-h); display: flex; justify-content: center; align-items: center; font-size: 0.8rem; opacity: 0.7; }
+      .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border: 1px solid currentColor; margin-bottom: 1rem; }
+      h1 { font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 0.5rem; color: var(--accent-color); }
+      h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; }
+      h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
+      p { margin-bottom: 1.5rem; opacity: 0.9; max-width: 60ch; }
+    </style>
+  </head>
+  <body data-direction="flow">
+
+    <button class="theme-toggle-btn" onclick="togglePanel()">🎨</button>
+    <div class="theme-panel" id="themePanel">
+      <div class="panel-section">
+        <div class="panel-title">Pattern Direction</div>
+        <div class="dir-controls">
+          <button class="dir-btn active" onclick="setDirection('flow', this)">Flow >></button>
+          <button class="dir-btn" onclick="setDirection('inward', this)">Inward >&lt;</button>
+          <button class="dir-btn" onclick="setDirection('outward', this)">Out &lt;></button>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-title">Themes</div>
+        <div class="theme-grid">
+           <button class="theme-swatch active" onclick="setTheme('')"><div class="color-preview" style="background: #cbd5e1;"></div><span class="theme-name">Clean</span></button>
+           <button class="theme-swatch" onclick="setTheme('ruler')"><div class="color-preview" style="background: #fdf6e3; border: 1px dashed #b58900;"></div><span class="theme-name">Ruler</span></button>
+           <button class="theme-swatch" onclick="setTheme('airmail')"><div class="color-preview" style="background: repeating-linear-gradient(45deg, red, blue);"></div><span class="theme-name">Mail</span></button>
+           <button class="theme-swatch" onclick="setTheme('memphis')"><div class="color-preview" style="background: #ffe4e6;"></div><span class="theme-name">Memphis</span></button>
+           <button class="theme-swatch" onclick="setTheme('circuit')"><div class="color-preview" style="background: #111827; border: 1px solid #10b981;"></div><span class="theme-name">Circuit</span></button>
+           <button class="theme-swatch" onclick="setTheme('neon')"><div class="color-preview" style="background: #06b6d4;"></div><span class="theme-name">Neon</span></button>
+           <button class="theme-swatch" onclick="setTheme('blueprint')"><div class="color-preview" style="background: #1e3a8a;"></div><span class="theme-name">Print</span></button>
+           <button class="theme-swatch" onclick="setTheme('sketch')"><div class="color-preview" style="background: #fffbeb;"></div><span class="theme-name">Sketch</span></button>
+           <button class="theme-swatch" onclick="setTheme('brutalist')"><div class="color-preview" style="background: #facc15;"></div><span class="theme-name">Brutal</span></button>
+           <button class="theme-swatch" onclick="setTheme('luxury')"><div class="color-preview" style="background: #1c1917; border: 1px solid #d4af37;"></div><span class="theme-name">Luxury</span></button>
+           <button class="theme-swatch" onclick="setTheme('terminal')"><div class="color-preview" style="background: #000;"></div><span class="theme-name">Hacker</span></button>
+           <button class="theme-swatch" onclick="setTheme('vaporwave')"><div class="color-preview" style="background: linear-gradient(to br, #ff71ce, #01cdfe);"></div><span class="theme-name">Vapor</span></button>
+           <button class="theme-swatch" onclick="setTheme('pixel')"><div class="color-preview" style="background: #ff0055;"></div><span class="theme-name">Pixel</span></button>
+           <button class="theme-swatch" onclick="setTheme('corporate')"><div class="color-preview" style="background: #0c4a6e;"></div><span class="theme-name">Corp</span></button>
+           <button class="theme-swatch" onclick="setTheme('topography')"><div class="color-preview" style="background: #57534e;"></div><span class="theme-name">Topo</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout-shell">
+      <div class="layout-container">
+        
+        <header class="site-header">
+          <div style="font-size: 1.5rem; font-weight: 800;">MASTER.SYS</div>
+          <nav>Layouts</nav>
+        </header>
+
+        <main>
+          
+          <section class="section-std">
+            <span class="badge">01. Standard Flow</span>
+            <h1>Comprehensive Layouts</h1>
+            <p>
+              Selamat datang di sistem layout terlengkap. Ini adalah mode <strong>Standard</strong>, 
+              di mana teks patuh pada margin dan padding container. Gunakan panel di kanan bawah untuk mengganti Tema dan Arah Pattern.
+            </p>
+          </section>
+
+          <section class="section-boxed">
+            <span class="badge">02. Boxed Layout</span>
+            <h2>The Safe Container</h2>
+            <p>
+              Konten di sini berada di dalam "kotak" yang terpisah dari background utama, namun tidak menimpa garis grid.
+              Ini menciptakan hierarki visual yang kuat untuk konten yang harus dipisahkan.
+            </p>
+            <button style="padding: 10px 20px; background: var(--accent-color); color: var(--body-bg); border: none; cursor: pointer; border-radius: 4px;">Interact</button>
+          </section>
+
+          <section class="section-inner" style="background-color: rgba(125,125,125,0.08);">
+            <div style="text-align: center;">
+              <span class="badge">03. Inner Full</span>
+              <h2>Touching the Borders</h2>
+              <p style="margin: 0 auto;">
+                Section ini menggunakan <code>negative-margin</code> untuk melebar hingga menyentuh garis vertikal kiri dan kanan.
+                Sangat cocok untuk highlight area yang tetap ingin terlihat rapi di dalam struktur grid.
+              </p>
+            </div>
+          </section>
+
+          <section class="section-bleed" style="background: var(--accent-color); color: var(--body-bg);">
+            <div class="bleed-wrapper">
+              <span class="badge" style="border-color: currentColor;">04. Breakout</span>
+              <h2 style="color: inherit;">Full Bleed Area</h2>
+              <p style="opacity: 0.9;">
+                Area ini "mendobrak" (breakout) dari grid layout. Lebarnya selebar layar browser (100vw).
+                Elemen ini menutupi garis pattern di belakangnya, menciptakan efek layer yang dalam.
+              </p>
+            </div>
+          </section>
+
+          <section class="section-std">
+            <span class="badge">05. Flush Media</span>
+            <h3>Image Attachment</h3>
+            <p>Gambar di bawah ini menempel pas (flush) ke garis grid kiri dan kanan (Single Image).</p>
+            
+            <div class="section-flush" style="margin-top: 2rem;">
+              <img 
+                src="https://images.unsplash.com/photo-1614850523060-8da1d56ae167?auto=format&fit=crop&w=1200&q=80" 
+                alt="Abstract Pattern" 
+                style="height: 400px; object-fit: cover; width: 100%; filter: grayscale(30%);"
+              >
+            </div>
+          </section>
+
+          <section class="split-grid-flush">
+             <div style="padding: 4rem 3rem; display: flex; flex-direction: column; justify-content: center;">
+               <span class="badge" style="width: fit-content;">Split Grid</span>
+               <h3>Side-by-Side</h3>
+               <p>Gambar di sebelah kanan menempel total ke garis grid.</p>
+               <a href="#" style="color: var(--accent-color); font-weight: bold; margin-top: 1rem;">Read More &rarr;</a>
+             </div>
+             <div style="position: relative; min-height: 400px;">
+               <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80" style="position: absolute; width: 100%; height: 100%; object-fit: cover;">
+             </div>
+          </section>
+
+        </main>
+        
+        <footer class="site-footer">
+          © 2025 Final Layout System
+        </footer>
+
+      </div>
+    </div>
+
+    <script>
+      function togglePanel() { document.getElementById('themePanel').classList.toggle('is-open'); }
+      function setTheme(themeName) {
+        if(themeName) document.documentElement.setAttribute('data-theme', themeName);
+        else document.documentElement.removeAttribute('data-theme');
+        document.querySelectorAll('.theme-swatch').forEach(btn => {
+          btn.classList.remove('active');
+          const nameSpan = btn.querySelector('.theme-name').innerText.toLowerCase();
+          if(themeName === '' && nameSpan === 'clean') btn.classList.add('active');
+          if(themeName && nameSpan.includes(themeName)) btn.classList.add('active');
+        });
+      }
+      function setDirection(dir, btnElement) {
+        document.body.setAttribute('data-direction', dir);
+        document.querySelectorAll('.dir-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+    </script>
+  </body>
+</html>

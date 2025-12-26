@@ -122,14 +122,7 @@ body::-webkit-scrollbar-thumb:hover {
 @media (min-width: 64rem) {
   .root-layout-container {
     border-left: var(--layout-guide-width) var(--layout-guide-style) rgba(45, 212, 191, 0.15);
- 
-
-@media (max-width: 48rem) {
-  main {
-    gap: 3rem;
-    margin-block: var(--spacing-lg, 2.5rem);
-  }
-}   border-right: var(--layout-guide-width) var(--layout-guide-style) rgba(45, 212, 191, 0.15);
+    border-right: var(--layout-guide-width) var(--layout-guide-style) rgba(45, 212, 191, 0.15);
   }
 }
 main {
@@ -138,21 +131,18 @@ main {
   gap: 6rem;
   margin-block: var(--spacing-xl);
 }
+@media (max-width: 48rem) {
+  main {
+    gap: 3rem;
+    margin-block: var(--spacing-lg, 2.5rem);
+  }
+}
 h1,
 h2,
 h3 {
   color: #e0f2fe;
 }
-.
-
-@media (max-width: 48rem) {
-  .intro {
-    font-size: 1rem;
-    line-height: 1.6;
-    max-width: 100%;
-    padding: 0 var(--spacing-sm, 1rem);
-  }
-}intro {
+.intro {
   font-size: 1.25rem;
   line-height: 1.7;
   max-width: 760px;
@@ -160,22 +150,31 @@ h3 {
   text-align: center;
   color: #94a3b8;
 }
-.
-
 @media (max-width: 48rem) {
-  .section > h2 {
-    font-size: 1.65rem;
-    margin-bottom: var(--spacing-md, 1.5rem);
+  .intro {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 100%;
+    padding: 0 var(--spacing-sm, 1rem);
   }
-}section {
+}
+.section {
   scroll-margin-top: var(--section-spacing);
 }
+
 .section > h2 {
   font-size: 2.25rem;
   font-weight: 800;
   text-align: center;
   margin-bottom: var(--spacing-lg);
   letter-spacing: -0.03em;
+}
+
+@media (max-width: 48rem) {
+  .section > h2 {
+    font-size: 1.65rem;
+    margin-bottom: var(--spacing-md, 1.5rem);
+  }
 }
 .how-to-use > p {
   text-align: center;
@@ -223,7 +222,14 @@ h3 {
 .usage-example {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(34, 211, 238, 0.2);
- 
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  position: relative;
+  transition: all var(--transition-slow);
+  backdrop-filter: blur(12px);
+}
 
 @media (max-width: 48rem) {
   .usage-example {
@@ -231,13 +237,6 @@ h3 {
     border-radius: var(--radius-lg, 24px);
     margin: 0 var(--spacing-sm, 1rem);
   }
-} border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-  position: relative;
-  transition: all var(--transition-slow);
-  backdrop-filter: blur(12px);
 }
 .usage-example::before {
   content: '';
