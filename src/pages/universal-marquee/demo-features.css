@@ -1,15 +1,15 @@
 #features {
-  --features-padding-v: var(--spacing-lg);
+  --features-padding-v: var(--spacing-lg, 2.5rem);
   --features-rotate: -3deg;
   --features-skew: -5deg;
   --features-font-size: clamp(2rem, 5vw, 3.5rem);
   --features-separator-size: 4.5rem;
-  --features-separator-margin: 0 var(--spacing-md);
+  --features-separator-margin: 0 var(--spacing-md, 1.5rem);
   --features-rainbow-duration: 15s;
   --features-wiggle-duration: 0.8s;
   --features-spin-normal: 8s;
   --features-spin-fast: 1s;
-  background: linear-gradient(90deg, var(--gradient-accent-1), #ec4899, #8b5cf6, #06b6d4, var(--gradient-accent-1));
+  background: linear-gradient(90deg, var(--gradient-accent-1, #6366f1), #ec4899, #8b5cf6, #06b6d4, var(--gradient-accent-1, #6366f1));
   background-size: 300% 100%;
   animation:
     rainbowShift var(--features-rainbow-duration) linear infinite,
@@ -17,7 +17,7 @@
   opacity: 0;
   padding: var(--features-padding-v) 0;
   transform: rotate(var(--features-rotate)) skewX(var(--features-skew));
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-xl, 30px);
   box-shadow:
     0 20px 50px -10px rgba(139, 92, 246, 0.4),
     inset 0 0 0 1px rgba(255, 255, 255, 0.15);
@@ -40,14 +40,14 @@
     wiggle var(--features-wiggle-duration) ease-in-out infinite;
 }
 #features .um-item {
-  font-family: var(--font-family-fun);
+  font-family: var(--font-family-fun, 'Luckiest Guy', sans-serif);
   font-weight: 700;
   font-size: var(--features-font-size);
   letter-spacing: 2px;
   text-shadow:
     0 0 8px rgba(255, 255, 255, 0.6),
     3px 3px 0 #000;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-pill, 60px);
   background: rgba(15, 15, 35, 0.9);
   box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.3),
@@ -58,7 +58,7 @@
   will-change: transform;
 }
 #features .um-item > span {
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-sm, 1rem) var(--spacing-lg, 2.5rem);
   display: block;
 }
 #features:hover .um-item {

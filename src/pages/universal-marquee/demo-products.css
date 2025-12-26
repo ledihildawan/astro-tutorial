@@ -28,12 +28,12 @@
 }
 
 #demo-products .product-view-card {
-  width: var(--products-card-width);
-  height: var(--products-card-height);
-  border-radius: var(--products-card-radius);
+  width: var(--products-card-width, 440px);
+  height: var(--products-card-height, 340px);
+  border-radius: var(--products-card-radius, var(--radius-lg, 24px));
   overflow: hidden;
   position: relative;
-  background: var(--products-card-bg);
+  background: var(--products-card-bg, rgba(15, 23, 42, 0.3));
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
@@ -88,7 +88,7 @@
   padding: 8px 16px;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
   font-size: 0.7rem;
@@ -96,7 +96,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   z-index: 2;
-  transition: all 0.4s;
+  transition: all var(--transition-normal, 0.4s cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 /* New Info Overlay (Slide up from bottom) */

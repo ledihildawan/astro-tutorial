@@ -1,20 +1,20 @@
 #demo-testimonials {
-  --testimonials-gap: 3rem;
-  --testimonials-padding-v: calc(var(--spacing-xl) + 1rem);
+  --testimonials-gap: var(--spacing-lg, 3rem);
+  --testimonials-padding-v: calc(var(--spacing-xl, 4rem) + 1rem);
   --testimonials-bg: rgba(15, 23, 42, 0.95);
   --testimonials-card-bg: rgba(30, 41, 59, 0.7);
   --testimonials-card-border: rgba(34, 211, 238, 0.15);
-  --testimonials-card-radius: 28px;
+  --testimonials-card-radius: var(--radius-lg, 28px);
   --testimonials-card-width: 400px;
   --testimonials-text-primary: #e0f2fe;
   --testimonials-text-secondary: #94a3b8;
   --testimonials-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-  --um-gap: var(--testimonials-gap);
+  --um-gap: var(--testimonials-gap, 3rem);
   padding: var(--testimonials-padding-v) 0;
   background: var(--testimonials-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-xl, 30px);
   border: 1px solid var(--testimonials-card-border);
   position: relative;
   overflow: hidden;
@@ -32,13 +32,13 @@
 #demo-testimonials .testimonial-card {
   background: var(--testimonials-card-bg);
   border: 1px solid var(--testimonials-card-border);
-  border-radius: var(--testimonials-card-radius);
-  padding: calc(var(--spacing-lg) + 0.5rem);
-  width: var(--testimonials-card-width);
+  border-radius: var(--testimonials-card-radius, 28px);
+  padding: calc(var(--spacing-lg, 2.5rem) + 0.5rem);
+  width: var(--testimonials-card-width, 400px);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  box-shadow: var(--testimonials-shadow);
+  gap: var(--spacing-md, 1.5rem);
+  box-shadow: var(--testimonials-shadow, 0 15px 40px rgba(0, 0, 0, 0.4));
   position: relative;
   overflow: hidden;
 }
@@ -69,7 +69,7 @@
 #demo-testimonials .t-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-md, 1.5rem);
   position: relative;
   z-index: 1;
 }
@@ -139,9 +139,9 @@
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm, 1rem);
   border-top: 1px solid var(--testimonials-card-border);
-  gap: var(--spacing-sm);
+  gap: var(--spacing-sm, 1rem);
   position: relative;
   z-index: 1;
 }
