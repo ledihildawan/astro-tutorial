@@ -1,14 +1,13 @@
 /**
- * UniversalMarquee v8.4 (Refactored Edition)
- * Fixed: Loop math, Deep merge safety, Drag momentum sync, Memory leaks.
+ * UniversalMarquee v8.5 (Final Refactored Edition)
+ * Fixed: Loop Glitch, Measurement Race Condition, Momentum Sync, & Memory Leaks.
  */
 
-// Helper: Deep Merge (Safer Version)
+// Helper: Deep Merge (Safer for Dates, RegExps, and DOM Nodes)
 function deepMerge(target, source) {
   if (typeof source !== 'object' || source === null) return source;
   if (Array.isArray(source)) return [...source];
   if (source.nodeType) return source;
-  // Protect complex built-ins
   if (source instanceof Date) return new Date(source);
   if (source instanceof RegExp) return new RegExp(source);
 
@@ -39,7 +38,7 @@ export class UniversalMarquee {
       wrapperClass: '',
     },
     style: {
-      speed: 50, // px per second
+      speed: 50,
       gap: '2rem',
       direction: 'normal',
       align: 'center',
@@ -95,7 +94,6 @@ export class UniversalMarquee {
     this._baseConfig = deepMerge(this._baseConfig, options);
     this.config = deepMerge({}, this._baseConfig);
 
-    // State
     this._observers = [];
     this._rafId = null;
     this._resizeTimer = null;
@@ -104,9 +102,8 @@ export class UniversalMarquee {
     this._isCentered = false;
     this._isManuallyPaused = false;
     this._hasStarted = false;
-    this._singleLoopWidth = 0; // Kritis untuk animasi mulus
+    this._singleLoopWidth = 0;
 
-    // Physics
     this._drag = {
       active: false,
       startX: 0,
@@ -120,9 +117,7 @@ export class UniversalMarquee {
       snapTarget: null,
     };
     
-    // Binding agar bisa removeEventListener dengan benar
     this._boundOnScroll = this.#onScroll.bind(this);
-    
     this._scroll = { currentOffset: 0, targetOffset: 0, lastY: window.scrollY, rafId: null };
     this._dragListeners = null;
 
@@ -133,8 +128,6 @@ export class UniversalMarquee {
     if (this.config.debug) console.log(`[UniversalMarquee]`, ...args);
   }
 
-  // --- PUBLIC API ---
-
   updateItems(newItems) {
     this.#log('Updating items:', newItems.length);
     this._baseConfig.content.items = newItems;
@@ -142,22 +135,15 @@ export class UniversalMarquee {
     if (this.config.behavior.randomize) this.#shuffleItems();
     this.#buildDOM();
     this.#waitForAssets().then(() => {
-      this.#syncCSS();
-      // Restart animation clean
+      this.#measureAndSync();
       this.root.classList.remove('um-animating');
-      void this.root.offsetWidth; // Trigger reflow
+      void this.root.offsetWidth;
       this.root.classList.add('um-animating');
     });
   }
 
   setSpeed(speed) {
     this.config.style.speed = speed;
-    this.#syncCSS();
-  }
-
-  reverse() {
-    const current = this.config.style.direction;
-    this.config.style.direction = current === 'normal' ? 'reverse' : 'normal';
     this.#syncCSS();
   }
 
@@ -176,57 +162,40 @@ export class UniversalMarquee {
   }
 
   destroy() {
-    this.#log('Destroying instance');
     this._isDestroyed = true;
     this._observers.forEach((o) => o.disconnect());
     this.#toggleListeners(false);
-
     if (this._rafId) cancelAnimationFrame(this._rafId);
     if (this._scroll.rafId) cancelAnimationFrame(this._scroll.rafId);
     clearTimeout(this._resizeTimer);
-
-    if (this.track) {
-      while (this.track.firstChild) this.track.removeChild(this.track.firstChild);
-    }
-
     this.root.innerHTML = '';
     this.root.className = '';
     this.root.removeAttribute('style');
-    this.root.removeAttribute('role');
-    this.root.removeAttribute('aria-label');
   }
 
-  // --- CORE ---
-
   #init() {
-    this.#log('Initializing v8.4...');
     this.root.classList.add('um-host');
     this.root.setAttribute('role', 'marquee');
-    if (this.config.a11y.ariaLabel) {
-      this.root.setAttribute('aria-label', this.config.a11y.ariaLabel);
-    }
+    if (this.config.a11y.ariaLabel) this.root.setAttribute('aria-label', this.config.a11y.ariaLabel);
 
     this.#checkBreakpoints();
     if (this.config.behavior.randomize) this.#shuffleItems();
-
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      if (this.config.animation.reducedMotion === 'stop') this.config.style.speed = 0;
-      else this.config.style.speed *= 0.15;
+      this.config.style.speed = this.config.animation.reducedMotion === 'stop' ? 0 : this.config.style.speed * 0.15;
     }
 
     this.#buildDOM();
 
     this.#waitForAssets().then(() => {
-      this.#syncCSS();
+      this.#measureAndSync();
       this.#initObservers();
       this.#toggleListeners(true);
 
-      const shouldWait = this.config.behavior.startWhenVisible;
-      if (this.config.behavior.autoStart && !this._isCentered && !shouldWait) {
+      if (this.config.behavior.autoStart && !this._isCentered && !this.config.behavior.startWhenVisible) {
         this.play();
       } else {
-        this.root.classList.add('um-paused');
-        this.root.style.setProperty('--um-play-state', 'paused');
+        this.pause();
+        this._isManuallyPaused = false; // Reset agar startWhenVisible bisa memicu play
       }
 
       if (this.config.callbacks.onInit) this.config.callbacks.onInit(this);
@@ -236,21 +205,21 @@ export class UniversalMarquee {
   #checkBreakpoints() {
     const width = window.innerWidth;
     const breakpoints = Object.keys(this._baseConfig.breakpoints).map(Number).sort((a, b) => a - b);
-    let activeBp = null;
     let targetConfig = deepMerge({}, this._baseConfig);
+    let activeBp = null;
 
-    const activePoints = breakpoints.filter((bp) => width >= bp);
-    activePoints.forEach((bp) => {
+    breakpoints.filter(bp => width >= bp).forEach(bp => {
       targetConfig = deepMerge(targetConfig, this._baseConfig.breakpoints[bp]);
       activeBp = bp;
     });
 
     if (this._currentBreakpoint !== activeBp) {
-      this.#log(`Breakpoint changed: ${activeBp || 'default'}`);
       this.config = targetConfig;
       this._currentBreakpoint = activeBp;
-      this.#syncCSS();
-      if (this.track) this.#buildDOM();
+      if (this.track) {
+        this.#buildDOM();
+        this.#measureAndSync();
+      }
       if (this.config.callbacks.onBreakpointChange) this.config.callbacks.onBreakpointChange(activeBp);
     }
   }
@@ -264,71 +233,40 @@ export class UniversalMarquee {
       if (separator) frag.appendChild(this.#createSeparator(separator));
     });
 
-    // --- MEASUREMENT PHASE ---
-    // Kita harus mengukur lebar konten asli (1 set) secara akurat termasuk gap
-    const tempMeasure = document.createElement('div');
-    const gapValue = this.#parseGap(this.config.style.gap);
-    
-    tempMeasure.style.cssText = `position:absolute; visibility:hidden; width:max-content; display:flex; gap:${gapValue}px; padding:0; margin:0;`;
-    tempMeasure.appendChild(frag.cloneNode(true));
-    this.root.appendChild(tempMeasure);
-    
-    const contentWidth = tempMeasure.offsetWidth;
-    // Lebar 1 siklus loop = lebar konten + 1 gap (karena gap ada di antara tiap set)
-    this._singleLoopWidth = contentWidth + gapValue;
-    
-    this.root.removeChild(tempMeasure);
-    // -------------------------
-
     this.track = document.createElement('div');
     this.track.className = 'um-track';
-    
-    // Event listener untuk loop events
     this.track.addEventListener('animationiteration', () => {
       if (this.config.callbacks.onCycleComplete) this.config.callbacks.onCycleComplete();
     });
 
-    const viewW = this.root.offsetWidth || window.innerWidth;
+    // Temporary measure to detect centering
+    const temp = document.createElement('div');
+    temp.style.cssText = 'position:absolute;visibility:hidden;width:max-content;display:flex;';
+    temp.appendChild(frag.cloneNode(true));
+    this.root.appendChild(temp);
+    const contentWidth = temp.offsetWidth;
+    this.root.removeChild(temp);
 
-    // Center Logic
+    const viewW = this.root.offsetWidth || window.innerWidth;
     if (this.config.behavior.centerIfShort && contentWidth < viewW) {
-      this.#log('Content shorter than viewport. Centering.');
       this._isCentered = true;
       this.root.classList.add('um-centered');
       this.track.appendChild(frag.cloneNode(true));
-      this.root.innerHTML = '';
-      this.root.appendChild(this.track);
-      return;
     } else {
       this._isCentered = false;
       this.root.classList.remove('um-centered');
-    }
+      
+      const neededSets = Math.ceil(viewW / contentWidth) + 1;
+      const clones = Math.max(1, this.config.behavior.cloneStrategy === 'exact' ? this.config.behavior.cloneCount : neededSets);
 
-    // Cloning Strategy
-    // Kita butuh cukup clone untuk mengisi viewport + buffer untuk scroll
-    // Minimal harus ada 2 set (asli + 1 clone) untuk animasi loop
-    let clones = 0;
-    const { cloneStrategy, cloneCount } = this.config.behavior;
-
-    if (cloneStrategy === 'exact') {
-      clones = cloneCount;
-    } else if (cloneStrategy === 'auto' && contentWidth > 0) {
-      // Hitung berapa set yang dibutuhkan untuk memenuhi lebar layar + 1 set ekstra untuk buffer animasi
-      // Math.ceil(viewW / this._singleLoopWidth) memberi jumlah set untuk memenuhi layar.
-      // Kita tambah 1 agar saat set pertama keluar layar, set baru sudah siap.
-      const neededSets = Math.ceil(viewW / this._singleLoopWidth) + 1;
-      clones = Math.max(1, neededSets - 1); // -1 karena set asli sudah ada
-    }
-
-    // Append Original
-    this.track.appendChild(frag.cloneNode(true));
-    
-    // Append Clones
-    for (let i = 0; i < clones; i++) {
-      const clone = frag.cloneNode(true);
-      this.#sanitizeIds(clone);
-      if (this.config.a11y.hideClones) this.#markAsClone(clone);
-      this.track.appendChild(clone);
+      for (let i = 0; i <= clones; i++) {
+        const set = frag.cloneNode(true);
+        if (i > 0) {
+          this.#sanitizeIds(set);
+          if (this.config.a11y.hideClones) this.#markAsClone(set);
+        }
+        this.track.appendChild(set);
+      }
     }
 
     this.root.innerHTML = '';
@@ -336,13 +274,26 @@ export class UniversalMarquee {
     this.root.classList.add('um-animating');
   }
 
+  #measureAndSync() {
+    if (!this.track || this._isCentered) return;
+    const items = Array.from(this.track.querySelectorAll('.um-item:not([data-clone="true"])'));
+    const separators = Array.from(this.track.querySelectorAll('.um-separator:not([data-clone="true"])'));
+    const gap = this.#parseGap(this.config.style.gap);
+    
+    let totalWidth = 0;
+    items.forEach(el => totalWidth += el.offsetWidth);
+    separators.forEach(el => totalWidth += el.offsetWidth);
+
+    this._singleLoopWidth = totalWidth + ((items.length + separators.length) * gap);
+    this.#syncCSS();
+  }
+
   #syncCSS() {
     if (this._isDestroyed) return;
     const s = this.root.style;
     const c = this.config;
-    const gapVal = this.#parseGap(c.style.gap);
 
-    s.setProperty('--um-gap', `${gapVal}px`);
+    s.setProperty('--um-gap', `${this.#parseGap(c.style.gap)}px`);
     s.setProperty('--um-align', c.style.align);
     s.setProperty('--um-direction-attr', c.style.rtl ? 'rtl' : 'ltr');
     s.setProperty('--um-direction', c.style.direction);
@@ -351,198 +302,150 @@ export class UniversalMarquee {
     s.setProperty('--um-init-delay', `${c.animation.delay}ms`);
 
     if (this.track && !this._isCentered) {
-      // FIX: Jarak tempuh animasi adalah tepat 1 siklus set item (original content + 1 gap)
-      // Ini mencegah glitch/lompatan di akhir animasi.
       const dist = this._singleLoopWidth;
-      
-      // Kirim jarak ini ke CSS
       s.setProperty('--um-travel-dist', `-${dist}px`);
-
       const dur = c.style.speed > 0 ? dist / c.style.speed : 0;
       s.setProperty('--um-duration', `${dur}s`);
-      this._baseDuration = dur;
     }
 
     if (c.style.mask) {
-      const maskVal = typeof c.style.mask === 'string' ? c.style.mask : 'both';
-      this.root.setAttribute('data-mask', maskVal);
+      this.root.setAttribute('data-mask', typeof c.style.mask === 'string' ? c.style.mask : 'both');
       s.setProperty('--um-mask-width', c.style.maskWidth);
-    } else {
-      this.root.removeAttribute('data-mask');
     }
 
-    if (c.physics.draggable && !this._isCentered) this.root.classList.add('um-cursor-grab');
-    else this.root.classList.remove('um-cursor-grab');
+    this.root.classList.toggle('um-cursor-grab', c.physics.draggable && !this._isCentered);
   }
 
-  // Helper untuk parse gap string ke angka
   #parseGap(gap) {
     if (typeof gap === 'number') return gap;
-    if (!gap) return 0;
-    // Simple parser for px/rem. Default to 0 if fails.
-    if (gap.endsWith('px')) return parseFloat(gap);
-    if (gap.endsWith('rem')) return parseFloat(gap) * 16; // Asumsi root 16px
+    if (gap?.endsWith('rem')) return parseFloat(gap) * 16;
     return parseFloat(gap) || 0;
   }
 
-  // --- EVENTS & PHYSICS ---
+  #initObservers() {
+    const ro = new ResizeObserver(() => {
+      clearTimeout(this._resizeTimer);
+      this._resizeTimer = setTimeout(() => this.#measureAndSync(), 150);
+    });
+    ro.observe(this.root);
+    if (this.track) ro.observe(this.track);
+    this._observers.push(ro);
+
+    const io = new IntersectionObserver((e) => {
+      e.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (this.config.behavior.startWhenVisible && !this._hasStarted) this.play();
+          if (this.config.behavior.pauseOnInvisibility && !this._isManuallyPaused) this.root.classList.remove('um-paused');
+        } else {
+          if (this.config.behavior.pauseOnInvisibility) this.root.classList.add('um-paused');
+        }
+      });
+    }, { rootMargin: '50px' });
+    io.observe(this.root);
+    this._observers.push(io);
+  }
 
   #toggleListeners(enable) {
     const method = enable ? 'addEventListener' : 'removeEventListener';
     this.root[method]('mouseenter', this.#onMouseEnter);
     this.root[method]('mouseleave', this.#onMouseLeave);
-
-    const scrollEnabled = this.config.physics.scrollSync?.enabled;
-    const reverseEnabled = this.config.physics.scrollSync?.reverse;
-
-    // FIX: Gunakan bound function reference agar tidak memory leak
-    if (scrollEnabled || reverseEnabled) {
+    if (this.config.physics.scrollSync?.enabled || this.config.physics.scrollSync?.reverse) {
       window[method]('scroll', this._boundOnScroll, { passive: true });
     }
-
-    if (this.config.physics.draggable) {
-      this.#toggleDragListeners(enable);
-    }
-  }
-
-  #setPlaybackRate(rate) {
-    if (!this.track) return;
-    const anims = this.track.getAnimations();
-    const scrollAnim = anims.find((a) => a.animationName === 'um-scroll');
-    if (scrollAnim) scrollAnim.playbackRate = rate;
+    if (this.config.physics.draggable) this.#toggleDragListeners(enable);
   }
 
   #onMouseEnter = () => {
     if (this._drag.active || this._isCentered) return;
-    const action = this.config.behavior.hoverAction;
-    if (action === 'pause') this.root.classList.add('um-paused');
-    else if (action === 'slow') this.#setPlaybackRate(this.config.behavior.hoverSpeedFactor || 0.3);
+    if (this.config.behavior.hoverAction === 'pause') this.root.classList.add('um-paused');
+    else if (this.config.behavior.hoverAction === 'slow') this.#setPlaybackRate(this.config.behavior.hoverSpeedFactor);
     if (this.config.callbacks.onMouseEnter) this.config.callbacks.onMouseEnter();
   };
 
   #onMouseLeave = () => {
     if (this._drag.active || this._isCentered) return;
-    const action = this.config.behavior.hoverAction;
-    if (action === 'pause') {
-      if (!this._isManuallyPaused) this.root.classList.remove('um-paused');
-    } else if (action === 'slow') {
-      this.#setPlaybackRate(1);
-    }
+    if (this.config.behavior.hoverAction === 'pause' && !this._isManuallyPaused) this.root.classList.remove('um-paused');
+    else if (this.config.behavior.hoverAction === 'slow') this.#setPlaybackRate(1);
     if (this.config.callbacks.onMouseLeave) this.config.callbacks.onMouseLeave();
   };
 
+  #setPlaybackRate(rate) {
+    if (!this.track) return;
+    this.track.getAnimations().forEach(anim => {
+      if (anim.animationName === 'um-scroll') anim.playbackRate = rate;
+    });
+  }
+
   #onScroll = () => {
     if (this._isDestroyed || this._isCentered) return;
-    const currentY = window.scrollY;
-    const delta = currentY - this._scroll.lastY;
-    this._scroll.lastY = currentY;
-
-    const { enabled, factor, reverse } = this.config.physics.scrollSync;
-
-    if (enabled) {
-      this._scroll.targetOffset -= delta * factor;
+    const delta = window.scrollY - this._scroll.lastY;
+    this._scroll.lastY = window.scrollY;
+    if (this.config.physics.scrollSync.enabled) {
+      this._scroll.targetOffset -= delta * this.config.physics.scrollSync.factor;
       if (!this._scroll.rafId) this._scroll.rafId = requestAnimationFrame(this.#loopScrollBoost);
-    }
-
-    if (reverse && Math.abs(delta) > 2) {
-      const isDown = delta > 0;
-      const newDir = isDown ? 'normal' : 'reverse';
-      this.root.style.setProperty('--um-direction', newDir);
     }
   };
 
   #loopScrollBoost = () => {
-    if (this._isDestroyed) return;
     this._scroll.currentOffset += (this._scroll.targetOffset - this._scroll.currentOffset) * 0.1;
     this.root.style.setProperty('--um-scroll-boost', `${this._scroll.currentOffset}px`);
     this._scroll.targetOffset *= 0.9;
-
-    if (Math.abs(this._scroll.currentOffset) < 0.5 && Math.abs(this._scroll.targetOffset) < 0.5) {
-      this._scroll.currentOffset = 0;
-      this.root.style.setProperty('--um-scroll-boost', '0px');
+    if (Math.abs(this._scroll.currentOffset) < 0.5) {
       this._scroll.rafId = null;
+      this.root.style.setProperty('--um-scroll-boost', '0px');
     } else {
       this._scroll.rafId = requestAnimationFrame(this.#loopScrollBoost);
     }
   };
 
-  // --- DRAG SYSTEM ---
   #toggleDragListeners(enable) {
-    const method = enable ? 'addEventListener' : 'removeEventListener';
+    const m = enable ? 'addEventListener' : 'removeEventListener';
     if (!this._dragListeners) {
       this._dragListeners = {
         start: (e) => this.#dragStart(e),
         move: (e) => this.#dragMove(e),
-        end: (e) => this.#dragEnd(e),
+        end: () => this.#dragEnd(),
       };
     }
     const { start, move, end } = this._dragListeners;
-    this.root[method]('mousedown', start);
-    this.root[method]('touchstart', start, { passive: false });
-    window[method]('mousemove', move);
-    window[method]('touchmove', move, { passive: false });
-    window[method]('mouseup', end);
-    window[method]('touchend', end);
+    this.root[m]('mousedown', start);
+    this.root[m]('touchstart', start, { passive: false });
+    window[m]('mousemove', move);
+    window[m]('touchmove', move, { passive: false });
+    window[m]('mouseup', end);
+    window[m]('touchend', end);
   }
 
   #dragStart(e) {
-    if (this._isCentered) return;
-    if (e.button === 2) return;
+    if (this._isCentered || e.button === 2) return;
     if (this._rafId) cancelAnimationFrame(this._rafId);
-
     this._drag.active = true;
     this._drag.hasMoved = false;
-    this._drag.isLocked = false;
-    this._drag.velocity = 0;
-
     const point = e.touches ? e.touches[0] : e;
     this._drag.startX = point.clientX;
     this._drag.startY = point.clientY;
     this._drag.lastTime = performance.now();
-
-    // Get current visual transform
-    const style = window.getComputedStyle(this.track).transform;
-    const Matrix = window.DOMMatrix || window.WebKitCSSMatrix;
-    const matrix = new Matrix(style);
-
+    const matrix = new (window.DOMMatrix || window.WebKitCSSMatrix)(getComputedStyle(this.track).transform);
     this._drag.lastTranslate = matrix.m41;
-    this._drag.currentX = this._drag.lastTranslate;
-
-    if (this.config.callbacks.onDragStart) this.config.callbacks.onDragStart();
+    this._drag.currentX = matrix.m41;
   }
 
   #dragMove(e) {
-    if (!this._drag.active || this._isCentered || this._drag.isLocked) return;
-
+    if (!this._drag.active) return;
     const point = e.touches ? e.touches[0] : e;
     const dx = point.clientX - this._drag.startX;
     const dy = point.clientY - this._drag.startY;
-
-    if (this.config.physics.lockAxis && e.touches) {
-      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5) {
-        this._drag.isLocked = true;
-        this._drag.active = false;
-        return;
-      }
-    }
-
+    if (this.config.physics.lockAxis && Math.abs(dy) > Math.abs(dx)) return;
     if (!this._drag.hasMoved && Math.abs(dx) < this.config.physics.touchThreshold) return;
     if (e.cancelable) e.preventDefault();
-
     if (!this._drag.hasMoved) {
       this.root.classList.add('um-dragging', 'um-cursor-grabbing');
-      this.root.classList.remove('um-animating', 'um-cursor-grab');
+      this.root.classList.remove('um-animating');
       this._drag.hasMoved = true;
     }
-
     const now = performance.now();
-    const dt = now - this._drag.lastTime;
-    const deltaX = dx * this.config.physics.dragSpeed;
-    const instantV = (this._drag.lastTranslate + deltaX - this._drag.currentX) / dt;
-    
-    if (dt > 0) this._drag.velocity = this._drag.velocity * 0.5 + instantV * 0.5;
-
-    this._drag.currentX = this._drag.lastTranslate + deltaX;
+    this._drag.velocity = (this._drag.lastTranslate + (dx * this.config.physics.dragSpeed) - this._drag.currentX) / (now - this._drag.lastTime || 1);
+    this._drag.currentX = this._drag.lastTranslate + (dx * this.config.physics.dragSpeed);
     this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
     this._drag.lastTime = now;
   }
@@ -550,175 +453,44 @@ export class UniversalMarquee {
   #dragEnd() {
     if (!this._drag.active) return;
     this._drag.active = false;
-
     this.root.classList.remove('um-dragging', 'um-cursor-grabbing');
-    this.root.classList.add('um-cursor-grab');
-
     if (this._drag.hasMoved) {
-      if (Math.abs(this._drag.velocity) > 0.1 || this.config.physics.snap.enabled) {
-        this.#momentumLoop();
-      } else {
-        this.#snapToCSS();
-      }
+      if (Math.abs(this._drag.velocity) > 0.1) this.#momentumLoop();
+      else this.#snapToCSS();
     }
-    if (this.config.callbacks.onDragEnd) this.config.callbacks.onDragEnd();
   }
 
   #momentumLoop() {
-    if (this._isDestroyed) return;
     this._drag.velocity *= 0.95;
     this._drag.currentX += this._drag.velocity * 16;
     this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
-
-    if (Math.abs(this._drag.velocity) < 0.1) {
-      if (this.config.physics.snap.enabled) {
-        this.#calculateSnapTarget();
-        this._rafId = requestAnimationFrame(this.#snapLoop.bind(this));
-      } else {
-        this.#snapToCSS();
-      }
-    } else {
-      this._rafId = requestAnimationFrame(this.#momentumLoop.bind(this));
-    }
-  }
-
-  #calculateSnapTarget() {
-    if (!this.track.children[0]) return;
-    const itemW = this.track.children[0].offsetWidth;
-    const gapVal = this.#parseGap(this.config.style.gap);
-    const unit = itemW + gapVal;
-    this._drag.snapTarget = Math.round(this._drag.currentX / unit) * unit;
-  }
-
-  #snapLoop() {
-    if (this._isDestroyed) return;
-    const dist = this._drag.snapTarget - this._drag.currentX;
-    const friction = this.config.physics.snap.friction || 0.1;
-    this._drag.currentX += dist * friction;
-    this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
-
-    if (Math.abs(dist) < 0.5) {
-      this._drag.currentX = this._drag.snapTarget;
-      this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
-      this.#snapToCSS();
-    } else {
-      this._rafId = requestAnimationFrame(this.#snapLoop.bind(this));
-    }
+    if (Math.abs(this._drag.velocity) < 0.1) this.#snapToCSS();
+    else this._rafId = requestAnimationFrame(() => this.#momentumLoop());
   }
 
   #snapToCSS() {
-    // FIX: Kalkulasi momentum resume yang akurat
-    // Kita gunakan _singleLoopWidth yang sudah kita hitung secara akurat
-    const loopLen = this._singleLoopWidth; 
-    
-    // Normalisasi posisi X ke dalam range 0 hingga -loopLen
+    const loopLen = this._singleLoopWidth;
     let norm = this._drag.currentX % loopLen;
-    if (norm > 0) norm -= loopLen; // Pastikan selalu negatif/kiri
-
+    if (norm > 0) norm -= loopLen;
     const progress = Math.abs(norm) / loopLen;
-    const durationStr = getComputedStyle(this.root).getPropertyValue('--um-duration');
-    const delay = -1 * progress * (parseFloat(durationStr) || 0);
-
-    // Terapkan delay, hapus transform manual, dan nyalakan animasi kembali
-    this.root.style.setProperty('--um-delay', `${delay}s`);
-    this.track.style.transform = ''; // Biarkan CSS mengambil alih
-    
-    // Force Reflow agar browser sadar perubahan transform ke animasi
-    void this.track.offsetWidth; 
+    const dur = parseFloat(getComputedStyle(this.root).getPropertyValue('--um-duration')) || 10;
+    this.root.style.setProperty('--um-delay', `${-1 * progress * dur}s`);
+    this.track.style.transform = '';
+    void this.track.offsetWidth;
     this.root.classList.add('um-animating');
-  }
-
-  // --- OBSERVERS ---
-  #initObservers() {
-    const ro = new ResizeObserver((entries) => {
-      if (entries[0].contentRect.width === 0) return;
-      clearTimeout(this._resizeTimer);
-      this._resizeTimer = setTimeout(() => {
-        this.#checkBreakpoints();
-        if(this.track) {
-           this.#buildDOM(); // Rebuild saat resize agar cloning tetap konsisten
-           this.#syncCSS();
-        }
-      }, 150);
-    });
-    ro.observe(this.root);
-    this._observers.push(ro);
-
-    const io = new IntersectionObserver(
-      (e) => {
-        e.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (this.config.behavior.startWhenVisible && !this._hasStarted) {
-              this._hasStarted = true;
-              this.play();
-            }
-            if (this.config.behavior.pauseOnInvisibility) {
-              if (this.config.behavior.autoStart && !this._isCentered && !this._isManuallyPaused) {
-                this.root.classList.remove('um-paused');
-              }
-            }
-          } else {
-            if (this.config.behavior.pauseOnInvisibility) {
-              this.root.classList.add('um-paused');
-            }
-          }
-        });
-      },
-      { rootMargin: '50px' }
-    );
-    io.observe(this.root);
-    this._observers.push(io);
-  }
-
-  // --- DOM HELPERS ---
-
-  #appendContent(parent, content) {
-    if (content === null || content === undefined) return;
-    if (Array.isArray(content) || content instanceof NodeList) {
-      Array.from(content).forEach((item) => this.#appendContent(parent, item));
-      return;
-    }
-    if (content instanceof Node) {
-      parent.appendChild(content.cloneNode(true));
-      return;
-    }
-    parent.insertAdjacentHTML('beforeend', String(content));
   }
 
   #createItem(data, idx, renderer, wrapperClass) {
     const el = document.createElement('div');
-    el.className = 'um-item';
-    if (wrapperClass) el.classList.add(wrapperClass);
-
-    let safeRenderer = typeof renderer === 'function' ? renderer : (d) => String(d);
+    el.className = `um-item ${wrapperClass || ''}`;
     try {
-      const content = safeRenderer(data, idx);
-      this.#appendContent(el, content);
-    } catch (e) {
-      console.error('UniversalMarquee: Error rendering item', e);
-      el.textContent = 'Error';
-    }
-
-    if (this.config.performance.lazyLoad) {
-      const imgs = el.querySelectorAll('img');
-      imgs.forEach((img) => {
-        img.setAttribute('loading', 'lazy');
-        img.onload = () => {
-          if (this._resizeTimer) clearTimeout(this._resizeTimer);
-          // Debounce rebuild
-          this._resizeTimer = setTimeout(() => {
-             this.#buildDOM(); 
-             this.#syncCSS();
-          }, 100);
-        };
-      });
-    }
-
+      const content = renderer(data, idx);
+      if (content instanceof Node) el.appendChild(content);
+      else el.insertAdjacentHTML('beforeend', content);
+    } catch (e) { el.textContent = 'Error'; }
     if (this.config.callbacks.onItemClick) {
-      el.style.cursor = 'pointer';
       el.addEventListener('click', (e) => {
-        if (this.config.physics.draggable && this._drag.hasMoved) return;
-        this.config.callbacks.onItemClick(data, idx, e);
+        if (!this._drag.hasMoved) this.config.callbacks.onItemClick(data, idx, e);
       });
     }
     return el;
@@ -728,13 +500,13 @@ export class UniversalMarquee {
     const el = document.createElement('span');
     el.className = 'um-separator';
     el.setAttribute('aria-hidden', 'true');
-    this.#appendContent(el, content);
+    if (content instanceof Node) el.appendChild(content);
+    else el.insertAdjacentHTML('beforeend', content);
     return el;
   }
 
   #markAsClone(frag) {
-    const childs = frag.children ? Array.from(frag.children) : [frag];
-    childs.forEach((c) => {
+    Array.from(frag.children || [frag]).forEach(c => {
       c.setAttribute('aria-hidden', 'true');
       c.setAttribute('data-clone', 'true');
     });
@@ -742,7 +514,7 @@ export class UniversalMarquee {
 
   #sanitizeIds(node) {
     if (node.id) node.removeAttribute('id');
-    node.querySelectorAll('[id]').forEach((e) => e.removeAttribute('id'));
+    node.querySelectorAll?.('[id]').forEach(e => e.removeAttribute('id'));
   }
 
   #shuffleItems() {
@@ -754,24 +526,9 @@ export class UniversalMarquee {
   }
 
   async #waitForAssets() {
-    if (this.config.performance.lazyLoad) return Promise.resolve();
-    
     const imgs = Array.from(this.root.querySelectorAll('img'));
-    const imgPromises = imgs.map((img) => {
-        if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
-        return new Promise((r) => {
-          img.onload = r;
-          img.onerror = r;
-        });
-    });
-
-    // FIX: Gunakan Promise.race untuk Fonts agar tidak hang selamanya
+    const promises = imgs.map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; }));
     const fontPromise = document.fonts ? document.fonts.ready : Promise.resolve();
-    const timeoutPromise = new Promise(r => setTimeout(r, 2000)); // Max wait 2s
-
-    await Promise.all([
-        Promise.all(imgPromises),
-        Promise.race([fontPromise, timeoutPromise])
-    ]);
+    await Promise.all([Promise.all(promises), Promise.race([fontPromise, new Promise(r => setTimeout(r, 2000))])]);
   }
 }

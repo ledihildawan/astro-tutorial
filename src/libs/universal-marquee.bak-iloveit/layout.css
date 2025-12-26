@@ -539,28 +539,27 @@ h3 {
   color: #ea5452;
 }
 
-/* Hero Section Enhancements */
+/* Container Hero */
 .hero-section {
+  position: relative;
+  padding: 8rem 1rem 4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 4rem 1rem;
-  position: relative;
+  overflow: visible;
 }
 
-/* Badge Trend 2025 */
+/* Badge di atas Title */
 .hero-badge {
   display: flex;
   align-items: center;
   gap: 10px;
   background: rgba(34, 211, 238, 0.1);
-  border: 1px solid rgba(34, 211, 238, 0.2);
-  padding: 6px 16px;
+  padding: 8px 16px;
   border-radius: var(--radius-pill);
+  border: 1px solid rgba(34, 211, 238, 0.2);
   margin-bottom: 2rem;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 1s ease-out;
+  animation: floatUp 0.8s ease-out;
 }
 
 .badge-dot {
@@ -572,29 +571,15 @@ h3 {
   animation: pulseGlow 2s infinite alternate;
 }
 
-.badge-text {
-  font-family: var(--font-family-mono);
-  font-size: 0.85rem;
-  color: var(--color-accent-primary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Typography Improvements */
+/* Tipografi Judul */
 .text-gradient {
-  background: linear-gradient(135deg, #22d3ee 0%, #a855f7 100%);
+  background: linear-gradient(to right, #ffffff, var(--color-accent-primary), #a855f7);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: rainbowShift 4s linear infinite;
 }
 
-.intro-sub {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 1.1rem;
-  opacity: 0.8;
-}
-
-/* Modern Action Buttons */
+/* Tombol Aksi */
 .hero-actions {
   display: flex;
   gap: 1.5rem;
@@ -610,22 +595,21 @@ h3 {
   font-weight: 700;
   text-decoration: none;
   transition: all var(--transition-normal);
-  box-shadow: 0 10px 20px rgba(34, 211, 238, 0.2);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.5);
 }
 
 .btn-secondary {
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: #ffffff;
   padding: 14px 32px;
   border-radius: var(--radius-sm);
-  font-weight: 600;
-  text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -637,80 +621,14 @@ h3 {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* ... [Pertahankan bagian atas file] ... */
-
-.section-subtitle {
-  text-align: center;
-  max-width: 700px;
-  margin: -1.5rem auto 3.5rem;
-  font-size: 1.15rem;
-  line-height: 1.6;
-  color: #94a3b8;
+/* Grid Background Effect */
+.ambient-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
 }
-
-/* Label Kecil di atas Card Example */
-.example-label {
-  display: inline-block;
-  font-family: var(--font-family-mono);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-accent-primary);
-  background: rgba(34, 211, 238, 0.1);
-  padding: 4px 12px;
-  border-radius: var(--radius-xs);
-  margin-bottom: 1rem;
-}
-
-/* Redesign Heading pada Section */
-.section > h2 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: var(--spacing-lg);
-  letter-spacing: -0.03em;
-  font-family: var(--font-family-heading);
-}
-
-/* Optimasi Spasi Hero */
-.intro {
-  font-size: 1.35rem; /* Ukuran Headline kecil lebih besar */
-  font-weight: 600;
-  line-height: 1.4;
-  max-width: 850px;
-  margin: var(--spacing-md) auto 0;
-  text-align: center;
-  color: #f8fafc;
-}
-
-.intro-sub {
-  display: block;
-  margin-top: 1rem;
-  font-size: 1.1rem;
-  font-weight: 400;
-  line-height: 1.7;
-  color: #94a3b8;
-  max-width: 700px;
-  margin-inline: auto;
-}
-
-/* Responsif Adjustments */
-@media (max-width: 48rem) {
-  .section > h2 {
-    font-size: 1.8rem;
-  }
-  .intro {
-    font-size: 1.1rem;
-  }
-  .hero-actions {
-    flex-direction: column;
-    width: 100%;
-    max-width: 300px;
-  }
-  .btn-primary, .btn-secondary {
-    text-align: center;
-    justify-content: center;
-  }
-}
-
-/* ... [Sisa gaya di bawahnya tetap sama] ... */

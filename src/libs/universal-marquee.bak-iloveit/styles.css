@@ -1,10 +1,9 @@
 /**
  * UniversalMarquee v8.5 Styles
- * Optimized for Precise Pixel Calculation
+ * Added: .um-empty, .um-reverse support
  */
 
 .um-host {
-  /* --- Layout & Context --- */
   display: flex;
   width: 100%;
   overflow: hidden;
@@ -12,11 +11,9 @@
   direction: var(--um-direction-attr, ltr);
   contain: layout paint;
   
-  /* --- Variables with Fallbacks --- */
   --um-mask-width: 5%;
   --um-gap: 2rem; 
   
-  /* Animation Physics */
   --um-duration: 0s;
   --um-direction: normal; 
   --um-easing: linear;        
@@ -24,24 +21,31 @@
   --um-init-delay: 0s;        
   --um-play-state: running;
   
-  /* Internal Physics */
   --um-delay: 0s;             
   --um-scroll-boost: 0px;     
-  /* v8.5: Travel dist dihitung presisi oleh JS (px) */
-  --um-travel-dist: -100%; 
+  --um-travel-dist: -100%;
   --um-align: center;
   
-  /* UX */
   user-select: none;
   touch-action: pan-y; 
   -webkit-user-drag: none;
 }
 
-/* Cursor States */
 .um-host.um-cursor-grab { cursor: grab; }
 .um-host.um-cursor-grabbing { cursor: grabbing; }
 
-/* --- Center if Short State --- */
+/* Empty state */
+.um-host.um-empty .um-track {
+  animation: none !important;
+}
+
+/* Optional styling when reversed */
+.um-host.um-reverse {
+  /* Tambahkan style khusus jika diperlukan, misal: */
+  /* filter: hue-rotate(180deg); */
+}
+
+/* Center if Short State */
 .um-host.um-centered .um-track {
   width: 100%;
   justify-content: center;
@@ -49,7 +53,7 @@
   animation: none !important;
 }
 
-/* --- Masking Logic --- */
+/* Masking */
 .um-host[data-mask="both"] {
   mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
@@ -66,18 +70,18 @@
   mask-image: none; -webkit-mask-image: none;
 }
 
-/* --- Track & Animation --- */
+/* Track & Animation */
 .um-track {
   display: flex;
   width: max-content;
   flex-shrink: 0;
   gap: var(--um-gap, 2rem); 
   align-items: var(--um-align, center); 
+  
   will-change: transform;
   transform: translate3d(var(--um-scroll-boost, 0px), 0, 0);
 }
 
-/* State: Animating */
 .um-animating .um-track {
   animation-name: um-scroll;
   animation-duration: var(--um-duration, 10s); 
@@ -85,41 +89,23 @@
   animation-play-state: var(--um-play-state, running);
   animation-timing-function: var(--um-easing, linear);
   animation-iteration-count: var(--um-iteration, infinite);
-  /* Momentum resume sync */
   animation-delay: calc(var(--um-delay, 0s) + var(--um-init-delay, 0s));
 }
 
-/* State: Dragging */
 .um-dragging .um-track { animation: none !important; }
-
-/* State: Paused */
 .um-host.um-paused .um-track { animation-play-state: paused; }
 
-/* Keyframes - v8.5 Fix */
 @keyframes um-scroll {
   0%   { transform: translate3d(calc(0px + var(--um-scroll-boost, 0px)), 0, 0); }
-  /* Menggunakan variabel piksel hasil kalkulasi JS agar loop mulus tanpa lompatan */
   100% { transform: translate3d(calc(var(--um-travel-dist) + var(--um-scroll-boost, 0px)), 0, 0); }
 }
 
-/* Items */
 .um-item {
-  display: flex; 
-  flex-shrink: 0; 
-  pointer-events: auto; 
-  height: 100%;
+  display: flex; flex-shrink: 0; pointer-events: auto; height: 100%;
   box-sizing: border-box;
 }
-
-.um-item img { 
-  pointer-events: none; 
-  -webkit-user-drag: none; 
-  display: block;
-}
+.um-item img { pointer-events: none; -webkit-user-drag: none; }
 
 .um-separator {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }

@@ -13,29 +13,35 @@ import '../libs/universal-marquee/demo-ticker.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Marquee v8.5 | The Infinite Scroll, Perfected</title>
+    <title>Universal Marquee - Seamless Infinite Horizontal Marquee JavaScript Library</title>
     <meta
       name="description"
-      content="Bring your website to life with buttery-smooth, lightweight marquees. Universal Marquee is a zero-dependency Vanilla JS library built for modern web performance and full accessibility."
+      content="Create smooth, accessible, infinite scrolling marquees with Universal Marquee. A lightweight Vanilla JS library with zero dependencies. Works with any content."
     />
     <meta
       name="keywords"
-      content="infinite scroll marquee, vanilla js ticker, horizontal scroll library, accessible marquee, lightweight javascript, performance focused marquee"
+      content="vanilla js marquee, infinite scroll, javascript ticker, accessible marquee, lightweight js library, no dependency"
     />
     <meta name="author" content="Ledi Hildawan" />
-
-    <meta property="og:title" content="Universal Marquee: The Infinite Scroll, Perfected" />
+    <meta property="og:title" content="Universal Marquee - The Lightweight JS Scroll Library" />
     <meta
       property="og:description"
-      content="Zero dependencies. Fully accessible. Buttery-smooth performance for text, images, or custom HTML."
+      content="Zero dependencies. Fully accessible. Works with text, images, or any custom HTML."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://universal-marquee.example.com" />
-    <meta property="og:image" content="https://placehold.co/1200x630/0f172a/e0f2fe?text=Universal+Marquee+v8.5" />
-
+    <meta property="og:image" content="https://placehold.co/1200x630/0f172a/e0f2fe?text=Universal+Marquee" />
+    <meta property="og:title" content="Universal Marquee - The Lightweight JS Scroll Library" />
+    <meta
+      property="og:description"
+      content="Zero dependencies. Fully accessible. Works with text, images, or any custom HTML."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://universal-marquee.example.com" />
+    <meta property="og:image" content="https://placehold.co/1200x630/0f172a/e0f2fe?text=Universal+Marquee" />
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💫</text></svg>"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -61,73 +67,62 @@ import '../libs/universal-marquee/demo-ticker.css';
             ></path>
           </svg>
         </header>
-
         <div class="root-layout-content">
           <main>
             <div class="hero-section">
-              <div class="hero-badge">
-                <span class="badge-dot"></span>
-                <span class="badge-text">✨ Version 8.5 Polished Edition</span>
-              </div>
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    <span class="badge-text">v1.0.0 is now live</span>
+  </div>
+  
+  <h1 class="main-title">
+    Infinite Motion <br/>
+    <span class="text-gradient">Universal Marquee</span>
+  </h1>
+  
+  <p class="intro">
+    A zero-dependency Vanilla JS library for smooth, accessible, infinite scrolling.
+    <span class="highlight">Lightweight and compatible</span> with text, images, or any custom HTML.
+  </p>
 
-              <h1 class="main-title">
-                Universal <span class="text-gradient">Marquee</span>
-              </h1>
-
-              <p class="intro">
-                The Infinite Scroll, Perfected.
-                <span class="intro-sub"
-                  >Bring your website to life with buttery-smooth, lightweight marquees. Zero dependencies, fully
-                  accessible, and built for modern web performance.</span
-                >
-              </p>
-
-              <div class="hero-actions">
-                <a href="#get-started" class="btn-primary">Get Started for Free</a>
-                <a href="https://github.com/your-repo" class="btn-secondary">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"
-                    ><path
-                      d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.416-4.041-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-                    ></path></svg
-                  >
-                  Star on GitHub
-                </a>
-              </div>
-            </div>
-
+  <div class="hero-actions">
+    <a href="#get-started-heading" class="btn-primary">Get Started</a>
+    <a href="https://github.com/your-repo" class="btn-secondary">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">...</svg>
+      GitHub
+    </a>
+  </div>
+</div>
             <section class="section" aria-labelledby="features-heading">
-              <h2 id="features-heading">Built for Performance. Designed for Delight.</h2>
-              <p class="section-subtitle">
-                Stop fighting with clunky CSS animations. Universal Marquee handles the math, so you can focus on the
-                design.
-              </p>
+              <h2 id="features-heading">Why Universal Marquee?</h2>
               <div id="features" role="region" aria-label="Key features marquee"></div>
             </section>
-
-            <section id="get-started" class="section how-to-use" aria-labelledby="get-started-heading">
-              <h2 id="get-started-heading">Zero Configuration, Infinite Possibilities.</h2>
+            <section class="section how-to-use" aria-labelledby="get-started-heading">
+              <h2 id="get-started-heading">Get Started</h2>
               <p class="get-started-desc">
-                Drop it into any project. No complex setups, no heavy bundles. Just one line of code to start the magic.
-                <br /><br />
+                Simply include the script and initialize. That's it.<br /><br />
                 <code class="inline-code">new UniversalMarquee('#my-element');</code>
               </p>
             </section>
-
             <section class="section examples" aria-labelledby="usage-heading">
               <h2 id="usage-heading">Real-World Examples</h2>
               <p class="examples-desc">Production-ready use cases with copy-paste code.</p>
-
               <div class="examples-grid">
                 <article class="usage-example">
-                  <div class="example-label">Build Social Proof</div>
-                  <h3>Trust-Building Testimonials</h3>
-                  <p>Display customer love in a non-intrusive, continuous flow that keeps users engaged.</p>
+                  <h3>Scrolling Testimonials</h3>
+                  <p>Build social proof with smooth customer reviews.</p>
                   <div id="demo-testimonials" role="region" aria-label="Testimonials marquee"></div>
                   <button class="code-toggle-btn" aria-expanded="false" aria-controls="code-testimonials">
-                    <svg class="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      ><path d="M6 9l6 6 6-6"></path></svg
+                    <svg
+                      class="icon-chevron"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg
                     >
-                    <span>View Implementation</span>
+                    <span>Show code</span>
                   </button>
                   <div class="code-viewer" id="code-testimonials">
                     <div class="code-tabs">
@@ -155,17 +150,21 @@ import '../libs/universal-marquee/demo-ticker.css';
                     </div>
                   </div>
                 </article>
-
                 <article class="usage-example">
-                  <div class="example-label">High-Conversion Visuals</div>
-                  <h3>Immersive Product Galleries</h3>
-                  <p>Showcase every angle of your product. Ideal for lookbooks, portfolios, and e-commerce displays.</p>
+                  <h3>Immersive Product Gallery</h3>
+                  <p>Showcase product details or angles (e.g., Adidas Samba OG).</p>
                   <div id="demo-products" role="region" aria-label="Product gallery marquee"></div>
                   <button class="code-toggle-btn" aria-expanded="false" aria-controls="code-products">
-                    <svg class="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      ><path d="M6 9l6 6 6-6"></path></svg
+                    <svg
+                      class="icon-chevron"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg
                     >
-                    <span>View Implementation</span>
+                    <span>Show code</span>
                   </button>
                   <div class="code-viewer" id="code-products">
                     <div class="code-tabs">
@@ -191,19 +190,21 @@ import '../libs/universal-marquee/demo-ticker.css';
                     </div>
                   </div>
                 </article>
-
                 <article class="usage-example">
-                  <div class="example-label">Real-Time Awareness</div>
-                  <h3>Dynamic Content Tickers</h3>
-                  <p>
-                    Keep users updated with live stocks, news flashes, or site-wide announcements in a sleek format.
-                  </p>
+                  <h3>Live News / Stock Ticker</h3>
+                  <p>Display fast-moving updates, prices, or alerts.</p>
                   <div id="demo-ticker" role="region" aria-label="Ticker marquee"></div>
                   <button class="code-toggle-btn" aria-expanded="false" aria-controls="code-ticker">
-                    <svg class="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                      ><path d="M6 9l6 6 6-6"></path></svg
+                    <svg
+                      class="icon-chevron"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg
                     >
-                    <span>View Implementation</span>
+                    <span>Show code</span>
                   </button>
                   <div class="code-viewer" id="code-ticker">
                     <div class="code-tabs">

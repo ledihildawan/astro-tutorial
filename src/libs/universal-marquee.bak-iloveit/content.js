@@ -8,29 +8,51 @@ const initApp = () => {
   };
 
   const features = [
-    'Seamless infinite horizontal marquee', 'Automatic dynamic cycle duplication', 'Speed-based scrolling or fixed duration', 'Configurable scrolling direction', 'Customizable gap between items', 'Flexible separator support', 'Custom renderItem function', 'Built-in lazy loading', 'Dynamic gradient overlay', 'Pause on hover, focus, and touch', 'Automatic play/pause based on visibility', 'Prefers-reduced-motion support', 'Full accessibility (ARIA/SR)', 'Web Animations API performance', 'Zero dependencies', 'Fully responsive',
+    'Seamless infinite horizontal marquee',
+    'Automatic dynamic cycle duplication',
+    'Speed-based scrolling or fixed duration',
+    'Configurable scrolling direction',
+    'Customizable gap between items',
+    'Flexible separator support',
+    'Custom renderItem function',
+    'Built-in lazy loading',
+    'Dynamic gradient overlay',
+    'Pause on hover, focus, and touch',
+    'Automatic play/pause based on visibility',
+    'Prefers-reduced-motion support',
+    'Full accessibility (ARIA/SR)',
+    'Web Animations API performance',
+    'Zero dependencies',
+    'Fully responsive',
   ];
 
   // 1. Fitur Utama (Header Marquee)
-  // FIXED: Menyimpan instance ke variabel untuk re-sync jika diperlukan
-  const mainMarquee = new UniversalMarquee('#features', {
+  new UniversalMarquee('#features', {
     style: {
       speed: 45,
       gap: 0,
-      direction: 'normal',
+      direction: 'normal', // v8.4 menggunakan 'normal' (left) | 'reverse' (right)
     },
     content: {
       items: features,
       separator: ' 🎊 ',
       renderItem: (text) => {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('um-item');
+        wrapper.style.display = 'inline-flex';
+        wrapper.style.alignItems = 'center';
         const span = document.createElement('span');
         span.textContent = text;
-        return span;
+        wrapper.appendChild(span);
+        return wrapper;
       },
     },
     behavior: {
       hoverAction: 'pause',
       startWhenVisible: true,
+    },
+    a11y: {
+      ariaLabel: 'List of Universal Marquee key features',
     }
   });
 
@@ -43,7 +65,8 @@ const initApp = () => {
   ];
 
   // 2. Testimonials (Complex DOM)
-  const testimonialMarquee = new UniversalMarquee('#demo-testimonials', {
+  new UniversalMarquee('#demo-testimonials', {
+    // Pengelompokan data dan fungsi render sesuai v8.4
     content: {
       items: reviews,
       renderItem: (item) => {
@@ -53,38 +76,48 @@ const initApp = () => {
         const companyDisplay = item.companyLogo
           ? `<img src="${item.companyLogo}" alt="${item.company}" class="t-logo-img" loading="lazy" />`
           : `<strong>${item.company}</strong>`;
-
+        
         div.innerHTML = `
           <div class="t-header">
-            <div class="t-avatar"><img src="${item.avatar}" alt="${item.name}" loading="lazy" /></div>
+            <div class="t-avatar">
+              <img src="${item.avatar}" alt="${item.name}" loading="lazy" />
+            </div>
             <div class="t-profile">
               <div class="t-name-row">
                 <span class="t-name">${item.name}</span>
                 <svg class="t-verified" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .495.083.965.238 1.4-1.272.65-2.147 2.02-2.147 3.6 0 1.435.716 2.696 1.813 3.396-.105.41-.16.837-.16 1.28 0 2.682 2.126 4.87 4.793 4.87.585 0 1.135-.11 1.644-.305.65 1.127 1.875 1.905 3.286 1.905 1.41 0 2.635-.778 3.286-1.9.51.196 1.058.305 1.644.305 2.667 0 4.793-2.19 4.793-4.87 0-.443-.056-.87-.16-1.28C21.784 15.196 22.5 13.935 22.5 12.5zm-5.694-2.11L10.82 16.377l-3.655-3.655.858-.853 2.797 2.797 5.128-5.128.858.853z"/></path></svg>
               </div>
               <span class="t-handle">${item.handle}</span>
-              <div class="t-role-company">${item.role} at ${companyDisplay}</div>
+              <div class="t-role-company">
+                ${item.role} at ${companyDisplay}
+              </div>
             </div>
           </div>
           <div class="t-body">"${item.text}"</div>
           <div class="t-footer">
-            <div class="t-source">${sourceIcon} <span>${item.date}</span></div>
+            <div class="t-source">
+              ${sourceIcon}
+              <span>${item.date}</span>
+            </div>
             <div class="t-stars">${'★'.repeat(item.stars)}</div>
-          </div>`;
+          </div>
+        `;
         return div;
-      },
+      }
     },
+    // Pengaturan visual di bawah objek style
     style: {
       speed: 25,
       gap: '3rem',
-      direction: 'normal',
+      direction: 'normal'
     },
+    // Pengaturan interaksi di bawah behavior
     behavior: {
       hoverAction: 'pause',
       startWhenVisible: true,
-      centerIfShort: true,
-    },
-  });
+      centerIfShort: true
+    }
+  });  
 
   const products = [
     { view: 'Side Profile', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Samba_OG_Shoes_White_B75806_01_00_standard.jpg', alt: 'Adidas Samba OG - Side' },
@@ -96,13 +129,13 @@ const initApp = () => {
   ];
 
   // 3. Products (Image Support + Draggable)
-  // FIXED: Memastikan variabel productsMarquee terdefinisi dengan benar di scope initApp
-  const productsMarquee = new UniversalMarquee('#demo-products', {
+  new UniversalMarquee('#demo-products', {
     content: {
       items: products,
       renderItem: (item, index) => {
         const div = document.createElement('div');
         div.className = 'product-view-card um-img-skeleton';
+        // Memberikan dimensi eksplisit mencegah glitch lompatan saat loading
         div.innerHTML = `
           <div class="view-label">View ${String(index + 1).padStart(2, '0')}</div>
           <img src="${item.img}" 
@@ -114,28 +147,29 @@ const initApp = () => {
           <div class="product-info-overlay">
             <span>Samba OG</span>
             <h4>${item.view}</h4>
-          </div>`;
+          </div>
+        `;
         return div;
-      },
+      }
     },
     style: {
       speed: 35,
       gap: '2rem',
       mask: 'both',
-      maskWidth: '10%',
+      maskWidth: '10%'
     },
     behavior: {
       autoStart: true,
       startWhenVisible: true,
-      cloneStrategy: 'auto',
+      cloneStrategy: 'auto'
     },
     physics: {
       draggable: true,
-      snap: { enabled: true, friction: 0.1 },
+      snap: { enabled: true, friction: 0.1 }
     },
     performance: {
-      lazyLoad: true,
-    },
+      lazyLoad: true
+    }
   });
 
   const stocks = [
@@ -146,7 +180,7 @@ const initApp = () => {
   ];
 
   // 4. Crypto Ticker (Performance Optimized)
-  const tickerMarquee = new UniversalMarquee('#demo-ticker', {
+  new UniversalMarquee('#demo-ticker', {
     content: {
       items: stocks,
       renderItem: (item) => {
@@ -188,19 +222,8 @@ const initApp = () => {
       gap: '3rem',
     },
     physics: {
-      scrollSync: { enabled: true, factor: 2.0 },
-    },
-  });
-
-  // Final Guard: Re-sync setelah seluruh asset window selesai load
-  // FIXED: Memanggil updateItems untuk SEMUA instance yang berisi gambar/konten dinamis
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      mainMarquee.updateItems(features);
-      testimonialMarquee.updateItems(reviews);
-      productsMarquee.updateItems(products);
-      tickerMarquee.updateItems(stocks);
-    }, 500);
+      scrollSync: { enabled: true, factor: 2.0 }
+    }
   });
 };
 

@@ -1,0 +1,131 @@
+#demo-products {
+  --products-gap: 2.5rem;
+  --products-padding-v: 6rem;
+  --products-bg: #020617; /* Deep slate black */
+  --products-card-bg: rgba(15, 23, 42, 0.3);
+  --products-accent: #22d3ee;
+  --products-card-radius: 24px;
+  --products-card-width: 440px;
+  --products-card-height: 340px;
+
+  padding: var(--products-padding-v) 0;
+  background: var(--products-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Ornament */
+#demo-products::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#demo-products .product-view-card {
+  width: var(--products-card-width);
+  height: var(--products-card-height);
+  border-radius: var(--products-card-radius);
+  overflow: hidden;
+  position: relative;
+  background: var(--products-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Glass Sheen Effect */
+#demo-products .product-view-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: skewX(-20deg);
+  transition: 0.8s;
+}
+
+#demo-products .product-view-card:hover::after {
+  left: 150%;
+}
+
+#demo-products .product-view-card:hover {
+  transform: translateY(-20px) scale(1.02);
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(34, 211, 238, 0.15);
+}
+
+/* Image Styling */
+#demo-products .product-view-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+  filter: saturate(0.9) brightness(0.9);
+}
+
+#demo-products .product-view-card:hover img {
+  transform: scale(1.1);
+  filter: saturate(1.1) brightness(1.1);
+}
+
+/* View Label Redesign (The Viewfinder Look) */
+#demo-products .view-label {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 2;
+  transition: all 0.4s;
+}
+
+/* New Info Overlay (Slide up from bottom) */
+.product-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.9), transparent);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+#demo-products .product-view-card:hover .product-info-overlay {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.product-info-overlay h4 {
+  color: #fff;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.product-info-overlay span {
+  color: var(--products-accent);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
