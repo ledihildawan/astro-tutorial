@@ -3,256 +3,331 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LH Design System</title>
+    <title>LH Boilerplate: System of Record</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
       /* =================================================================
-         1. LH TOKENS (Variables)
+         1. LH SYSTEM TOKENS (The API)
          ================================================================= */
       :root {
-        /* LH System Metrics */
-        --lh-max-w: 1080px;      
-        --lh-gutter: 1.5rem; 
-        --lh-head-h: 4rem;
-        --lh-foot-h: 4rem;
+        /* --- A. METRICS --- */
+        --lh-width: 1080px;      
+        --lh-gutter: 1.5rem; /* Base Mobile Gutter */
+        --lh-header-h: 4rem;
+        --lh-footer-h: 4rem;
         
-        /* Colors */
-        --c-bg: #f8fafc; --c-text: #334155; --c-surface: #ffffff; --c-accent: #0f172a; 
-        --font-sans: 'Inter', sans-serif;
-        --font-mono: 'JetBrains Mono', monospace;
+        /* --- B. Z-INDEX SCALE (Layering Logic) --- 
+           Devs: Use these variables. Do not use magic numbers.
+        */
+        --z-deep:    1;   /* Backgrounds (Behind everything) */
+        --z-base:    5;   /* Standard Content */
+        --z-line:    10;  /* The Grid Lines */
+        --z-cover:   15;  /* Content covering Vertical Lines */
+        --z-horz:    20;  /* Horizontal Lines */
+        --z-roof:    30;  /* Content covering EVERYTHING (Lines & Horz) */
+        --z-ui:      50;  /* Sticky Headers, Modals */
         
-        /* Line Settings */
-        --line-w: 1px; --line-op: 1; --line-c: #cbd5e1; --line-filter: none;
-        --line-bg-v: var(--line-c); --line-bg-h: var(--line-c);
+        /* --- C. EXPANSION LOGIC (Distance Logic) --- 
+           Controls how far content pushes out.
+           Mobile Defaults: Both act as simple gutter bleed.
+        */
+        --exp-zero:  0px;
+        --exp-edge:  var(--lh-gutter);
+        --exp-cross: var(--lh-gutter);
+
+        /* --- D. VISUAL TOKENS (Base Theme) --- */
+        --c-bg: #ffffff; 
+        --c-txt: #0f172a; 
+        --c-surf: #f8fafc;
+        --c-accent: #0f172a;
+        
+        --line-w: 1px; 
+        --line-op: 1;
+        --line-filter: none;
+        --line-c: #e2e8f0;
+        --line-v: var(--line-c); 
+        --line-h: var(--line-c);
+        
+        /* --- E. DIRECTION --- */
         --flip-y-top: 1; --flip-y-bottom: 1; --flip-x-left: 1; --flip-x-right: 1;
       }
       
-      /* Desktop Activation (>= 1280px) */
+      /* --- DESKTOP CONFIG (>= 1280px) --- */
       @media (min-width: 1280px) { 
         :root { 
           --lh-gutter: 3rem; 
-          --lh-head-h: 5rem; 
-          --lh-foot-h: 5rem; 
+          --lh-header-h: 5rem; --lh-footer-h: 5rem;
+          
+          /* Precision Logic: 
+             Edge = Stops at 0px (Abutting) 
+             Cross = Goes past 0px + Line Width (Overlapping/Underlapping) 
+          */
+          --exp-edge: var(--lh-gutter);
+          --exp-cross: calc(var(--lh-gutter) + var(--line-w));
         } 
       }
 
-      /* Functional Utilities */
+      /* =================================================================
+         2. THEME ENGINE
+         ================================================================= */
+      [data-theme="swiss"] { /* Modern Clean */
+        --c-bg: #ffffff; --c-txt: #111; --c-surf: #f4f4f5; --c-accent: #000;
+        --line-w: 1px; --line-c: #e4e4e7;
+      }
+      [data-theme="blueprint"] { /* Technical */
+        --c-bg: #285496; --c-txt: #fff; --c-surf: #1e4072; --c-accent: #ffd700;
+        --line-w: 2px; --line-op: 0.5;
+        --pat: repeating-linear-gradient(to bottom, #fff 0, #fff 8px, transparent 8px, transparent 16px);
+        --line-v: var(--pat); --line-h: repeating-linear-gradient(to right, #fff 0, #fff 8px, transparent 8px, transparent 16px);
+      }
+      [data-theme="warning"] { /* Industrial */
+        --c-bg: #fbbf24; --c-txt: #111; --c-surf: #fffbeb; --c-accent: #000;
+        --line-w: 14px; --line-op: 1;
+        --pat: repeating-linear-gradient(45deg, #000 0, #000 10px, #fbbf24 10px, #fbbf24 20px);
+        --line-v: var(--pat); --line-h: var(--pat);
+      }
+      [data-theme="cyber"] { /* Neon */
+        --c-bg: #030712; --c-txt: #e2e8f0; --c-surf: #111827; --c-accent: #38bdf8;
+        --line-w: 1px; --line-op: 0.8; --line-filter: drop-shadow(0 0 5px #38bdf8);
+        --pat: linear-gradient(to bottom, #38bdf8, transparent, #38bdf8);
+        --line-v: var(--pat); --line-h: linear-gradient(to right, #38bdf8, transparent, #38bdf8);
+      }
+      [data-theme="arcade"] { /* RGB */
+        --c-bg: #2e1065; --c-txt: #fff; --c-surf: #581c87; --c-accent: #f472b6;
+        --line-w: 6px; --line-filter: blur(0.5px);
+        --pat: linear-gradient(to bottom, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7);
+        --line-v: var(--pat); --line-h: linear-gradient(to right, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7);
+      }
+
+      /* Direction Utilities */
       [data-dir="flow"] { --flip-y-top: 1; --flip-y-bottom: 1; --flip-x-left: 1; --flip-x-right: 1; }
       [data-dir="inward"] { --flip-y-top: 1; --flip-y-bottom: -1; --flip-x-left: 1; --flip-x-right: -1; }
       [data-dir="outward"] { --flip-y-top: -1; --flip-y-bottom: 1; --flip-x-left: -1; --flip-x-right: 1; }
 
-      [data-theme="neon"] { 
-        --c-bg:#09090b; --c-text:#e2e8f0; --c-surface:#18181b; --c-accent:#22d3ee; 
-        --line-w:20px; --line-c:#06b6d4; --line-filter:drop-shadow(0 0 8px #06b6d4); 
-      }
-      [data-theme="airmail"] { 
-        --c-bg:#fff; --c-text:#1e293b; --c-surface:#f1f5f9; --c-accent:#ef4444; 
-        --line-w:15px; 
-        --pattern: repeating-linear-gradient(45deg, #ef4444 0, #ef4444 10px, transparent 10px, transparent 20px, #3b82f6 20px, #3b82f6 30px, transparent 30px, transparent 40px); 
-        --line-bg-v: var(--pattern); --line-bg-h: var(--pattern); 
-      }
-
       /* =================================================================
-         2. CORE SETUP
+         3. CORE CSS (Reset & Base)
          ================================================================= */
       *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
       body { 
-        background: var(--c-bg); color: var(--c-text); font-family: var(--font-sans); 
-        transition: all 0.4s ease; overflow-x: hidden; line-height: 1.6; 
+        background: var(--c-bg); color: var(--c-txt); font-family: 'Inter', sans-serif; 
+        transition: background-color 0.5s ease, color 0.5s ease; overflow-x: hidden; line-height: 1.6; 
       }
       img { display: block; max-width: 100%; }
-      code { font-family: var(--font-mono); font-size: 0.85em; background: rgba(0,0,0,0.06); padding: 2px 4px; border-radius: 4px; }
+      code { font-family: 'JetBrains Mono', monospace; font-size: 0.8em; background: rgba(125,125,125,0.2); padding: 2px 5px; border-radius: 4px; }
 
       /* =================================================================
-         3. LH LAYOUT ENGINE (The Structure)
+         4. LH GRID ENGINE (Structural)
          ================================================================= */
       
-      /* .lh-shell: Wrapper luar untuk garis Horizontal */
-      .lh-shell { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
-      
-      .lh-shell::before, .lh-shell::after {
-        content: ''; position: absolute; pointer-events: none; z-index: 20;
-        left: 0; right: 0; height: var(--line-w); background: var(--line-bg-h);
-        filter: var(--line-filter); opacity: var(--line-op); transition: all 0.4s ease;
+      /* .lh-root: Wraps app. Handles Horizontal Lines. */
+      .lh-root { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+      .lh-root::before, .lh-root::after {
+        content: ''; position: absolute; left: 0; right: 0; height: var(--line-w); background: var(--line-h);
+        z-index: var(--z-horz); pointer-events: none; filter: var(--line-filter); opacity: var(--line-op); transition: all 0.5s ease;
       }
-      .lh-shell::before { top: var(--lh-head-h); transform: scaleY(var(--flip-y-top)); }
-      .lh-shell::after { bottom: var(--lh-foot-h); transform: scaleY(var(--flip-y-bottom)); }
+      .lh-root::before { top: var(--lh-header-h); transform: scaleY(var(--flip-y-top)); }
+      .lh-root::after { bottom: var(--lh-footer-h); transform: scaleY(var(--flip-y-bottom)); }
 
-      /* .lh-grid: Container utama untuk garis Vertikal */
-      .lh-grid { 
-        width: 100%; max-width: var(--lh-max-w); 
+      /* .lh-container: Main content. Handles Vertical Lines. */
+      .lh-container { 
+        width: 100%; max-width: var(--lh-width); 
         margin-inline: auto; padding-inline: var(--lh-gutter); 
         position: relative; display: flex; flex-direction: column; flex: 1;
+        transition: padding 0.5s ease;
       }
-
+      /* Lines are Desktop Only */
       @media (min-width: 1280px) {
-        .lh-grid::before, .lh-grid::after {
-          content: ''; position: absolute; top: 0; bottom: 0;
-          width: var(--line-w); background: var(--line-bg-v);
-          pointer-events: none; z-index: 10; 
-          filter: var(--line-filter); opacity: var(--line-op); 
-          transition: all 0.4s ease; transform-origin: center center;
+        .lh-container::before, .lh-container::after {
+          content: ''; position: absolute; top: 0; bottom: 0; width: var(--line-w); background: var(--line-v);
+          z-index: var(--z-line); pointer-events: none; transform-origin: center;
+          filter: var(--line-filter); opacity: var(--line-op); transition: all 0.5s ease;
         }
-        /* Outside Position */
-        .lh-grid::before { left: calc(var(--line-w) * -1); transform: scaleX(var(--flip-x-left)); }
-        .lh-grid::after { right: calc(var(--line-w) * -1); transform: scaleX(var(--flip-x-right)); }
+        .lh-container::before { left: calc(var(--line-w) * -1); transform: scaleX(var(--flip-x-left)); }
+        .lh-container::after { right: calc(var(--line-w) * -1); transform: scaleX(var(--flip-x-right)); }
       }
 
       /* =================================================================
-         4. LH CONTENT MODULES (The Components)
+         5. LH ZONE API (Component Logic)
          ================================================================= */
       
-      /* Base for all sections */
-      [class*="lh-"] { position: relative; }
-
-      /* A. lh-content (Standard) */
-      .lh-content { 
-        width: 100%; z-index: 1; padding-block: 2rem; margin-block: 2rem;
-      }
-
-      /* B. lh-overlay (Cover Line / Menimpa) */
-      .lh-overlay {
+      /* Base Class: .lh-zone
+         All logic lives here. Derived classes only set variables.
+      */
+      .lh-zone {
+        /* Defaults */
+        --lh-exp: var(--exp-zero); 
+        --lh-z:   var(--z-base);   
+        
+        position: relative;
+        width: 100%;
         margin-block: 2rem;
-        margin-inline: calc(var(--lh-gutter) * -1); width: calc(100% + (var(--lh-gutter) * 2));
-      }
-      @media (min-width: 1280px) {
-        .lh-overlay {
-          --offset: calc(var(--lh-gutter) + var(--line-w));
-          margin-inline: calc(var(--offset) * -1); width: calc(100% + (var(--offset) * 2));
-          z-index: 15; /* High Z-Index */
-        }
-      }
-
-      /* C. lh-edge (Touch Line / Menyentuh) */
-      .lh-edge {
-        margin-block: 2rem;
-        margin-inline: calc(var(--lh-gutter) * -1); width: calc(100% + (var(--lh-gutter) * 2));
-      }
-      @media (min-width: 1280px) {
-        .lh-edge {
-          --offset: var(--lh-gutter); /* Stops at 0 */
-          margin-inline: calc(var(--offset) * -1); width: calc(100% + (var(--offset) * 2));
-          z-index: 1; /* Normal Z-Index */
-        }
+        
+        /* The Logic */
+        z-index: var(--lh-z);
+        margin-inline: calc(var(--lh-exp) * -1);
+        width: calc(100% + (var(--lh-exp) * 2));
+        
+        transition: all 0.5s ease;
       }
 
-      /* D. lh-underlay (Behind Line / Di Belakang) */
-      .lh-underlay {
-        padding-inline: var(--lh-gutter); padding-block: 5rem; margin-block: 2rem;
-        margin-inline: calc(var(--lh-gutter) * -1); width: calc(100% + (var(--lh-gutter) * 2));
-        z-index: 1; /* Normal Z-Index (Lines are at 10) */
+      /* --- PRESETS --- */
+      
+      /* Cover: Overlaps vertical lines */
+      .lh-zone-cover { 
+        --lh-exp: var(--exp-cross); 
+        --lh-z:   var(--z-cover); 
       }
-      @media (min-width: 1280px) {
-        .lh-underlay {
-          --offset: calc(var(--lh-gutter) + var(--line-w));
-          margin-inline: calc(var(--offset) * -1); width: calc(100% + (var(--offset) * 2));
-        }
+      
+      /* Touch: Abuts vertical lines */
+      .lh-zone-touch { 
+        --lh-exp: var(--exp-edge);  
+        --lh-z:   var(--z-base); 
+      }
+      
+      /* Deep: Behind vertical lines */
+      .lh-zone-deep  { 
+        --lh-exp: var(--exp-cross); 
+        --lh-z:   var(--z-deep); 
+        padding-inline: var(--lh-gutter); padding-block: 4rem; 
       }
 
-      /* E. lh-viewport (Full Screen) */
-      .lh-viewport {
+      /* Max: Full Viewport */
+      .lh-zone-max {
+        --lh-z: var(--z-deep); /* Default behind lines */
+        
         width: 100vw; margin-left: -50vw; left: 50%;
-        padding-block: 6rem; z-index: 2;
+        padding-block: 6rem; position: relative; 
+        z-index: var(--lh-z);
+        transition: background 0.5s ease;
       }
-      .lh-viewport-inner { 
-        width: 100%; max-width: var(--lh-max-w); margin: 0 auto; padding-inline: var(--lh-gutter); 
+      
+      /* Max Cover: Covers EVERYTHING (including Horz Lines) */
+      .lh-zone-max-cover {
+        --lh-z: var(--z-roof); 
       }
+
+      .lh-zone-max-inner { width: 100%; max-width: var(--lh-width); margin: 0 auto; padding-inline: var(--lh-gutter); }
 
       /* =================================================================
-         5. COMPONENTS
+         6. UI UTILITIES
          ================================================================= */
-      .lh-header { 
-        height: var(--lh-head-h); display: flex; align-items: center; justify-content: space-between; 
-        position: relative; z-index: 50; background: var(--c-bg); 
-      }
-      .lh-footer { 
-        height: var(--lh-foot-h); display: flex; justify-content: center; align-items: center; 
-        font-size: 0.8rem; opacity: 0.7; 
-      }
-      .lh-badge { 
-        display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; 
-        font-weight: 700; text-transform: uppercase; border: 1px solid currentColor; margin-bottom: 1rem; font-family: var(--font-mono);
-      }
+      .lh-header { height: var(--lh-header-h); display: flex; align-items: center; justify-content: space-between; position: relative; z-index: var(--z-ui); background: var(--c-bg); transition: background 0.5s ease; }
+      .lh-footer { height: var(--lh-footer-h); display: flex; justify-content: center; align-items: center; font-size: 0.8rem; opacity: 0.7; }
+      .lh-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border: 1px solid currentColor; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
 
-      /* Dev UI */
-      .dev-btn { padding: 4px 8px; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; background: transparent; }
-      .dev-btn.active { background: var(--c-accent); color: var(--c-bg); border-color: var(--c-accent); }
-      .dev-controls { position: fixed; bottom: 2rem; right: 2rem; background: var(--c-surface); padding: 1rem; border-radius: 8px; border: 1px solid #ddd; z-index: 9999; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+      /* Dev Toolbar */
+      .dev-dock { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+      .dev-group { background: var(--c-surf); padding: 0.5rem; border-radius: 8px; display: flex; gap: 0.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 1px solid rgba(125,125,125,0.2); }
+      .dev-btn { padding: 6px 12px; border: none; background: transparent; color: var(--c-txt); font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 4px; opacity: 0.5; font-family: 'Inter', sans-serif; }
+      .dev-btn:hover { opacity: 1; background: rgba(125,125,125,0.1); }
+      .dev-btn.active { background: var(--c-accent); color: var(--c-bg); opacity: 1; }
     </style>
   </head>
-  <body data-dir="flow">
+  <body data-theme="swiss" data-dir="flow">
 
-    <div class="dev-controls">
-      <div>
-        <small style="display:block; margin-bottom:4px; font-weight:bold;">THEME</small>
-        <button class="dev-btn active" onclick="setTheme('', this)">Clean</button>
-        <button class="dev-btn" onclick="setTheme('neon', this)">Neon</button>
-        <button class="dev-btn" onclick="setTheme('airmail', this)">Airmail</button>
+    <div class="dev-dock">
+      <div class="dev-group">
+        <button class="dev-btn active" onclick="setTheme('swiss', this)">SWISS</button>
+        <button class="dev-btn" onclick="setTheme('blueprint', this)">BLUEPRINT</button>
+        <button class="dev-btn" onclick="setTheme('warning', this)">WARNING</button>
+        <button class="dev-btn" onclick="setTheme('cyber', this)">CYBER</button>
+        <button class="dev-btn" onclick="setTheme('arcade', this)">ARCADE</button>
       </div>
-      <div>
-        <small style="display:block; margin-bottom:4px; font-weight:bold;">DIRECTION</small>
-        <button class="dev-btn active" onclick="setDir('flow', this)">Flow</button>
-        <button class="dev-btn" onclick="setDir('inward', this)">In</button>
-        <button class="dev-btn" onclick="setDir('outward', this)">Out</button>
+      <div class="dev-group">
+        <button class="dev-btn active" onclick="setDir('flow', this)">FLOW</button>
+        <button class="dev-btn" onclick="setDir('inward', this)">IN</button>
+        <button class="dev-btn" onclick="setDir('outward', this)">OUT</button>
       </div>
     </div>
 
-    <div class="lh-shell">
-      <div class="lh-grid">
+    <div class="lh-root">
+      <div class="lh-container">
         
         <header class="lh-header">
-          <div style="font-weight: 800; font-size: 1.5rem;">LH.SYSTEM</div>
-          <code style="font-size: 0.9rem;">prefix: lh-*</code>
+          <div>
+            <div style="font-weight: 800; font-size: 1.5rem; line-height:1;">LH.BOILERPLATE</div>
+            <div style="font-size: 0.75rem; opacity: 0.6; font-family: monospace;">v2.0 Golden Copy</div>
+          </div>
+          <code style="font-size: 0.8rem;">prefix: lh-*</code>
         </header>
         
         <main>
           
-          <section class="lh-content">
-            <span class="lh-badge">.lh-overlay</span>
-            <h2>Overlay</h2>
-            <p>Varian ini menimpa garis vertikal (Z-Index: 15).</p>
+          <section class="lh-zone">
+            <span class="lh-badge">.lh-zone</span>
+            <h2>Standard Zone</h2>
+            <p>
+              Zona konten standar. Terikat di dalam gutter. Gunakan ini untuk teks artikel, form, dan konten umum.
+            </p>
           </section>
-          <div class="lh-overlay">
-             <img src="https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1400&q=80" style="height: 300px; object-fit: cover; width: 100%;">
+
+          <div class="lh-zone lh-zone-cover">
+             <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=80" style="height: 350px; object-fit: cover; width: 100%;">
+             <div style="padding: 1rem 0; font-size: 0.8rem; opacity: 0.7; text-align: center;">
+               <strong>.lh-zone-cover</strong> &mdash; Menutupi Garis Vertikal (Z-15)
+             </div>
           </div>
 
-          <section class="lh-content">
-            <span class="lh-badge">.lh-edge</span>
-            <h2>Edge</h2>
-            <p>Varian ini berhenti tepat sebelum garis vertikal (Z-Index: 1).</p>
-          </section>
-          <div class="lh-edge">
-             <img src="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1400&q=80" style="height: 300px; object-fit: cover; width: 100%;">
+          <div class="lh-zone lh-zone-touch">
+             <img src="https://images.unsplash.com/photo-1488554378835-f7acf46e6c98?auto=format&fit=crop&w=1400&q=80" style="height: 300px; object-fit: cover; width: 100%;">
+             <div style="padding: 1rem 0; font-size: 0.8rem; opacity: 0.7; text-align: center;">
+               <strong>.lh-zone-touch</strong> &mdash; Menyentuh Sisi Garis (Z-5)
+             </div>
           </div>
 
-          <section class="lh-content">
-            <span class="lh-badge">.lh-underlay</span>
-            <h2>Underlay</h2>
-            <p>Varian ini melebar ke luar, tapi posisinya di belakang garis vertikal.</p>
-          </section>
-          <section class="lh-underlay" style="background-color: rgba(0,0,0,0.05);">
+          <section class="lh-zone lh-zone-deep" style="background-color: var(--c-surf); border-block: 1px solid rgba(125,125,125,0.1);">
             <div style="text-align: center;">
-              <h3>Background Area</h3>
-              <p>Garis tetap terlihat di atas.</p>
+              <span class="lh-badge">.lh-zone-deep</span>
+              <h3>Deep Zone</h3>
+              <p style="max-width: 40ch; margin: 0 auto;">
+                Elemen background ini melebar menembus garis, namun berada di layer terbawah (Z-1). 
+                Garis grid akan terlihat melintas di atasnya (Coba tema Warning).
+              </p>
             </div>
           </section>
 
-          <section class="lh-viewport" style="background: var(--c-accent); color: var(--c-bg);">
-            <div class="lh-viewport-inner">
-              <span class="lh-badge" style="border-color: currentColor;">.lh-viewport</span>
-              <h2 style="color: inherit;">Viewport</h2>
-              <p>Full bleed (100vw).</p>
+          <section class="lh-zone">
+             <h3>Variable Override (DX)</h3>
+             <p>Contoh Custom Component yang dibuat hanya dengan mengubah variable <code>--lh-exp</code> dan <code>--lh-z</code> di inline style.</p>
+          </section>
+
+          <div class="lh-zone" 
+               style="--lh-exp: var(--exp-cross); --lh-z: 50; background: var(--c-accent); color: var(--c-bg); padding: 4rem;">
+            <div style="text-align: center;">
+              <h2 style="margin:0; font-size: 2rem;">CUSTOM HERO</h2>
+              <p style="opacity: 0.8;">Variable-driven configuration</p>
+            </div>
+          </div>
+
+          <section class="lh-zone">
+             <h3>Max Viewport Zones</h3>
+             <p>Dua varian full-width di bawah ini memiliki Z-Index yang berbeda.</p>
+          </section>
+
+          <section class="lh-zone-max" style="background: #22c55e; color: white;">
+            <div class="lh-zone-max-inner">
+              <span class="lh-badge">.lh-zone-max</span>
+              <h2>Behind Lines (Z-1)</h2>
+              <p>Garis vertikal masih terlihat di atas section hijau ini.</p>
+            </div>
+          </section>
+
+          <section class="lh-zone-max lh-zone-max-cover" style="background: #6366f1; color: white; --lh-z: var(--z-horz);">
+            <div class="lh-zone-max-inner">
+              <span class="lh-badge">.lh-zone-max-cover</span>
+              <h2>Roof Layer (Z-30)</h2>
+              <p>Section ungu ini menutupi segalanya, termasuk garis horizontal Header & Footer.</p>
             </div>
           </section>
 
         </main>
 
         <footer class="lh-footer">
-          LH Design System © 2025
+          LH Boilerplate © 2025
         </footer>
 
       </div>
@@ -260,8 +335,7 @@
 
     <script>
       function setTheme(name, btn) {
-        if (name) document.documentElement.setAttribute('data-theme', name);
-        else document.documentElement.removeAttribute('data-theme');
+        document.body.setAttribute('data-theme', name);
         btn.parentElement.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       }
