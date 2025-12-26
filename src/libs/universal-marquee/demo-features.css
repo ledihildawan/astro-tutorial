@@ -79,12 +79,12 @@
 #features .um-item:nth-child(4n) {
   color: #00ff00;
 }
-#features .um-item-separator {
+#features .um-separator {
   font-size: var(--features-separator-size);
   margin: var(--features-separator-margin);
   animation: spinSlow var(--features-spin-normal) linear infinite;
 }
-#features:hover .um-item-separator {
+#features:hover .um-separator {
   animation: spinFast var(--features-spin-fast) linear infinite;
 }
 #features::before {
