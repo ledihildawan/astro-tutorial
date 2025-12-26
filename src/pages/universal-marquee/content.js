@@ -1,4 +1,4 @@
-import { UniversalMarquee } from './main';
+import { UniversalMarquee } from "../../libs/universal-marquee/main";
 
 const initApp = () => {
   const ICONS = {
