@@ -1,554 +1,1202 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Marquee v4.0 Demo</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UniversalMarquee v8.1 Ultimate Demo</title>
     <style>
-        /* --- RESET & DEMO PAGE STYLES --- */
-        :root {
-            --bg: #0f172a;
-            --text: #f8fafc;
-            --accent: #38bdf8;
-            --card-bg: #1e293b;
-        }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding-bottom: 100px;
-            overflow-x: hidden;
-        }
-        h1, h2, p { margin: 0; }
-        
-        header {
-            text-align: center;
-            padding: 4rem 1rem;
-            background: linear-gradient(to bottom, #1e293b, #0f172a);
-        }
-        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--accent); }
-        header p { color: #94a3b8; }
+      /* --- UNIVERSAL MARQUEE v8.1 (MINIFIED CSS) --- */
+      /**
+ * UniversalMarquee v8.3 Styles
+ * Final Polish
+ */
 
-        section {
-            margin: 3rem 0;
-            border-top: 1px solid #334155;
-            padding-top: 1rem;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        .section-title {
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-            color: #cbd5e1;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .badge {
-            font-size: 0.75rem;
-            background: var(--accent);
-            color: #000;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
+      .um-host {
+        /* --- Layout & Context --- */
+        display: flex;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+        direction: var(--um-direction-attr, ltr);
+        contain: layout paint;
 
-        /* Demo Item Styles */
-        .logo-box {
-            width: 120px;
-            height: 60px;
-            background: var(--card-bg);
-            border: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #64748b;
+        /* --- Variables with Fallbacks --- */
+        --um-mask-width: 5%;
+        --um-gap: 2rem;
+
+        /* Animation Physics */
+        --um-duration: 0s;
+        --um-direction: normal;
+        --um-easing: linear;
+        --um-iteration: infinite;
+        --um-init-delay: 0s;
+        --um-play-state: running;
+
+        /* Internal Physics */
+        --um-delay: 0s;
+        --um-scroll-boost: 0px;
+        --um-align: center;
+
+        /* UX */
+        user-select: none;
+        touch-action: pan-y;
+        -webkit-user-drag: none;
+      }
+
+      /* Cursor States */
+      .um-host.um-cursor-grab {
+        cursor: grab;
+      }
+      .um-host.um-cursor-grabbing {
+        cursor: grabbing;
+      }
+
+      /* --- Center if Short State --- */
+      .um-host.um-centered .um-track {
+        width: 100%;
+        justify-content: center;
+        transform: none !important;
+        animation: none !important;
+      }
+
+      /* --- Masking Logic --- */
+      .um-host[data-mask='both'] {
+        mask-image: linear-gradient(
+          to right,
+          transparent 0%,
+          black var(--um-mask-width, 5%),
+          black calc(100% - var(--um-mask-width, 5%)),
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to right,
+          transparent 0%,
+          black var(--um-mask-width, 5%),
+          black calc(100% - var(--um-mask-width, 5%)),
+          transparent 100%
+        );
+      }
+      .um-host[data-mask='start'] {
+        mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width, 5%), black 100%);
+      }
+      .um-host[data-mask='end'] {
+        mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width, 5%)), transparent 100%);
+        -webkit-mask-image: linear-gradient(
+          to right,
+          black 0%,
+          black calc(100% - var(--um-mask-width, 5%)),
+          transparent 100%
+        );
+      }
+      .um-host.um-no-mask,
+      .um-host[data-mask='none'] {
+        mask-image: none;
+        -webkit-mask-image: none;
+      }
+
+      /* --- Track & Animation --- */
+      .um-track {
+        display: flex;
+        width: max-content;
+        flex-shrink: 0;
+        gap: var(--um-gap, 2rem);
+        align-items: var(--um-align, center);
+
+        will-change: transform;
+        transform: translate3d(var(--um-scroll-boost, 0px), 0, 0);
+      }
+
+      /* State: Animating */
+      .um-animating .um-track {
+        animation-name: um-scroll;
+        animation-duration: var(--um-duration, 10s);
+        animation-direction: var(--um-direction, normal);
+        animation-play-state: var(--um-play-state, running);
+
+        animation-timing-function: var(--um-easing, linear);
+        animation-iteration-count: var(--um-iteration, infinite);
+        animation-delay: calc(var(--um-delay, 0s) + var(--um-init-delay, 0s));
+      }
+
+      /* State: Dragging */
+      .um-dragging .um-track {
+        animation: none !important;
+      }
+
+      /* State: Paused */
+      .um-host.um-paused .um-track {
+        animation-play-state: paused;
+      }
+
+      /* Keyframes */
+      @keyframes um-scroll {
+        0% {
+          transform: translate3d(calc(0px + var(--um-scroll-boost, 0px)), 0, 0);
         }
-
-        .card-testimonial {
-            width: 280px;
-            padding: 1.5rem;
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            border: 1px solid #334155;
-            user-select: none; /* Penting untuk drag */
+        /* -50% selalu valid karena item dijamin genap/terduplikasi */
+        100% {
+          transform: translate3d(calc(-50% - (var(--um-gap, 2rem) / 2) + var(--um-scroll-boost, 0px)), 0, 0);
         }
-        .card-testimonial h4 { color: var(--accent); margin-bottom: 0.5rem; }
-        .card-testimonial p { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; }
+      }
 
-        .photo-item {
-            width: 200px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-            filter: grayscale(0.5);
-            transition: filter 0.3s;
-        }
-        .photo-item:hover { filter: grayscale(0); }
+      /* Items */
+      .um-item {
+        display: flex;
+        flex-shrink: 0;
+        pointer-events: auto;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      .um-item img {
+        pointer-events: none;
+        -webkit-user-drag: none;
+      }
 
-        .rtl-text {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #e2e8f0;
-            padding: 0 1rem;
-            background: #334155;
-            border-radius: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-        }
+      .um-separator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
 
-        /* --- UNIVERSAL MARQUEE v4.0 CSS --- */
-        .um-host {
-            display: flex;
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-            direction: var(--um-direction-attr, ltr);
-            contain: layout paint;
-            
-            --um-mask-width: 5%;
-            --um-gap: 2rem;
-            --um-duration: 0s;
-            --um-direction: normal; 
-            --um-delay: 0s;
-            --um-play-state: running;
-            --um-align: center;
-            --um-scroll-boost: 0px;
-            
-            user-select: none;
-            touch-action: pan-y;
-            -webkit-user-drag: none;
-        }
+      /* --- DEMO STYLES (PRETTY) --- */
+      :root {
+        --bg: #09090b;
+        --text: #e4e4e7;
+        --accent: #00dc82;
+        --panel: #18181b;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Inter', system-ui, sans-serif;
+        overflow-x: hidden;
+      }
 
-        .um-host.um-cursor-grab { cursor: grab; }
-        .um-host.um-cursor-grabbing { cursor: grabbing; }
+      header {
+        padding: 4rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid #27272a;
+        margin-bottom: 2rem;
+      }
+      h1 {
+        font-size: 3rem;
+        margin: 0 0 1rem;
+        background: linear-gradient(to right, #fff, #666);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      p.subtitle {
+        color: #a1a1aa;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
 
-        .um-host[data-mask="both"] {
-            mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
-        }
-        .um-host.um-no-mask { mask-image: none; -webkit-mask-image: none; }
+      section {
+        margin: 4rem auto;
+        max-width: 1200px;
+        padding: 0 1rem;
+      }
+      .label {
+        display: inline-block;
+        background: var(--accent);
+        color: #000;
+        padding: 0.25rem 0.75rem;
+        border-radius: 99px;
+        font-weight: bold;
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .demo-box {
+        background: var(--panel);
+        border: 1px solid #27272a;
+        border-radius: 1rem;
+        padding: 2rem 0;
+        overflow: hidden;
+        position: relative;
+      }
 
-        .um-track {
-            display: flex;
-            width: max-content;
-            flex-shrink: 0;
-            gap: var(--um-gap);
-            align-items: var(--um-align);
-            will-change: transform;
-            transform: translate3d(var(--um-scroll-boost), 0, 0);
-        }
+      /* Custom Item Styles */
+      .text-item {
+        font-size: 5rem;
+        font-weight: 900;
+        -webkit-text-stroke: 1px #3f3f46;
+        color: transparent;
+        transition: 0.3s;
+      }
+      .text-item:hover {
+        color: var(--accent);
+        -webkit-text-stroke: 1px var(--accent);
+      }
 
-        .um-animating .um-track {
-            animation-name: um-scroll;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-            animation-duration: var(--um-duration);
-            animation-direction: var(--um-direction);
-            animation-play-state: var(--um-play-state);
-            animation-delay: var(--um-delay);
-        }
+      .card-item {
+        width: 280px;
+        height: 160px;
+        background: #27272a;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        transition: transform 0.2s;
+        border: 1px solid #3f3f46;
+      }
+      .card-item:hover {
+        transform: scale(0.98);
+        border-color: var(--accent);
+      }
+      .card-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      .card-title {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
 
-        .um-dragging .um-track { animation: none !important; }
-        .um-host.um-paused .um-track { animation-play-state: paused; }
+      .photo-item {
+        width: 300px;
+        height: 400px;
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .photo-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .photo-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(to top, black, transparent);
+      }
 
-        @keyframes um-scroll {
-            0%   { transform: translate3d(calc(0px + var(--um-scroll-boost)), 0, 0); }
-            100% { transform: translate3d(calc(-50% - (var(--um-gap) / 2) + var(--um-scroll-boost)), 0, 0); }
-        }
-
-        .um-item { display: flex; flex-shrink: 0; pointer-events: auto; height: 100%; }
-        .um-item img { pointer-events: none; -webkit-user-drag: none; }
-        .um-separator { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      /* Spacer for scroll demo */
+      .spacer {
+        height: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3f3f46;
+        border-top: 1px dashed #27272a;
+        border-bottom: 1px dashed #27272a;
+        margin: 4rem 0;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <header>
-        <div class="container">
-            <h1>Universal Marquee v4.0</h1>
-            <p>GPU Accelerated • Inertia Drag • Scroll Velocity • Smart Performance</p>
-        </div>
+      <h1>UniversalMarquee v8.1</h1>
+      <p class="subtitle">
+        Ultimate Demo: Fixed Logic, Drag Physics, Snap-to-Item, and Lazy Loading. <br />Try dragging the marquees below!
+      </p>
     </header>
 
     <section>
-        <div class="container">
-            <h2 class="section-title">1. Infinite Loop <span class="badge">Performance Optimized</span></h2>
-            <div id="marquee-logos"></div>
-        </div>
+      <span class="label">Demo 1: High Performance Text</span>
+      <div class="demo-box">
+        <div id="hero-marquee"></div>
+      </div>
     </section>
 
     <section>
-        <div class="container">
-            <h2 class="section-title">2. Draggable & Momentum <span class="badge">Try Swiping!</span></h2>
-            <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">Grab and throw the cards. Notice the physics decay.</p>
-        </div>
-        <div id="marquee-cards" style="padding: 1rem 0; background: #0b1120;"></div>
+      <span class="label">Demo 2: Draggable + Snap Physics (Feature C)</span>
+      <p style="color: #71717a; margin-bottom: 1rem; font-size: 0.9rem">
+        Try dragging these cards. It will snap to the nearest item when released.
+      </p>
+      <div class="demo-box" style="background: transparent; border: none; padding: 0">
+        <div id="card-marquee"></div>
+      </div>
     </section>
+
+    <div class="spacer">Scroll down to trigger "Start When Visible" 👇</div>
 
     <section>
-        <div class="container">
-            <h2 class="section-title">3. Scroll Velocity & Randomize <span class="badge">Scroll Page Fast!</span></h2>
-            <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">The marquee accelerates when you scroll the window. Items are randomized on reload.</p>
-            <div id="marquee-photos"></div>
-        </div>
+      <span class="label">Demo 3: Start When Visible (Feature B)</span>
+      <div class="demo-box">
+        <div id="photo-marquee" style="height: 420px"></div>
+      </div>
     </section>
 
-    <section>
-        <div class="container">
-            <h2 class="section-title">4. RTL Support <span class="badge">Right-to-Left</span></h2>
-            <div id="marquee-rtl" style="margin-top: 1rem;"></div>
-        </div>
-    </section>
+    <script type="module">
+      /**
+       * UniversalMarquee v8.3 (Essentials Edition)
+       * Fixed: Added missing #initObservers method.
+       */
 
-    <div style="height: 100vh;"></div> <script type="module">
-        /**
-         * UniversalMarquee v4.0 Class Definition
-         * (Disatukan di sini agar bisa langsung jalan tanpa import external)
-         */
-        class UniversalMarquee {
-            static #DEFAULTS = {
-                speed: 50, gap: '2rem', direction: 'normal', alignItems: 'center', rtl: false,
-                minClones: 0, randomize: false, pauseOnInvisibility: true,
-                hoverBehavior: 'pause', draggable: false, dragSpeed: 1.2, dragMomentum: true,
-                scrollVelocity: false, mask: true, maskSide: 'both', maskWidth: '5%',
-                reducedMotionMode: 'stop',
-                items: [], separator: null, renderItem: (item) => document.createTextNode(String(item)),
-                onInit: () => {}, onDragStart: () => {}, onDragEnd: () => {}, onItemClick: () => {},
-            };
+      // Helper: Deep Merge (Safe for Arrays, Functions, and DOM Nodes)
+      function deepMerge(target, source) {
+        // 1. Return primitive, null, undefined directly
+        if (typeof source !== 'object' || source === null) return source;
 
-            constructor(selector, options = {}) {
-                this.root = document.querySelector(selector);
-                if (!this.root) throw new Error(`Node '${selector}' not found.`);
-                this.userOptions = options;
-                this.config = { ...UniversalMarquee.#DEFAULTS, ...options };
-                this._observers = []; this._resizeTimer = null; this._isManualPaused = false;
-                this._drag = { active: false, startX: 0, currentX: 0, lastTranslate: 0, hasMoved: false, velocity: 0, lastTime: 0 };
-                this._scroll = { currentOffset: 0, targetOffset: 0, rafId: null };
-                this.#init();
-            }
+        // 2. Return array copy directly (replace strategy)
+        if (Array.isArray(source)) return [...source];
 
-            #init() {
-                this.root.classList.add('um-host');
-                if (this.config.randomize) this.#shuffleItems();
-                this.#handleReducedMotion();
-                this.#evaluateResponsive();
-                this.#buildDOM();
-                this.#waitForAssets().then(() => {
-                    this.#syncPhysics();
-                    this.#attachObservers();
-                    this.#attachEvents();
-                    if (this.config.scrollVelocity) this.#initScrollTrigger();
-                    if (this.config.onInit) this.config.onInit(this);
-                });
-            }
+        // 3. Return DOM Nodes directly (prevent recursion on HTMLElement)
+        if (source.nodeType) return source;
 
-            #shuffleItems() {
-                for (let i = this.config.items.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [this.config.items[i], this.config.items[j]] = [this.config.items[j], this.config.items[i]];
-                }
-            }
-
-            #handleReducedMotion() {
-                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                    if (this.config.reducedMotionMode === 'stop') { this.config.speed = 0; this.pause(); }
-                    else if (this.config.reducedMotionMode === 'reduce-speed') { this.config.speed *= 0.15; }
-                }
-            }
-
-            #buildDOM() {
-                const singleSet = document.createDocumentFragment();
-                this.config.items.forEach((item, index) => {
-                    singleSet.appendChild(this.#createItemNode(item, index));
-                    if (this.config.separator) singleSet.appendChild(this.#createSeparatorNode());
-                });
-
-                this.track = document.createElement('div');
-                this.track.className = 'um-track';
-                
-                const temp = document.createElement('div');
-                temp.style.cssText = 'position:absolute;visibility:hidden;width:max-content;display:flex;gap:var(--um-gap);';
-                temp.appendChild(singleSet.cloneNode(true));
-                this.root.appendChild(temp);
-                this._contentWidth = temp.offsetWidth;
-                this.root.removeChild(temp);
-
-                let clones = 0;
-                if (this._contentWidth > 0) clones = Math.ceil((this.root.offsetWidth || window.innerWidth) / this._contentWidth);
-                clones = Math.max(clones, this.config.minClones);
-
-                const superGroup = document.createDocumentFragment();
-                for (let i = 0; i <= clones; i++) superGroup.appendChild(singleSet.cloneNode(true));
-
-                this.track.appendChild(superGroup.cloneNode(true));
-                const groupB = superGroup.cloneNode(true);
-                this.#sanitizeIds(groupB);
-                this.track.appendChild(groupB);
-                
-                this.root.innerHTML = '';
-                this.root.appendChild(this.track);
-                this.root.classList.add('um-animating');
-            }
-
-            #syncPhysics() {
-                if (!this.track) return;
-                const loopDist = this.track.scrollWidth / 2;
-                if (loopDist > 0) this.root.style.setProperty('--um-duration', `${loopDist / this.config.speed}s`);
-            }
-
-            #applyConfigStyles() {
-                this.root.style.setProperty('--um-align', this.config.alignItems);
-                this.root.style.setProperty('--um-direction-attr', this.config.rtl ? 'rtl' : 'ltr');
-                if (this.config.rtl) this.root.setAttribute('dir', 'rtl'); else this.root.removeAttribute('dir');
-                
-                if (this.config.mask && this.config.maskSide !== 'none') {
-                    this.root.setAttribute('data-mask', this.config.maskSide);
-                    this.root.style.setProperty('--um-mask-width', this.config.maskWidth);
-                } else { this.root.classList.add('um-no-mask'); }
-
-                this.config.draggable ? this.root.classList.add('um-cursor-grab') : this.root.classList.remove('um-cursor-grab');
-                this.root.style.setProperty('--um-gap', typeof this.config.gap === 'number' ? `${this.config.gap}px` : this.config.gap);
-                this.root.style.setProperty('--um-direction', this.config.direction);
-            }
-
-            #attachEvents() {
-                if (this.config.hoverBehavior === 'pause') {
-                    this.root.addEventListener('mouseenter', () => !this._drag.active && this.root.classList.add('um-paused'));
-                    this.root.addEventListener('mouseleave', () => !this._drag.active && !this._isManualPaused && this.root.classList.remove('um-paused'));
-                }
-                if (this.config.draggable) this.#initDraggable();
-            }
-
-            #attachObservers() {
-                const ro = new ResizeObserver(entries => {
-                    if (entries[0].contentRect.width === 0) return;
-                    clearTimeout(this._resizeTimer);
-                    this._resizeTimer = setTimeout(() => { this.#evaluateResponsive(); this.#syncPhysics(); }, 150);
-                });
-                ro.observe(this.root);
-                this._observers.push(ro);
-
-                if (this.config.pauseOnInvisibility) {
-                    const io = new IntersectionObserver(entries => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting && !this._isManualPaused) {
-                                this.root.classList.remove('um-paused');
-                            } else if (!entry.isIntersecting) {
-                                this.root.classList.add('um-paused');
-                            }
-                        });
-                    });
-                    io.observe(this.root);
-                    this._observers.push(io);
-                }
-            }
-
-            #initScrollTrigger() {
-                let lastY = window.scrollY;
-                const onScroll = () => {
-                    const currY = window.scrollY;
-                    const delta = currY - lastY;
-                    lastY = currY;
-                    this._scroll.targetOffset -= delta * 1.5;
-                    if (!this._scroll.rafId) this._scroll.rafId = requestAnimationFrame(this.#updateScrollPhysics.bind(this));
-                };
-                window.addEventListener('scroll', onScroll, { passive: true });
-                this._scrollListener = onScroll;
-            }
-
-            #updateScrollPhysics() {
-                this._scroll.currentOffset += (this._scroll.targetOffset - this._scroll.currentOffset) * 0.1;
-                this.root.style.setProperty('--um-scroll-boost', `${this._scroll.currentOffset}px`);
-                this._scroll.targetOffset *= 0.9;
-                if (Math.abs(this._scroll.currentOffset) < 0.5 && Math.abs(this._scroll.targetOffset) < 0.5) {
-                    this._scroll.currentOffset = 0; this._scroll.targetOffset = 0;
-                    this.root.style.setProperty('--um-scroll-boost', `0px`);
-                    this._scroll.rafId = null;
-                } else {
-                    this._scroll.rafId = requestAnimationFrame(this.#updateScrollPhysics.bind(this));
-                }
-            }
-
-            #initDraggable() {
-                const start = (e) => {
-                    if (e.button === 2) return;
-                    if (this._rafId) cancelAnimationFrame(this._rafId);
-                    this._drag.active = true; this._drag.hasMoved = false; this._drag.velocity = 0;
-                    this._drag.startX = (e.touches ? e.touches[0].clientX : e.clientX);
-                    this._drag.lastTime = performance.now();
-                    const style = window.getComputedStyle(this.track);
-                    this._drag.lastTranslate = (new WebKitCSSMatrix(style.transform)).m41;
-                    this._drag.currentX = this._drag.lastTranslate;
-                    this.root.classList.remove('um-animating');
-                    this.root.classList.add('um-dragging', 'um-cursor-grabbing');
-                    this.root.classList.remove('um-cursor-grab');
-                    this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
-                    if(this.config.onDragStart) this.config.onDragStart();
-                };
-                const move = (e) => {
-                    if (!this._drag.active) return;
-                    e.preventDefault();
-                    const now = performance.now();
-                    const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
-                    const delta = (clientX - this._drag.startX) * this.config.dragSpeed;
-                    if (now - this._drag.lastTime > 0) this._drag.velocity = (this._drag.velocity * 0.5) + ((delta / (now - this._drag.lastTime)) * 0.5);
-                    const newPos = this._drag.lastTranslate + delta;
-                    this.track.style.transform = `translate3d(${newPos}px, 0, 0)`;
-                    this._drag.currentX = newPos; this._drag.lastTime = now;
-                    if (Math.abs(delta) > 5) this._drag.hasMoved = true;
-                };
-                const end = () => {
-                    if (!this._drag.active) return;
-                    this._drag.active = false;
-                    this.root.classList.remove('um-dragging', 'um-cursor-grabbing');
-                    this.root.classList.add('um-cursor-grab');
-                    if (this.config.dragMomentum && Math.abs(this._drag.velocity) > 0.1) this.#startMomentum();
-                    else this.#snapToCSS();
-                    if(this.config.onDragEnd) this.config.onDragEnd();
-                };
-                this.root.addEventListener('mousedown', start); this.root.addEventListener('touchstart', start, {passive:false});
-                window.addEventListener('mousemove', move); window.addEventListener('touchmove', move, {passive:false});
-                window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
-                this._dragListeners = { start, move, end };
-            }
-
-            #removeDragListeners() {
-                if(!this._dragListeners) return;
-                const { start, move, end } = this._dragListeners;
-                this.root.removeEventListener('mousedown', start); this.root.removeEventListener('touchstart', start);
-                window.removeEventListener('mousemove', move); window.removeEventListener('touchmove', move);
-                window.removeEventListener('mouseup', end); window.removeEventListener('touchend', end);
-            }
-
-            #startMomentum() {
-                const loop = () => {
-                    this._drag.velocity *= 0.95;
-                    this._drag.currentX += this._drag.velocity * 16;
-                    this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
-                    if (Math.abs(this._drag.velocity) < 0.01) this.#snapToCSS();
-                    else this._rafId = requestAnimationFrame(loop);
-                };
-                loop();
-            }
-
-            #snapToCSS() {
-                const loopLen = this.track.scrollWidth / 2;
-                let norm = this._drag.currentX % loopLen;
-                if (norm > 0) norm -= loopLen;
-                const dur = parseFloat(getComputedStyle(this.root).getPropertyValue('--um-duration')) || 0;
-                this.root.style.setProperty('--um-delay', `${-1 * (Math.abs(norm) / loopLen) * dur}s`);
-                this.track.style.transform = '';
-                this.root.classList.add('um-animating');
-                if (this.config.hoverBehavior === 'pause' && this.root.matches(':hover')) this.root.classList.add('um-paused');
-            }
-
-            #createItemNode(item, i) {
-                const w = document.createElement('div'); w.className = 'um-item';
-                const c = this.config.renderItem(item, i);
-                if (typeof c === 'string') w.innerHTML = c; else w.appendChild(c);
-                if (this.config.onItemClick) {
-                    w.style.cursor = 'pointer';
-                    w.addEventListener('click', (e) => {
-                        if (this.config.draggable && this._drag.hasMoved) { e.preventDefault(); e.stopPropagation(); return; }
-                        this.config.onItemClick(item, i, e);
-                    });
-                }
-                return w;
-            }
-            #createSeparatorNode() {
-                const s = document.createElement('span'); s.className = 'um-separator';
-                this.config.separator instanceof Node ? s.appendChild(this.config.separator.cloneNode(true)) : s.innerHTML = this.config.separator;
-                return s;
-            }
-            #sanitizeIds(n) { if (n.id) n.removeAttribute('id'); n.querySelectorAll('[id]').forEach(e => e.removeAttribute('id')); }
-            async #waitForAssets() {
-                await Promise.all(Array.from(this.root.querySelectorAll('img')).map(i => {
-                    if(i.complete) return; return new Promise(r => { i.onload=i.onerror=r });
-                }));
-                if (document.fonts) try { await document.fonts.ready; } catch(e){}
-            }
-            #evaluateResponsive() {
-                const w = window.innerWidth;
-                let cfg = { ...UniversalMarquee.#DEFAULTS, ...this.userOptions };
-                if (this.userOptions.responsive) {
-                    Object.keys(this.userOptions.responsive).map(Number).sort((a,b)=>a-b).forEach(bp => {
-                        if(w>=bp) cfg = { ...cfg, ...this.userOptions.responsive[bp] };
-                    });
-                }
-                this.config = cfg; this.#applyConfigStyles();
-            }
-            
-            pause() { this._isManualPaused=true; this.root.classList.add('um-paused'); }
-            play() { this._isManualPaused=false; this.root.classList.remove('um-paused'); }
+        // 4. Ensure target is object
+        if (typeof target !== 'object' || target === null || Array.isArray(target)) {
+          target = {};
         }
 
-        /* --- INITIALIZATION --- */
+        // 5. Shallow copy target to avoid mutation
+        const output = { ...target };
 
-        // 1. Logo Marquee
-        const brands = ['NextJS', 'React', 'Vue', 'Svelte', 'Angular', 'Node', 'Deno', 'Bun', 'Vite'];
-        new UniversalMarquee('#marquee-logos', {
-            items: brands,
-            speed: 40,
-            gap: '3rem',
-            renderItem: (name) => `<div class="logo-box">${name}</div>`,
-            maskSide: 'both'
-        });
+        for (const key of Object.keys(source)) {
+          const value = source[key];
+          // Recursion only for plain objects
+          if (value instanceof Object && !Array.isArray(value) && typeof value !== 'function' && !value.nodeType) {
+            output[key] = deepMerge(output[key], value);
+          } else {
+            output[key] = value;
+          }
+        }
 
-        // 2. Testimonial Cards (Draggable)
-        const testimonials = [
-            { name: 'Sarah', role: 'Dev', text: 'Momentum drag feels native!' },
-            { name: 'James', role: 'CTO', text: 'Performance is outstanding.' },
-            { name: 'Annie', role: 'Designer', text: 'Seamless looping is magic.' },
-            { name: 'Pabel', role: 'Manager', text: 'Responsive config saves time.' },
-            { name: 'Mila', role: 'User', text: 'Very smooth animations.' }
-        ];
-        new UniversalMarquee('#marquee-cards', {
-            items: testimonials,
-            speed: 30,
-            draggable: true,
-            dragMomentum: true, // Enable Inertia
-            dragSpeed: 1.5,
-            gap: '1.5rem',
-            renderItem: (data) => `
-                <div class="card-testimonial">
-                    <h4>${data.name} <span style="font-size:0.7em; color:#64748b">(${data.role})</span></h4>
-                    <p>"${data.text}"</p>
-                </div>
-            `
-        });
+        return output;
+      }
 
-        // 3. Image Gallery (Scroll Velocity & Randomize)
-        // Using colored divs for offline safety, but mimicking images
-        const colors = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#34d399', '#22d3ee', '#818cf8', '#e879f9'];
-        new UniversalMarquee('#marquee-photos', {
-            items: colors,
-            speed: 60,
-            gap: '1rem',
-            scrollVelocity: true, // Boost speed on scroll
-            randomize: true,      // Shuffle on reload
-            renderItem: (color) => `<div class="photo-item" style="background:${color}"></div>`
-        });
+      export class UniversalMarquee {
+        // --- CONFIGURATION ESSENTIALS ---
+        static #DEFAULTS = {
+          debug: false,
 
-        // 4. RTL & Alignment
-        const arabicWords = ['مرحبا', 'أهلا', 'تصميم', 'إبداع', 'سرعة', 'أداء'];
-        new UniversalMarquee('#marquee-rtl', {
-            items: arabicWords,
-            rtl: true,
-            speed: 40,
+          // Content & Rendering
+          content: {
+            items: [],
+            renderItem: (item) => String(item),
+            separator: null,
+            wrapperClass: '',
+          },
+
+          // Visual Basics
+          style: {
+            speed: 50, // px per second
             gap: '2rem',
-            mask: false, // Turn off mask to see edges
-            renderItem: (word) => `<div class="rtl-text">${word}</div>`
-        });
+            direction: 'normal', // 'normal' (Left) | 'reverse' (Right)
+            align: 'center',
+            rtl: false,
+            mask: true, // true | 'start' | 'end' | 'both'
+            maskWidth: '5%',
+          },
 
+          // UX Behavior
+          behavior: {
+            autoStart: true,
+            startWhenVisible: false,
+            centerIfShort: true,
+            hoverAction: 'pause', // 'pause' | 'slow' | 'none'
+            hoverSpeedFactor: 0.3,
+            pauseOnInvisibility: true,
+            cloneStrategy: 'auto',
+            cloneCount: 0,
+            randomize: false,
+          },
+
+          // Physics (Draggable Default: TRUE)
+          physics: {
+            draggable: true,
+            dragSpeed: 1.2,
+            touchThreshold: 10,
+            snap: { enabled: false, friction: 0.1 },
+            scrollSync: { enabled: false, factor: 2.5, reverse: false },
+            lockAxis: true,
+          },
+
+          // Animation
+          animation: {
+            delay: 0,
+            loops: 'infinite',
+            easing: 'linear',
+            reducedMotion: 'stop',
+          },
+
+          performance: { lazyLoad: false },
+          a11y: { ariaLabel: 'Scrolling content', hideClones: true },
+
+          breakpoints: {},
+          callbacks: {
+            onInit: () => {},
+            onCycleComplete: () => {},
+            onItemClick: () => {},
+            onDragStart: () => {},
+            onDragEnd: () => {},
+            onMouseEnter: () => {},
+            onMouseLeave: () => {},
+            onBreakpointChange: () => {},
+          },
+        };
+
+        constructor(selector, options = {}) {
+          this.root = document.querySelector(selector);
+          if (!this.root) throw new Error(`UniversalMarquee: Node '${selector}' not found.`);
+
+          // Config Initialization
+          this._baseConfig = deepMerge({}, UniversalMarquee.#DEFAULTS);
+          this._baseConfig = deepMerge(this._baseConfig, options);
+          this.config = deepMerge({}, this._baseConfig);
+
+          // Internal State
+          this._observers = [];
+          this._rafId = null;
+          this._resizeTimer = null;
+          this._currentBreakpoint = null;
+          this._isDestroyed = false;
+          this._isCentered = false;
+          this._isManuallyPaused = false;
+          this._hasStarted = false;
+
+          // Physics State
+          this._drag = {
+            active: false,
+            startX: 0,
+            startY: 0,
+            currentX: 0,
+            lastTranslate: 0,
+            velocity: 0,
+            lastTime: 0,
+            hasMoved: false,
+            isLocked: false,
+            snapTarget: null,
+          };
+          this._scroll = { currentOffset: 0, targetOffset: 0, lastY: window.scrollY, rafId: null };
+          this._dragListeners = null;
+
+          this.#init();
+        }
+
+        // --- LOGGING ---
+        #log(...args) {
+          if (this.config.debug) console.log(`[UniversalMarquee]`, ...args);
+        }
+
+        // --- PUBLIC API ---
+
+        updateItems(newItems) {
+          this.#log('Updating items:', newItems.length);
+          this._baseConfig.content.items = newItems;
+          this.config.content.items = newItems;
+          if (this.config.behavior.randomize) this.#shuffleItems();
+          this.#buildDOM();
+          this.#waitForAssets().then(() => this.#syncCSS());
+        }
+
+        setSpeed(speed) {
+          this.config.style.speed = speed;
+          this.#syncCSS();
+        }
+
+        reverse() {
+          const current = this.config.style.direction;
+          this.config.style.direction = current === 'normal' ? 'reverse' : 'normal';
+          this.#syncCSS();
+        }
+
+        play() {
+          if (this._isCentered) return;
+          this.root.classList.remove('um-paused');
+          this.root.style.setProperty('--um-play-state', 'running');
+          this._hasStarted = true;
+          this._isManuallyPaused = false;
+          this.#log('State: Play');
+        }
+
+        pause() {
+          this.root.classList.add('um-paused');
+          this.root.style.setProperty('--um-play-state', 'paused');
+          this._isManuallyPaused = true;
+          this.#log('State: Pause');
+        }
+
+        destroy() {
+          this.#log('Destroying instance');
+          this._isDestroyed = true;
+          this._observers.forEach((o) => o.disconnect());
+          this.#toggleListeners(false);
+
+          if (this._rafId) cancelAnimationFrame(this._rafId);
+          if (this._scroll.rafId) cancelAnimationFrame(this._scroll.rafId);
+          clearTimeout(this._resizeTimer);
+
+          if (this.track) {
+            while (this.track.firstChild) this.track.removeChild(this.track.firstChild);
+          }
+
+          this.root.innerHTML = '';
+          this.root.className = '';
+          this.root.removeAttribute('style');
+          this.root.removeAttribute('role');
+          this.root.removeAttribute('aria-label');
+        }
+
+        // --- CORE ---
+
+        #init() {
+          this.#log('Initializing v8.3...');
+          this.root.classList.add('um-host');
+
+          this.root.setAttribute('role', 'marquee');
+          if (this.config.a11y.ariaLabel) {
+            this.root.setAttribute('aria-label', this.config.a11y.ariaLabel);
+          }
+
+          this.#checkBreakpoints();
+
+          if (this.config.behavior.randomize) this.#shuffleItems();
+
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            if (this.config.animation.reducedMotion === 'stop') this.config.style.speed = 0;
+            else this.config.style.speed *= 0.15;
+          }
+
+          this.#buildDOM();
+
+          this.#waitForAssets().then(() => {
+            this.#syncCSS();
+            this.#initObservers();
+            this.#toggleListeners(true);
+
+            const shouldWait = this.config.behavior.startWhenVisible;
+
+            if (this.config.behavior.autoStart && !this._isCentered && !shouldWait) {
+              this.play();
+            } else {
+              this.root.classList.add('um-paused');
+              this.root.style.setProperty('--um-play-state', 'paused');
+            }
+
+            if (this.config.callbacks.onInit) this.config.callbacks.onInit(this);
+          });
+        }
+
+        #checkBreakpoints() {
+          const width = window.innerWidth;
+          const breakpoints = Object.keys(this._baseConfig.breakpoints)
+            .map(Number)
+            .sort((a, b) => a - b);
+
+          let activeBp = null;
+          let targetConfig = deepMerge({}, this._baseConfig);
+
+          const activePoints = breakpoints.filter((bp) => width >= bp);
+          activePoints.forEach((bp) => {
+            targetConfig = deepMerge(targetConfig, this._baseConfig.breakpoints[bp]);
+            activeBp = bp;
+          });
+
+          if (this._currentBreakpoint !== activeBp) {
+            this.#log(`Breakpoint changed: ${activeBp || 'default'}`);
+            this.config = targetConfig;
+            this._currentBreakpoint = activeBp;
+            this.#syncCSS();
+            if (this.track) this.#buildDOM();
+            if (this.config.callbacks.onBreakpointChange) this.config.callbacks.onBreakpointChange(activeBp);
+          }
+        }
+
+        #buildDOM() {
+          const { items, separator, renderItem, wrapperClass } = this.config.content;
+          const frag = document.createDocumentFragment();
+
+          items.forEach((item, idx) => {
+            frag.appendChild(this.#createItem(item, idx, renderItem, wrapperClass));
+            if (separator) frag.appendChild(this.#createSeparator(separator));
+          });
+
+          this.track = document.createElement('div');
+          this.track.className = 'um-track';
+          this.track.addEventListener('animationiteration', () => {
+            if (this.config.callbacks.onCycleComplete) this.config.callbacks.onCycleComplete();
+          });
+
+          // Measure Content
+          const temp = document.createElement('div');
+          temp.style.cssText =
+            'position:absolute; visibility:hidden; width:max-content; display:flex; gap:var(--um-gap, 2rem);';
+          temp.appendChild(frag.cloneNode(true));
+          this.root.appendChild(temp);
+          const contentWidth = temp.offsetWidth;
+          this.root.removeChild(temp);
+
+          const viewW = this.root.offsetWidth || window.innerWidth;
+          if (this.config.behavior.centerIfShort && contentWidth < viewW) {
+            this.#log('Content shorter than viewport. Centering.');
+            this._isCentered = true;
+            this.root.classList.add('um-centered');
+            this.track.appendChild(frag.cloneNode(true));
+            this.root.innerHTML = '';
+            this.root.appendChild(this.track);
+            return;
+          } else {
+            this._isCentered = false;
+            this.root.classList.remove('um-centered');
+          }
+
+          // Cloning Strategy
+          let clones = 0;
+          const { cloneStrategy, cloneCount } = this.config.behavior;
+
+          if (cloneStrategy === 'exact') {
+            clones = cloneCount;
+          } else if (cloneStrategy === 'auto' && contentWidth > 0) {
+            let visibleSets = Math.ceil(viewW / contentWidth) + 1;
+            if ((visibleSets + 1) % 2 !== 0) visibleSets++; // Ensure even count for clean looping
+            clones = visibleSets;
+          }
+
+          this.track.appendChild(frag.cloneNode(true));
+          for (let i = 0; i < clones; i++) {
+            const clone = frag.cloneNode(true);
+            this.#sanitizeIds(clone);
+            if (this.config.a11y.hideClones) this.#markAsClone(clone);
+            this.track.appendChild(clone);
+          }
+
+          if (this.config.animation.loops === 'infinite' && cloneStrategy === 'none') {
+            const loopSet = frag.cloneNode(true);
+            this.#sanitizeIds(loopSet);
+            if (this.config.a11y.hideClones) this.#markAsClone(loopSet);
+            this.track.appendChild(loopSet);
+          }
+
+          this.root.innerHTML = '';
+          this.root.appendChild(this.track);
+          this.root.classList.add('um-animating');
+        }
+
+        #syncCSS() {
+          if (this._isDestroyed) return;
+          const s = this.root.style;
+          const c = this.config;
+
+          s.setProperty('--um-gap', typeof c.style.gap === 'number' ? `${c.style.gap}px` : c.style.gap);
+          s.setProperty('--um-align', c.style.align);
+          s.setProperty('--um-direction-attr', c.style.rtl ? 'rtl' : 'ltr');
+
+          // FIX: Direction is now pure config (Left or Right), not auto-reversed by RTL
+          s.setProperty('--um-direction', c.style.direction);
+
+          s.setProperty('--um-easing', c.animation.easing);
+          s.setProperty('--um-iteration', c.animation.loops === 'infinite' ? 'infinite' : String(c.animation.loops));
+          s.setProperty('--um-init-delay', `${c.animation.delay}ms`);
+
+          if (this.track && !this._isCentered) {
+            const effectiveDist = this.track.scrollWidth / 2;
+            const dur = c.style.speed > 0 ? effectiveDist / c.style.speed : 0;
+            s.setProperty('--um-duration', `${dur}s`);
+            this._baseDuration = dur;
+          }
+
+          // FIX: Mask supports boolean or specific string
+          if (c.style.mask) {
+            const maskVal = typeof c.style.mask === 'string' ? c.style.mask : 'both';
+            this.root.setAttribute('data-mask', maskVal);
+            s.setProperty('--um-mask-width', c.style.maskWidth);
+          } else {
+            this.root.removeAttribute('data-mask');
+          }
+
+          if (c.physics.draggable && !this._isCentered) this.root.classList.add('um-cursor-grab');
+          else this.root.classList.remove('um-cursor-grab');
+        }
+
+        // --- EVENTS & PHYSICS ---
+
+        #toggleListeners(enable) {
+          const method = enable ? 'addEventListener' : 'removeEventListener';
+
+          this.root[method]('mouseenter', this.#onMouseEnter);
+          this.root[method]('mouseleave', this.#onMouseLeave);
+
+          const scrollEnabled = this.config.physics.scrollSync?.enabled;
+          const reverseEnabled = this.config.physics.scrollSync?.reverse;
+
+          if (scrollEnabled || reverseEnabled) {
+            window[method]('scroll', this.#onScroll, { passive: true });
+          }
+
+          if (this.config.physics.draggable) {
+            this.#toggleDragListeners(enable);
+          }
+        }
+
+        #setPlaybackRate(rate) {
+          const anims = this.track.getAnimations();
+          const scrollAnim = anims.find(a => a.animationName === 'um-scroll');
+          
+          if (scrollAnim) {
+            scrollAnim.playbackRate = rate;
+          }
+        }
+
+        #onMouseEnter = () => {
+          if (this._drag.active || this._isCentered) return;
+
+          const action = this.config.behavior.hoverAction;
+          const factor = this.config.behavior.hoverSpeedFactor || 0.3;
+
+          if (action === 'pause') {
+            this.root.classList.add('um-paused');
+          } else if (action === 'slow') {
+            this.#setPlaybackRate(factor);
+          }
+          
+          if (this.config.callbacks.onMouseEnter) this.config.callbacks.onMouseEnter();
+        }
+
+        #onMouseLeave = () => {
+          if (this._drag.active || this._isCentered) return;
+          
+          const action = this.config.behavior.hoverAction;
+
+          if (action === 'pause') {
+            if (!this._isManuallyPaused) this.root.classList.remove('um-paused');
+          } else if (action === 'slow') {
+            this.#setPlaybackRate(1);
+          }
+          
+          if (this.config.callbacks.onMouseLeave) this.config.callbacks.onMouseLeave();
+        }
+
+        #onScroll = () => {
+          if (this._isDestroyed || this._isCentered) return;
+          const currentY = window.scrollY;
+          const delta = currentY - this._scroll.lastY;
+          this._scroll.lastY = currentY;
+
+          const { enabled, factor, reverse } = this.config.physics.scrollSync;
+
+          if (enabled) {
+            this._scroll.targetOffset -= delta * factor;
+            if (!this._scroll.rafId) this._scroll.rafId = requestAnimationFrame(this.#loopScrollBoost);
+          }
+
+          if (reverse && Math.abs(delta) > 2) {
+            const isDown = delta > 0;
+            const newDir = isDown ? 'normal' : 'reverse';
+            this.root.style.setProperty('--um-direction', newDir);
+          }
+        };
+
+        #loopScrollBoost = () => {
+          if (this._isDestroyed) return;
+          this._scroll.currentOffset += (this._scroll.targetOffset - this._scroll.currentOffset) * 0.1;
+          this.root.style.setProperty('--um-scroll-boost', `${this._scroll.currentOffset}px`);
+          this._scroll.targetOffset *= 0.9;
+
+          if (Math.abs(this._scroll.currentOffset) < 0.5 && Math.abs(this._scroll.targetOffset) < 0.5) {
+            this._scroll.currentOffset = 0;
+            this.root.style.setProperty('--um-scroll-boost', '0px');
+            this._scroll.rafId = null;
+          } else {
+            this._scroll.rafId = requestAnimationFrame(this.#loopScrollBoost);
+          }
+        };
+
+        // --- DRAG SYSTEM ---
+        #toggleDragListeners(enable) {
+          const method = enable ? 'addEventListener' : 'removeEventListener';
+          if (!this._dragListeners) {
+            this._dragListeners = {
+              start: (e) => this.#dragStart(e),
+              move: (e) => this.#dragMove(e),
+              end: (e) => this.#dragEnd(e),
+            };
+          }
+          const { start, move, end } = this._dragListeners;
+          this.root[method]('mousedown', start);
+          this.root[method]('touchstart', start, { passive: false });
+          window[method]('mousemove', move);
+          window[method]('touchmove', move, { passive: false });
+          window[method]('mouseup', end);
+          window[method]('touchend', end);
+        }
+
+        #dragStart(e) {
+          if (this._isCentered) return;
+          if (e.button === 2) return;
+          if (this._rafId) cancelAnimationFrame(this._rafId);
+
+          this._drag.active = true;
+          this._drag.hasMoved = false;
+          this._drag.isLocked = false;
+          this._drag.velocity = 0;
+
+          const point = e.touches ? e.touches[0] : e;
+          this._drag.startX = point.clientX;
+          this._drag.startY = point.clientY;
+          this._drag.lastTime = performance.now();
+
+          const style = window.getComputedStyle(this.track).transform;
+          const Matrix = window.DOMMatrix || window.WebKitCSSMatrix;
+          const matrix = new Matrix(style);
+
+          this._drag.lastTranslate = matrix.m41;
+          this._drag.currentX = this._drag.lastTranslate;
+
+          if (this.config.callbacks.onDragStart) this.config.callbacks.onDragStart();
+        }
+
+        #dragMove(e) {
+          if (!this._drag.active || this._isCentered || this._drag.isLocked) return;
+
+          const point = e.touches ? e.touches[0] : e;
+          const dx = point.clientX - this._drag.startX;
+          const dy = point.clientY - this._drag.startY;
+
+          if (this.config.physics.lockAxis && e.touches) {
+            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 5) {
+              this._drag.isLocked = true;
+              this._drag.active = false;
+              return;
+            }
+          }
+
+          if (!this._drag.hasMoved && Math.abs(dx) < this.config.physics.touchThreshold) return;
+
+          if (e.cancelable) e.preventDefault();
+
+          if (!this._drag.hasMoved) {
+            this.root.classList.add('um-dragging', 'um-cursor-grabbing');
+            this.root.classList.remove('um-animating', 'um-cursor-grab');
+            this._drag.hasMoved = true;
+          }
+
+          const now = performance.now();
+          const dt = now - this._drag.lastTime;
+          const deltaX = dx * this.config.physics.dragSpeed;
+
+          const instantV = (this._drag.lastTranslate + deltaX - this._drag.currentX) / dt;
+          if (dt > 0) {
+            this._drag.velocity = this._drag.velocity * 0.5 + instantV * 0.5;
+          }
+
+          this._drag.currentX = this._drag.lastTranslate + deltaX;
+          this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
+          this._drag.lastTime = now;
+        }
+
+        #dragEnd() {
+          if (!this._drag.active) return;
+          this._drag.active = false;
+
+          this.root.classList.remove('um-dragging', 'um-cursor-grabbing');
+          this.root.classList.add('um-cursor-grab');
+
+          if (this._drag.hasMoved) {
+            if (Math.abs(this._drag.velocity) > 0.1 || this.config.physics.snap.enabled) {
+              this.#momentumLoop();
+            } else {
+              this.#snapToCSS();
+            }
+          }
+          if (this.config.callbacks.onDragEnd) this.config.callbacks.onDragEnd();
+        }
+
+        #momentumLoop() {
+          if (this._isDestroyed) return;
+
+          this._drag.velocity *= 0.95;
+          this._drag.currentX += this._drag.velocity * 16;
+          this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
+
+          if (Math.abs(this._drag.velocity) < 0.1) {
+            if (this.config.physics.snap.enabled) {
+              this.#calculateSnapTarget();
+              this._rafId = requestAnimationFrame(this.#snapLoop.bind(this));
+            } else {
+              this.#snapToCSS();
+            }
+          } else {
+            this._rafId = requestAnimationFrame(this.#momentumLoop.bind(this));
+          }
+        }
+
+        #calculateSnapTarget() {
+          if (!this.track.children[0]) return;
+          const itemW = this.track.children[0].offsetWidth;
+          const gapVal = parseFloat(getComputedStyle(this.root).getPropertyValue('--um-gap')) || 0;
+          const unit = itemW + gapVal;
+          this._drag.snapTarget = Math.round(this._drag.currentX / unit) * unit;
+        }
+
+        #snapLoop() {
+          if (this._isDestroyed) return;
+          const dist = this._drag.snapTarget - this._drag.currentX;
+          const friction = this.config.physics.snap.friction || 0.1;
+
+          this._drag.currentX += dist * friction;
+          this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
+
+          if (Math.abs(dist) < 0.5) {
+            this._drag.currentX = this._drag.snapTarget;
+            this.track.style.transform = `translate3d(${this._drag.currentX}px, 0, 0)`;
+            this.#snapToCSS();
+          } else {
+            this._rafId = requestAnimationFrame(this.#snapLoop.bind(this));
+          }
+        }
+
+        #snapToCSS() {
+          const loopLen = this.track.scrollWidth / 2;
+          let norm = this._drag.currentX % loopLen;
+          if (norm > 0) norm -= loopLen;
+
+          const progress = Math.abs(norm) / loopLen;
+          const durationStr = getComputedStyle(this.root).getPropertyValue('--um-duration');
+          const delay = -1 * progress * (parseFloat(durationStr) || 0);
+
+          this.root.style.setProperty('--um-delay', `${delay}s`);
+          this.track.style.transform = '';
+          this.root.classList.add('um-animating');
+        }
+
+        // --- OBSERVERS ---
+        #initObservers() {
+          const ro = new ResizeObserver((entries) => {
+            if (entries[0].contentRect.width === 0) return;
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => {
+              this.#checkBreakpoints();
+              this.#syncCSS();
+            }, 150);
+          });
+          ro.observe(this.root);
+          this._observers.push(ro);
+
+          const io = new IntersectionObserver(
+            (e) => {
+              e.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  if (this.config.behavior.startWhenVisible && !this._hasStarted) {
+                    this._hasStarted = true;
+                    this.play();
+                  }
+
+                  if (this.config.behavior.pauseOnInvisibility) {
+                    if (this.config.behavior.autoStart && !this._isCentered && !this._isManuallyPaused) {
+                      this.root.classList.remove('um-paused');
+                    }
+                  }
+                } else {
+                  if (this.config.behavior.pauseOnInvisibility) {
+                    this.root.classList.add('um-paused');
+                  }
+                }
+              });
+            },
+            { rootMargin: '50px' }
+          );
+
+          io.observe(this.root);
+          this._observers.push(io);
+        }
+
+        // --- DOM HELPERS ---
+
+        #appendContent(parent, content) {
+          if (content === null || content === undefined) return;
+          if (Array.isArray(content) || content instanceof NodeList) {
+            Array.from(content).forEach((item) => this.#appendContent(parent, item));
+            return;
+          }
+          if (content instanceof Node) {
+            parent.appendChild(content.cloneNode(true));
+            return;
+          }
+          parent.insertAdjacentHTML('beforeend', String(content));
+        }
+
+        #createItem(data, idx, renderer, wrapperClass) {
+          const el = document.createElement('div');
+          el.className = 'um-item';
+          if (wrapperClass) el.classList.add(wrapperClass);
+
+          let safeRenderer = typeof renderer === 'function' ? renderer : (d) => String(d);
+
+          try {
+            const content = safeRenderer(data, idx);
+            this.#appendContent(el, content);
+          } catch (e) {
+            console.error('UniversalMarquee: Error rendering item', e);
+            el.textContent = 'Error';
+          }
+
+          if (this.config.performance.lazyLoad) {
+            const imgs = el.querySelectorAll('img');
+            imgs.forEach((img) => {
+              img.setAttribute('loading', 'lazy');
+              img.onload = () => {
+                if (this._resizeTimer) clearTimeout(this._resizeTimer);
+                this._resizeTimer = setTimeout(() => this.#syncCSS(), 100);
+              };
+            });
+          }
+
+          if (this.config.callbacks.onItemClick) {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', (e) => {
+              if (this.config.physics.draggable && this._drag.hasMoved) return;
+              this.config.callbacks.onItemClick(data, idx, e);
+            });
+          }
+          return el;
+        }
+
+        #createSeparator(content) {
+          const el = document.createElement('span');
+          el.className = 'um-separator';
+          el.setAttribute('aria-hidden', 'true');
+          this.#appendContent(el, content);
+          return el;
+        }
+
+        #markAsClone(frag) {
+          const childs = frag.children ? Array.from(frag.children) : [frag];
+          childs.forEach((c) => {
+            c.setAttribute('aria-hidden', 'true');
+            c.setAttribute('data-clone', 'true');
+          });
+        }
+
+        #sanitizeIds(node) {
+          if (node.id) node.removeAttribute('id');
+          node.querySelectorAll('[id]').forEach((e) => e.removeAttribute('id'));
+        }
+
+        #shuffleItems() {
+          const items = this.config.content.items;
+          for (let i = items.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [items[i], items[j]] = [items[j], items[i]];
+          }
+        }
+
+        async #waitForAssets() {
+          if (this.config.performance.lazyLoad) return Promise.resolve();
+          const imgs = Array.from(this.root.querySelectorAll('img'));
+          await Promise.all(
+            imgs.map((img) => {
+              if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+              return new Promise((r) => {
+                img.onload = r;
+                img.onerror = r;
+              });
+            })
+          );
+          if (document.fonts)
+            try {
+              await document.fonts.ready;
+            } catch (e) {}
+        }
+      }
+
+      /* --- DEMO IMPLEMENTATION --- */
+      // 1. Hero Text Marquee
+      const textItems = ['CREATIVE', 'INNOVATION', 'DESIGN', 'FUTURE', 'CONCEPT', 'DIGITAL'];
+      new UniversalMarquee('#hero-marquee', {
+        content: {
+          items: textItems,
+          renderItem: (text) => {
+            console.log(text);
+            return `<span class="text-item">${text}</span>`;
+          },
+        },
+        style: {
+          speed: 100,
+          gap: '4rem',
+          mask: true,
+          maskWidth: '10%',
+        },
+      });
+
+      // 2. Card Marquee (Draggable + Snap)
+      const features = [
+        { icon: '⚡', title: 'Fast' },
+        { icon: '🖐', title: 'Draggable' },
+        { icon: '🎯', title: 'Snapping' },
+        { icon: '👁', title: 'Lazy Load' },
+        { icon: '📱', title: 'Responsive' },
+        { icon: '🎮', title: 'Physics' },
+        { icon: '🧩', title: 'Modular' },
+      ];
+
+      new UniversalMarquee('#card-marquee', {
+        content: {
+          items: features,
+          renderItem: (data) => {
+            console.log(data);
+            return `
+        <div class="card-item">
+          <div class="card-icon">${data.icon}</div>
+          <div class="card-title">${data.title} asd</div>
+        </div>
+      `;
+          },
+        },
+        style: {
+          speed: 30,
+          gap: '1.5rem',
+          mask: false,
+        },
+        physics: {
+          draggable: true,
+          snap: {
+            enabled: false, // FEATURE C: Enables carousel-like snapping
+            friction: 0.1,
+          },
+        },
+        behavior: {
+          hoverAction: 'slow',
+        },
+      });
+
+      // 3. Photo Marquee (Lazy Load + Start When Visible)
+      // Using placeholder images
+      const photos = [
+        'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&q=80',
+        'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80',
+        'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=80',
+        'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=600&q=80',
+        'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80',
+      ];
+
+      new UniversalMarquee('#photo-marquee', {
+        content: {
+          items: photos,
+          renderItem: (src) => `
+        <div class="photo-item">
+          <img src="${src}" alt="Demo" />
+          <div class="photo-overlay">Example</div>
+        </div>
+      `,
+        },
+        style: {
+          speed: 60,
+          gap: '1rem',
+          direction: 'reverse', // Reverse direction
+        },
+        performance: {
+          lazyLoad: true, // Enable lazy load optimization
+        },
+        behavior: {
+          startWhenVisible: true, // FEATURE B: Only starts when scrolled into view
+          autoStart: true,
+        },
+        physics: {
+          draggable: true,
+        },
+      });
     </script>
-</body>
+  </body>
 </html>
