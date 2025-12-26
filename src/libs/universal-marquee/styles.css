@@ -1,6 +1,5 @@
 /**
- * UniversalMarquee v9.0 Styles
- * Optimasi: GPU-forced rendering & sub-pixel stability.
+ * UniversalMarquee v9.0 Styles (Optimized for Rendering Performance)
  */
 
 .um-host {
@@ -9,7 +8,9 @@
   overflow: hidden;
   position: relative;
   direction: var(--um-direction-attr, ltr);
-  contain: layout paint;
+  
+  /* Optimasi: Batasi scope browser untuk layout & paint */
+  contain: content; 
   
   /* Defaults & Variables */
   --um-mask-width: 5%;
@@ -29,7 +30,7 @@
   touch-action: pan-y; 
   -webkit-user-drag: none;
 
-  /* Stabilitas Visual */
+  /* Stabilitas Visual & GPU forcing */
   backface-visibility: hidden;
   perspective: 1000px;
   transform-style: preserve-3d;
@@ -46,7 +47,7 @@
   animation: none !important;
 }
 
-/* Masking (Improved Gradient) */
+/* Masking */
 .um-host[data-mask="both"] {
   mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black var(--um-mask-width), black calc(100% - var(--um-mask-width)), transparent 100%);
@@ -60,15 +61,14 @@
   -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - var(--um-mask-width)), transparent 100%);
 }
 
-/* Track & Animation Core */
+/* Track Core */
 .um-track {
   display: flex;
   width: max-content;
   flex-shrink: 0;
   gap: var(--um-gap); 
   align-items: var(--um-align); 
-  will-change: transform;
-  /* Paksa GPU dengan 0.01px Z-axis */
+  /* will-change akan dikontrol secara dinamis via JS untuk efisiensi RAM */
   transform: translate3d(var(--um-scroll-boost), 0, 0.01px);
 }
 
@@ -79,7 +79,6 @@
   animation-play-state: var(--um-play-state);
   animation-timing-function: var(--um-easing);
   animation-iteration-count: var(--um-iteration);
-  /* Presisi delay untuk melanjutkan posisi */
   animation-delay: calc(var(--um-delay) + var(--um-init-delay));
 }
 
@@ -94,5 +93,17 @@
 .um-item {
   display: flex; flex-shrink: 0; height: 100%; box-sizing: border-box;
 }
-.um-item img { pointer-events: none; -webkit-user-drag: none; }
+.um-item img { 
+  pointer-events: none; 
+  -webkit-user-drag: none;
+  image-rendering: -webkit-optimize-contrast; /* Menjaga ketajaman gambar */
+}
 .um-separator { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Support for Reduced Motion (Hemat Resource & A11y) */
+@media (prefers-reduced-motion: reduce) {
+  .um-animating .um-track {
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+  }
+}

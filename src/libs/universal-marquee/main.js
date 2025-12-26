@@ -1,6 +1,5 @@
 /**
- * UniversalMarquee v9.0 (Ultra-Stable Edition)
- * Fixed: Sub-pixel gaps, resize jumping, and background-tab desync.
+ * UniversalMarquee v9.0 (Ultra-Stable & Resource-Efficient Edition)
  */
 
 function deepMerge(target, source) {
@@ -100,13 +99,14 @@ export class UniversalMarquee {
     const separators = Array.from(this.track.querySelectorAll('.um-separator:not([data-clone="true"])'));
     const gap = this.#parseGap(this.config.style.gap);
     
-    // Peningkatan: Menggunakan getBoundingClientRect untuk presisi sub-pixel
+    // Batch Read: Menghindari forced synchronous layout
     let totalWidth = 0;
     items.forEach(el => totalWidth += el.getBoundingClientRect().width);
     separators.forEach(el => totalWidth += el.getBoundingClientRect().width);
 
     this._singleLoopWidth = totalWidth + ((items.length + separators.length) * gap);
     
+    // Batch Write: Menggunakan RAF untuk sinkronisasi style
     requestAnimationFrame(() => this.#syncCSS());
   }
 
@@ -147,7 +147,6 @@ export class UniversalMarquee {
     
     this.root.style.setProperty('--um-delay', `-${(progress * dur).toFixed(4)}s`);
     
-    // Double-RAF untuk transisi mulus dari inline-transform kembali ke CSS Animation
     this.track.style.transform = `translate3d(${norm.toFixed(2)}px, 0, 0.01px)`;
     requestAnimationFrame(() => {
       this.root.classList.add('um-animating');
@@ -159,34 +158,41 @@ export class UniversalMarquee {
 
   #initObservers() {
     const ro = new ResizeObserver(() => {
-      clearTimeout(this._resizeTimer);
-      this._resizeTimer = setTimeout(() => this.#measureAndSync(), 150);
+      if (this._resizeTimer) cancelAnimationFrame(this._resizeTimer);
+      this._resizeTimer = requestAnimationFrame(() => {
+        if (!this._isDestroyed) this.#measureAndSync();
+      });
     });
     ro.observe(this.root);
-    if (this.track) ro.observe(this.track);
     this._observers.push(ro);
 
     const io = new IntersectionObserver((e) => {
       e.forEach(entry => {
         if (entry.isIntersecting) {
+          // Hemat Resource: Aktifkan will-change hanya saat terlihat
+          this.track.style.willChange = 'transform';
           if (this.config.behavior.startWhenVisible && !this._hasStarted) this.play();
-          if (this.config.behavior.pauseOnInvisibility && !this._isManuallyPaused) this.root.classList.remove('um-paused');
+          if (this.config.behavior.pauseOnInvisibility && !this._isManuallyPaused) {
+            this.root.classList.remove('um-paused');
+          }
         } else {
-          if (this.config.behavior.pauseOnInvisibility) this.root.classList.add('um-paused');
+          // Bebaskan GPU memory saat di luar layar
+          this.track.style.willChange = 'auto';
+          if (this.config.behavior.pauseOnInvisibility) {
+            this.root.classList.add('um-paused');
+          }
         }
       });
-    }, { rootMargin: '50px' });
+    }, { rootMargin: '100px' });
     io.observe(this.root);
     this._observers.push(io);
 
-    // Visibility Change: Mencegah lonjakan animasi saat kembali ke tab
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.root.classList.add('um-paused');
       else if (!this._isManuallyPaused) this.root.classList.remove('um-paused');
     });
   }
 
-  // --- Sisa fungsi dasar yang dipertahankan ---
   play() { if (this._isCentered) return; this.root.classList.remove('um-paused'); this.root.style.setProperty('--um-play-state', 'running'); this._hasStarted = true; this._isManuallyPaused = false; }
   pause() { this.root.classList.add('um-paused'); this.root.style.setProperty('--um-play-state', 'paused'); this._isManuallyPaused = true; }
   
@@ -228,7 +234,6 @@ export class UniversalMarquee {
     this.root.classList.add('um-animating');
   }
 
-  // ... (Fungsi helper lainnya: #dragMove, #onScroll, etc tetap ada di background)
   #dragStart(e) {
     if (this._isCentered || e.button === 2) return;
     if (this._rafId) cancelAnimationFrame(this._rafId);
@@ -250,7 +255,10 @@ export class UniversalMarquee {
     const dy = point.clientY - this._drag.startY;
     if (this.config.physics.lockAxis && Math.abs(dy) > Math.abs(dx)) return;
     if (!this._drag.hasMoved && Math.abs(dx) < this.config.physics.touchThreshold) return;
+    
+    // Non-passive listener diperlukan di sini jika ingin mematikan scroll default
     if (e.cancelable) e.preventDefault();
+    
     if (!this._drag.hasMoved) {
       this.root.classList.add('um-dragging', 'um-cursor-grabbing');
       this.root.classList.remove('um-animating');
@@ -354,9 +362,11 @@ export class UniversalMarquee {
 
   #toggleListeners(enable) {
     const method = enable ? 'addEventListener' : 'removeEventListener';
-    this.root[method]('mouseenter', this.#onMouseEnter);
-    this.root[method]('mouseleave', this.#onMouseLeave);
-    if (this.config.physics.scrollSync?.enabled) window[method]('scroll', this._boundOnScroll, { passive: true });
+    const opt = { passive: true }; // Optimasi performa scroll
+    
+    this.root[method]('mouseenter', this.#onMouseEnter, opt);
+    this.root[method]('mouseleave', this.#onMouseLeave, opt);
+    if (this.config.physics.scrollSync?.enabled) window[method]('scroll', this._boundOnScroll, opt);
     if (this.config.physics.draggable) this.#toggleDragListeners(enable);
   }
 
@@ -379,15 +389,18 @@ export class UniversalMarquee {
 
   #toggleDragListeners(enable) {
     const m = enable ? 'addEventListener' : 'removeEventListener';
-    const start = (e) => this.#dragStart(e);
-    const move = (e) => this.#dragMove(e);
-    const end = () => this.#dragEnd();
-    this.root[m]('mousedown', start);
-    this.root[m]('touchstart', start, { passive: false });
-    window[m]('mousemove', move);
-    window[m]('touchmove', move, { passive: false });
-    window[m]('mouseup', end);
-    window[m]('touchend', end);
+    const passiveOpt = { passive: true };
+    const nonPassiveOpt = { passive: false };
+
+    this.root[m]('mousedown', (e) => this.#dragStart(e), passiveOpt);
+    this.root[m]('touchstart', (e) => this.#dragStart(e), passiveOpt);
+    
+    // Perlu non-passive untuk lockAxis atau menghentikan scroll saat dragging
+    window[m]('mousemove', (e) => this.#dragMove(e), nonPassiveOpt);
+    window[m]('touchmove', (e) => this.#dragMove(e), nonPassiveOpt);
+    
+    window[m]('mouseup', () => this.#dragEnd(), passiveOpt);
+    window[m]('touchend', () => this.#dragEnd(), passiveOpt);
   }
 
   updateItems(newItems) {
