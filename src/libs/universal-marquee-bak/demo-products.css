@@ -53,6 +53,18 @@
   transition: var(--transition-slow); /* Menggunakan variabel core */
 }
 
+@media (max-width: 48rem) {
+  .product-view-card {
+    width: 100%;
+    height: 280px;
+    max-width: 100%;
+  }
+  
+  .product-view-card:hover {
+    transform: translateY(-10px) scale(1.01);
+  }
+}
+
 /* Glass Sheen Effect on Hover */
 .product-view-card::after {
   content: '';
@@ -112,6 +124,15 @@
   transition: var(--transition-normal);
 }
 
+@media (max-width: 48rem) {
+  .view-label {
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 0.65rem;
+  }
+}
+
 /* Info Overlay (Slide up) */
 .product-info-overlay {
   position: absolute;
@@ -123,6 +144,14 @@
   opacity: 0;
   transform: translateY(20px);
   transition: var(--transition-normal);
+}
+
+@media (max-width: 48rem) {
+  .product-info-overlay {
+    padding: 20px;
+    opacity: 0.95;
+    transform: translateY(0);
+  }
 }
 
 .product-view-card:hover .product-info-overlay {

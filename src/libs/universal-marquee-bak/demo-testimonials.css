@@ -55,6 +55,17 @@
   transition: var(--transition-slow);
 }
 
+@media (max-width: 48rem) {
+  .testimonial-card {
+    width: 100%;
+    padding: var(--spacing-md, 1.5rem);
+  }
+  
+  .testimonial-card:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
 /* Decorative Quote Mark */
 .testimonial-card::before {
   content: '"';
@@ -104,6 +115,14 @@
   transition: var(--transition-normal);
 }
 
+@media (max-width: 48rem) {
+  .t-avatar {
+    width: 48px;
+    height: 48px;
+    border-width: 2px;
+  }
+}
+
 .t-avatar img {
   width: 100%;
   height: 100%;
@@ -129,6 +148,12 @@
   font-family: var(--font-family-heading);
 }
 
+@media (max-width: 48rem) {
+  .t-name {
+    font-size: 1rem;
+  }
+}
+
 .t-handle {
   font-size: 0.95rem;
   font-weight: 500;
@@ -148,6 +173,13 @@
   line-height: 1.7;
   color: var(--color-text-main);
   opacity: 0.95;
+}
+
+@media (max-width: 48rem) {
+  .t-body {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
 }
 
 .t-footer {

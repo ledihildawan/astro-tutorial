@@ -27,6 +27,16 @@
   position: relative;
   will-change: transform, box-shadow;
 }
+
+@media (max-width: 48rem) {
+  #features {
+    --features-font-size: clamp(1.5rem, 4vw, 2.5rem);
+    --features-separator-size: 3rem;
+    --features-padding-v: var(--spacing-md, 1.5rem);
+    margin: var(--spacing-lg, 2.5rem) auto;
+    max-width: 100%;
+  }
+}
 #features:hover {
   --features-rainbow-duration: 3s;
   opacity: 1;
@@ -60,6 +70,12 @@
 #features .um-item > span {
   padding: var(--spacing-sm) var(--spacing-lg);
   display: block;
+}
+
+@media (max-width: 48rem) {
+  #features .um-item > span {
+    padding: var(--spacing-sm, 1rem) var(--spacing-md, 1.5rem);
+  }
 }
 #features:hover .um-item {
   transform: translateY(-6px);
