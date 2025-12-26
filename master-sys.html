@@ -1,314 +1,274 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Layout System: Touch Variant</title>
+    <title>LH Design System</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
       /* =================================================================
-         1. BASE VARIABLES
+         1. LH TOKENS (Variables)
          ================================================================= */
       :root {
-        --max-width: 1080px;      
-        --gutter: 1.5rem; 
-        --header-h: 4rem;
-        --footer-h: 4rem;
+        /* LH System Metrics */
+        --lh-max-w: 1080px;      
+        --lh-gutter: 1.5rem; 
+        --lh-head-h: 4rem;
+        --lh-foot-h: 4rem;
         
-        --body-bg: #f8fafc; 
-        --body-text: #334155; 
-        --surface-bg: #ffffff; 
-        --accent-color: #0f172a; 
-        --font-family: 'Inter', sans-serif;
+        /* Colors */
+        --c-bg: #f8fafc; --c-text: #334155; --c-surface: #ffffff; --c-accent: #0f172a; 
+        --font-sans: 'Inter', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
         
-        --line-width: 1px; 
-        --line-opacity: 1; 
-        --line-color: #cbd5e1; 
-        --line-filter: none;
-        --line-bg-vert: var(--line-color); 
-        --line-bg-horz: var(--line-color);
-        
-        --flip-top: 1; --flip-bottom: 1; --flip-left: 1; --flip-right: 1;
+        /* Line Settings */
+        --line-w: 1px; --line-op: 1; --line-c: #cbd5e1; --line-filter: none;
+        --line-bg-v: var(--line-c); --line-bg-h: var(--line-c);
+        --flip-y-top: 1; --flip-y-bottom: 1; --flip-x-left: 1; --flip-x-right: 1;
       }
       
+      /* Desktop Activation (>= 1280px) */
       @media (min-width: 1280px) { 
         :root { 
-          --gutter: 3rem; 
-          --header-h: 5rem;
-          --footer-h: 5rem;
+          --lh-gutter: 3rem; 
+          --lh-head-h: 5rem; 
+          --lh-foot-h: 5rem; 
         } 
       }
 
-      /* DIRECTION LOGIC */
-      [data-direction="flow"] { --flip-top: 1; --flip-bottom: 1; --flip-left: 1; --flip-right: 1; }
-      [data-direction="inward"] { --flip-top: 1; --flip-bottom: -1; --flip-left: 1; --flip-right: -1; }
-      [data-direction="outward"] { --flip-top: -1; --flip-bottom: 1; --flip-left: -1; --flip-right: 1; }
+      /* Functional Utilities */
+      [data-dir="flow"] { --flip-y-top: 1; --flip-y-bottom: 1; --flip-x-left: 1; --flip-x-right: 1; }
+      [data-dir="inward"] { --flip-y-top: 1; --flip-y-bottom: -1; --flip-x-left: 1; --flip-x-right: -1; }
+      [data-dir="outward"] { --flip-y-top: -1; --flip-y-bottom: 1; --flip-x-left: -1; --flip-x-right: 1; }
 
-      /* THEMES */
       [data-theme="neon"] { 
-        --body-bg:#09090b; --body-text:#e2e8f0; --surface-bg:#18181b; --accent-color:#22d3ee; 
-        --line-width:20px; --line-color:#06b6d4; --line-filter:drop-shadow(0 0 8px #06b6d4); 
+        --c-bg:#09090b; --c-text:#e2e8f0; --c-surface:#18181b; --c-accent:#22d3ee; 
+        --line-w:20px; --line-c:#06b6d4; --line-filter:drop-shadow(0 0 8px #06b6d4); 
       }
       [data-theme="airmail"] { 
-        --body-bg:#fff; --body-text:#1e293b; --surface-bg:#f1f5f9; --accent-color:#ef4444; 
-        --line-width:15px; 
+        --c-bg:#fff; --c-text:#1e293b; --c-surface:#f1f5f9; --c-accent:#ef4444; 
+        --line-w:15px; 
         --pattern: repeating-linear-gradient(45deg, #ef4444 0, #ef4444 10px, transparent 10px, transparent 20px, #3b82f6 20px, #3b82f6 30px, transparent 30px, transparent 40px); 
-        --line-bg-vert: var(--pattern); --line-bg-horz: var(--pattern); 
+        --line-bg-v: var(--pattern); --line-bg-h: var(--pattern); 
       }
 
       /* =================================================================
-         2. CORE LAYOUT
+         2. CORE SETUP
          ================================================================= */
       *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-      
       body { 
-        background: var(--body-bg); color: var(--body-text); font-family: var(--font-family); 
-        transition: background-color 0.4s ease, color 0.4s ease; 
-        overflow-x: hidden; line-height: 1.6; 
+        background: var(--c-bg); color: var(--c-text); font-family: var(--font-sans); 
+        transition: all 0.4s ease; overflow-x: hidden; line-height: 1.6; 
       }
       img { display: block; max-width: 100%; }
+      code { font-family: var(--font-mono); font-size: 0.85em; background: rgba(0,0,0,0.06); padding: 2px 4px; border-radius: 4px; }
 
-      .layout-shell { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+      /* =================================================================
+         3. LH LAYOUT ENGINE (The Structure)
+         ================================================================= */
       
-      .layout-container { 
-        width: 100%; max-width: var(--max-width); 
-        margin-inline: auto; padding-inline: var(--gutter); 
+      /* .lh-shell: Wrapper luar untuk garis Horizontal */
+      .lh-shell { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+      
+      .lh-shell::before, .lh-shell::after {
+        content: ''; position: absolute; pointer-events: none; z-index: 20;
+        left: 0; right: 0; height: var(--line-w); background: var(--line-bg-h);
+        filter: var(--line-filter); opacity: var(--line-op); transition: all 0.4s ease;
+      }
+      .lh-shell::before { top: var(--lh-head-h); transform: scaleY(var(--flip-y-top)); }
+      .lh-shell::after { bottom: var(--lh-foot-h); transform: scaleY(var(--flip-y-bottom)); }
+
+      /* .lh-grid: Container utama untuk garis Vertikal */
+      .lh-grid { 
+        width: 100%; max-width: var(--lh-max-w); 
+        margin-inline: auto; padding-inline: var(--lh-gutter); 
         position: relative; display: flex; flex-direction: column; flex: 1;
       }
 
-      .layout-shell::before, .layout-shell::after {
-        content: ''; position: absolute; pointer-events: none; 
-        filter: var(--line-filter); opacity: var(--line-opacity); 
-        transition: all 0.4s ease; z-index: 20;
-      }
-      .layout-shell::before { 
-        left: 0; right: 0; height: var(--line-width); background: var(--line-bg-horz); 
-        top: var(--header-h); transform: scaleY(var(--flip-top)); 
-      }
-      .layout-shell::after { 
-        left: 0; right: 0; height: var(--line-width); background: var(--line-bg-horz); 
-        bottom: var(--footer-h); transform: scaleY(var(--flip-bottom)); 
-      }
-
-      /* VERTICAL LINES (>= 1280px) */
       @media (min-width: 1280px) {
-        .layout-container::before, .layout-container::after {
+        .lh-grid::before, .lh-grid::after {
           content: ''; position: absolute; top: 0; bottom: 0;
-          width: var(--line-width); background: var(--line-bg-vert);
+          width: var(--line-w); background: var(--line-bg-v);
           pointer-events: none; z-index: 10; 
-          filter: var(--line-filter); opacity: var(--line-opacity);
+          filter: var(--line-filter); opacity: var(--line-op); 
           transition: all 0.4s ease; transform-origin: center center;
         }
         /* Outside Position */
-        .layout-container::before { left: calc(var(--line-width) * -1); transform: scaleX(var(--flip-left)); }
-        .layout-container::after { right: calc(var(--line-width) * -1); transform: scaleX(var(--flip-right)); }
+        .lh-grid::before { left: calc(var(--line-w) * -1); transform: scaleX(var(--flip-x-left)); }
+        .lh-grid::after { right: calc(var(--line-w) * -1); transform: scaleX(var(--flip-x-right)); }
       }
 
       /* =================================================================
-         3. SECTION VARIANTS
+         4. LH CONTENT MODULES (The Components)
          ================================================================= */
       
-      .section-std { padding-block: 4rem; position: relative; z-index: 1; width: 100%; }
+      /* Base for all sections */
+      [class*="lh-"] { position: relative; }
 
-      /* --- A. FLUSH (COVER) --- 
-         Menutupi Garis. Z-Index Tinggi.
-      */
-      .section-flush {
+      /* A. lh-content (Standard) */
+      .lh-content { 
+        width: 100%; z-index: 1; padding-block: 2rem; margin-block: 2rem;
+      }
+
+      /* B. lh-overlay (Cover Line / Menimpa) */
+      .lh-overlay {
         margin-block: 2rem;
-        margin-inline: calc(var(--gutter) * -1);
-        width: calc(100% + (var(--gutter) * 2));
+        margin-inline: calc(var(--lh-gutter) * -1); width: calc(100% + (var(--lh-gutter) * 2));
       }
       @media (min-width: 1280px) {
-        .section-flush {
-          /* Offset: Gutter + Line Width */
-          --offset: calc(var(--gutter) + var(--line-width));
-          margin-inline: calc(var(--offset) * -1);
-          width: calc(100% + (var(--offset) * 2));
-          position: relative; z-index: 15; /* Di ATAS garis */
+        .lh-overlay {
+          --offset: calc(var(--lh-gutter) + var(--line-w));
+          margin-inline: calc(var(--offset) * -1); width: calc(100% + (var(--offset) * 2));
+          z-index: 15; /* High Z-Index */
         }
       }
 
-      /* --- B. TOUCH (ABUTTING) --- 
-         Menyentuh Sisi Garis. Tidak overlap.
-      */
-      .section-touch {
+      /* C. lh-edge (Touch Line / Menyentuh) */
+      .lh-edge {
         margin-block: 2rem;
-        margin-inline: calc(var(--gutter) * -1);
-        width: calc(100% + (var(--gutter) * 2));
+        margin-inline: calc(var(--lh-gutter) * -1); width: calc(100% + (var(--lh-gutter) * 2));
       }
       @media (min-width: 1280px) {
-        .section-touch {
-          /* Offset: HANYA Gutter. Berhenti di 0px. */
-          --offset: var(--gutter); 
-          margin-inline: calc(var(--offset) * -1);
-          width: calc(100% + (var(--offset) * 2));
-          position: relative; z-index: 1; /* Di BAWAH garis */
+        .lh-edge {
+          --offset: var(--lh-gutter); /* Stops at 0 */
+          margin-inline: calc(var(--offset) * -1); width: calc(100% + (var(--offset) * 2));
+          z-index: 1; /* Normal Z-Index */
         }
       }
 
-      /* --- C. INNER (BEHIND) --- 
-         Di belakang garis.
-      */
-      .section-inner {
-        padding-inline: var(--gutter); padding-block: 5rem;
-        position: relative; z-index: 1; 
-        margin-inline: calc(var(--gutter) * -1);
-        width: calc(100% + (var(--gutter) * 2));
+      /* D. lh-underlay (Behind Line / Di Belakang) */
+      .lh-underlay {
+        padding-inline: var(--lh-gutter); padding-block: 5rem; margin-block: 2rem;
+        margin-inline: calc(var(--lh-gutter) * -1); width: calc(100% + (var(--lh-gutter) * 2));
+        z-index: 1; /* Normal Z-Index (Lines are at 10) */
       }
       @media (min-width: 1280px) {
-        .section-inner {
-          /* Offset: Gutter + Line Width agar background full di belakang garis */
-          --offset: calc(var(--gutter) + var(--line-width));
-          margin-inline: calc(var(--offset) * -1);
-          width: calc(100% + (var(--offset) * 2));
+        .lh-underlay {
+          --offset: calc(var(--lh-gutter) + var(--line-w));
+          margin-inline: calc(var(--offset) * -1); width: calc(100% + (var(--offset) * 2));
         }
       }
 
-      .section-bleed {
+      /* E. lh-viewport (Full Screen) */
+      .lh-viewport {
         width: 100vw; margin-left: -50vw; left: 50%;
-        padding-block: 6rem; position: relative; z-index: 2;
+        padding-block: 6rem; z-index: 2;
       }
-      .bleed-wrapper { width: 100%; max-width: var(--max-width); margin: 0 auto; padding-inline: var(--gutter); }
+      .lh-viewport-inner { 
+        width: 100%; max-width: var(--lh-max-w); margin: 0 auto; padding-inline: var(--lh-gutter); 
+      }
 
       /* =================================================================
-         4. UI COMPONENT
+         5. COMPONENTS
          ================================================================= */
-      .theme-toggle-btn {
-        position: fixed; bottom: 2rem; right: 2rem; z-index: 10000;
-        width: 3.5rem; height: 3.5rem; border-radius: 50%;
-        background: var(--accent-color); color: var(--body-bg); border: none; cursor: pointer;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem; transition: transform 0.2s;
+      .lh-header { 
+        height: var(--lh-head-h); display: flex; align-items: center; justify-content: space-between; 
+        position: relative; z-index: 50; background: var(--c-bg); 
       }
-      .theme-toggle-btn:hover { transform: scale(1.1); }
-      
-      .theme-panel {
-        position: fixed; bottom: 6.5rem; right: 2rem; z-index: 9999;
-        background: var(--surface-bg); color: var(--body-text);
-        border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2); padding: 1.5rem; width: 340px;
-        opacity: 0; visibility: hidden; transform: translateY(20px);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      .lh-footer { 
+        height: var(--lh-foot-h); display: flex; justify-content: center; align-items: center; 
+        font-size: 0.8rem; opacity: 0.7; 
       }
-      .theme-panel.is-open { opacity: 1; visibility: visible; transform: translateY(0); }
-      
-      .panel-section { margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; }
-      .panel-title { font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.8rem; opacity: 0.6; letter-spacing: 1px; font-weight: 700; }
-      
-      .dir-controls { display: flex; gap: 0.5rem; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 8px; }
-      .dir-btn { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--body-text); }
-      .dir-btn.active { background: var(--surface-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--accent-color); }
-      
-      .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-      .theme-swatch { background: transparent; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 0.5rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
-      .theme-swatch.active { border-color: var(--accent-color); background: rgba(0,0,0,0.05); font-weight: bold; }
-      .color-preview { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
-      
-      .site-header { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 50; background: var(--body-bg); }
-      .site-footer { height: var(--footer-h); display: flex; justify-content: center; align-items: center; font-size: 0.8rem; opacity: 0.7; }
-      .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border: 1px solid currentColor; margin-bottom: 1rem; }
-      h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-color); }
-      p { margin-bottom: 1.5rem; opacity: 0.9; max-width: 60ch; }
+      .lh-badge { 
+        display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; 
+        font-weight: 700; text-transform: uppercase; border: 1px solid currentColor; margin-bottom: 1rem; font-family: var(--font-mono);
+      }
+
+      /* Dev UI */
+      .dev-btn { padding: 4px 8px; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; background: transparent; }
+      .dev-btn.active { background: var(--c-accent); color: var(--c-bg); border-color: var(--c-accent); }
+      .dev-controls { position: fixed; bottom: 2rem; right: 2rem; background: var(--c-surface); padding: 1rem; border-radius: 8px; border: 1px solid #ddd; z-index: 9999; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
     </style>
   </head>
-  <body data-direction="flow">
-    
-    <button class="theme-toggle-btn" onclick="togglePanel()">🎨</button>
-    <div class="theme-panel" id="themePanel">
-      <div class="panel-section">
-        <div class="panel-title">Pattern Direction</div>
-        <div class="dir-controls">
-          <button class="dir-btn active" onclick="setDirection('flow', this)">Flow >></button>
-          <button class="dir-btn" onclick="setDirection('inward', this)">Inward >&lt;</button>
-          <button class="dir-btn" onclick="setDirection('outward', this)">Out &lt;></button>
-        </div>
+  <body data-dir="flow">
+
+    <div class="dev-controls">
+      <div>
+        <small style="display:block; margin-bottom:4px; font-weight:bold;">THEME</small>
+        <button class="dev-btn active" onclick="setTheme('', this)">Clean</button>
+        <button class="dev-btn" onclick="setTheme('neon', this)">Neon</button>
+        <button class="dev-btn" onclick="setTheme('airmail', this)">Airmail</button>
       </div>
-      <div class="panel-section">
-        <div class="panel-title">Themes</div>
-        <div class="theme-grid">
-          <button class="theme-swatch active" onclick="setTheme('')"><div class="color-preview" style="background: #cbd5e1;"></div><span>Clean</span></button>
-          <button class="theme-swatch" onclick="setTheme('neon')"><div class="color-preview" style="background: #06b6d4;"></div><span>Neon</span></button>
-          <button class="theme-swatch" onclick="setTheme('airmail')"><div class="color-preview" style="background: repeating-linear-gradient(45deg, red, blue);"></div><span>Airmail</span></button>
-        </div>
+      <div>
+        <small style="display:block; margin-bottom:4px; font-weight:bold;">DIRECTION</small>
+        <button class="dev-btn active" onclick="setDir('flow', this)">Flow</button>
+        <button class="dev-btn" onclick="setDir('inward', this)">In</button>
+        <button class="dev-btn" onclick="setDir('outward', this)">Out</button>
       </div>
     </div>
 
-    <div class="layout-shell">
-      <div class="layout-container">
+    <div class="lh-shell">
+      <div class="lh-grid">
         
-        <header class="site-header">
-          <div style="font-size: 1.5rem; font-weight: 800;">VARIANTS.SYS</div>
-          <nav>v6.0 Complete</nav>
+        <header class="lh-header">
+          <div style="font-weight: 800; font-size: 1.5rem;">LH.SYSTEM</div>
+          <code style="font-size: 0.9rem;">prefix: lh-*</code>
         </header>
         
         <main>
           
-          <section class="section-std">
-            <span class="badge">01. Flush (Cover)</span>
-            <h2>Covering The Line</h2>
-            <p>Z-Index gambar lebih tinggi. Gambar menabrak dan menutupi garis.</p>
+          <section class="lh-content">
+            <span class="lh-badge">.lh-overlay</span>
+            <h2>Overlay</h2>
+            <p>Varian ini menimpa garis vertikal (Z-Index: 15).</p>
           </section>
-          <div class="section-flush">
-             <img 
-                src="https://images.unsplash.com/photo-1519011985187-444d62641929?auto=format&fit=crop&w=1400&q=80" 
-                alt="Cover" style="height: 300px; object-fit: cover; width: 100%;">
+          <div class="lh-overlay">
+             <img src="https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1400&q=80" style="height: 300px; object-fit: cover; width: 100%;">
           </div>
 
-          <section class="section-std">
-            <span class="badge">02. Touch (New)</span>
-            <h2>Touching The Line</h2>
-            <p>
-              Gambar ini berhenti <strong>TEPAT</strong> di sebelah dalam garis. Tidak menutupi, tidak di belakang. 
-              Sangat terlihat bedanya jika pakai tema <strong>Neon</strong> (Shadow neon akan jatuh di atas gambar).
-            </p>
+          <section class="lh-content">
+            <span class="lh-badge">.lh-edge</span>
+            <h2>Edge</h2>
+            <p>Varian ini berhenti tepat sebelum garis vertikal (Z-Index: 1).</p>
           </section>
-          <div class="section-touch">
-             <img 
-                src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1400&q=80" 
-                alt="Touch" style="height: 300px; object-fit: cover; width: 100%;">
+          <div class="lh-edge">
+             <img src="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1400&q=80" style="height: 300px; object-fit: cover; width: 100%;">
           </div>
 
-          <section class="section-std">
-            <span class="badge">03. Inner (Behind)</span>
-            <h2>Behind The Line</h2>
-            <p>Background melebar keluar, tapi garis tetap merender di atasnya.</p>
+          <section class="lh-content">
+            <span class="lh-badge">.lh-underlay</span>
+            <h2>Underlay</h2>
+            <p>Varian ini melebar ke luar, tapi posisinya di belakang garis vertikal.</p>
           </section>
-          <section class="section-inner" style="background-color: rgba(125,125,125,0.1);">
+          <section class="lh-underlay" style="background-color: rgba(0,0,0,0.05);">
             <div style="text-align: center;">
-              <h3>Background Layer</h3>
+              <h3>Background Area</h3>
+              <p>Garis tetap terlihat di atas.</p>
+            </div>
+          </section>
+
+          <section class="lh-viewport" style="background: var(--c-accent); color: var(--c-bg);">
+            <div class="lh-viewport-inner">
+              <span class="lh-badge" style="border-color: currentColor;">.lh-viewport</span>
+              <h2 style="color: inherit;">Viewport</h2>
+              <p>Full bleed (100vw).</p>
             </div>
           </section>
 
         </main>
 
-        <footer class="site-footer">
-          © 2025 Layout System
+        <footer class="lh-footer">
+          LH Design System © 2025
         </footer>
 
       </div>
     </div>
 
     <script>
-      function togglePanel() { document.getElementById('themePanel').classList.toggle('is-open'); }
-      function setTheme(themeName) {
-        if (themeName) { document.documentElement.setAttribute('data-theme', themeName); } 
-        else { document.documentElement.removeAttribute('data-theme'); }
-        document.querySelectorAll('.theme-swatch').forEach(btn => {
-          btn.classList.remove('active');
-          const name = btn.querySelector('span').textContent.toLowerCase();
-          if ((themeName === '' && name === 'clean') || (themeName && name.includes(themeName.toLowerCase()))) {
-            btn.classList.add('active');
-          }
-        });
+      function setTheme(name, btn) {
+        if (name) document.documentElement.setAttribute('data-theme', name);
+        else document.documentElement.removeAttribute('data-theme');
+        btn.parentElement.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
       }
-      function setDirection(dir, el) {
-        document.body.setAttribute('data-direction', dir);
-        document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
-        el.classList.add('active');
+      function setDir(dir, btn) {
+        document.body.setAttribute('data-dir', dir);
+        btn.parentElement.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
       }
     </script>
   </body>
