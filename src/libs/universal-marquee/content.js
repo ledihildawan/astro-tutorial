@@ -123,6 +123,7 @@ const initApp = () => {
       gap: '2rem',
       mask: 'both',
       maskWidth: '10%',
+      direction: 'reverse'
     },
     behavior: {
       autoStart: true,
