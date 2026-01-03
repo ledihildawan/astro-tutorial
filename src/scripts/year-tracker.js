@@ -2,6 +2,7 @@
   'use strict';
   const DOM = {
     grid: document.getElementById('grid'),
+    container: document.getElementById('container'),
     spotlight: document.getElementById('spotlight'),
     tooltip: document.getElementById('tooltip'),
     toast: document.getElementById('toast'),
@@ -45,7 +46,7 @@
     const totalDaysInYear = isLeap ? 366 : 365;
 
     let bestDiff = Infinity;
-    let bestCols = 52; // default sekitar 52 minggu
+    let bestCols = 52;
 
     for (let c = 20; c <= 80; c++) {
       const r = Math.ceil(totalDaysInYear / c);
@@ -69,7 +70,6 @@
     const totalCells = bestCols * rows;
     const extraCells = totalCells - totalDaysInYear;
     const padLeft = Math.floor(extraCells / 2);
-    const padRight = extraCells - padLeft;
 
     return {
       cols: bestCols,
@@ -79,7 +79,6 @@
       year,
       now: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
       padLeft,
-      padRight,
     };
   }
 
@@ -97,7 +96,6 @@
     DOM.grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
     DOM.grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
 
-    // Mulai dari tahun sebelumnya agar padding kiri terisi
     const startDate = new Date(year, 0, 1);
     startDate.setDate(startDate.getDate() - padLeft);
 
@@ -136,11 +134,6 @@
 
     DOM.grid.replaceChildren(frag);
 
-    const initialFocus = todayIdx !== -1 ? todayIdx : Math.floor(totalCells / 2);
-    if (DOM.grid.children[initialFocus]) {
-      DOM.grid.children[initialFocus].setAttribute('tabindex', '0');
-    }
-
     currentDate = new Date(now);
     currentDate.setHours(0, 0, 0, 0);
 
@@ -148,6 +141,18 @@
       () => {
         DOM.grid.classList.remove('locked');
         loadingComplete = true;
+
+        // Auto-scroll to center today after render complete
+        if (todayIdx !== -1) {
+          const todayEl = DOM.grid.children[todayIdx];
+          if (todayEl) {
+            todayEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            // Set initial focus
+            const prev = DOM.grid.querySelector('[tabindex="0"]');
+            if (prev) prev.setAttribute('tabindex', '-1');
+            todayEl.setAttribute('tabindex', '0');
+          }
+        }
       },
       totalCells * 1.2 + 600
     );
@@ -204,6 +209,9 @@
       if (window.innerWidth > 768) DOM.tooltip.classList.add('on');
       else DOM.toast.classList.add('on');
     }, TOOLTIP_DELAY_AFTER_FILL);
+
+    // Scroll to selected day
+    el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
   }
 
   function showTodayNotification(el) {
@@ -307,6 +315,7 @@
       if (todayEl) {
         updateTabIndex(todayEl);
         todayEl.focus();
+        todayEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       }
       return;
     }
@@ -348,6 +357,7 @@
       if (nextEl) {
         updateTabIndex(nextEl);
         nextEl.focus();
+        nextEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
       }
     }
   });

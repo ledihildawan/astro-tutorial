@@ -19,7 +19,9 @@ const description = 'A minimal visualization of your life — one day at a time.
   </head>
   <body class="mouse-mode">
     <div id="spotlight"></div>
-    <div id="grid" role="application" aria-label="Interactive Calendar"></div>
+    <div id="container">
+      <div id="grid" role="application" aria-label="Interactive Calendar"></div>
+    </div>
     <div id="tooltip"><span id="txt"></span></div>
     <div id="toast"><span id="toast-txt"></span></div>
 
@@ -48,7 +50,6 @@ const description = 'A minimal visualization of your life — one day at a time.
     --tt-shd: 0 15px 40px rgba(0, 0, 0, 0.6);
     --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-
   @media (prefers-color-scheme: light) {
     :root {
       --bg: #f8f8f8;
@@ -67,14 +68,12 @@ const description = 'A minimal visualization of your life — one day at a time.
       --tt-shd: 0 10px 30px rgba(0, 0, 0, 0.15);
     }
   }
-
   @media (max-width: 480px) {
     :root {
       --gap: 2px;
       --frame: 4px;
     }
   }
-
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.01ms !important;
@@ -88,7 +87,6 @@ const description = 'A minimal visualization of your life — one day at a time.
         inset 0 0 40px var(--glow-fill);
     }
   }
-
   *,
   *::before,
   *::after {
@@ -96,7 +94,6 @@ const description = 'A minimal visualization of your life — one day at a time.
     margin: 0;
     padding: 0;
   }
-
   body {
     background-color: var(--bg);
     height: 100vh;
@@ -106,15 +103,13 @@ const description = 'A minimal visualization of your life — one day at a time.
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     padding: var(--frame);
     transition: background-color 0.6s var(--ease-out);
     background-image:
       radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0%, transparent 70%),
       url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   }
-
   @media (prefers-color-scheme: light) {
     body {
       background-image:
@@ -122,7 +117,12 @@ const description = 'A minimal visualization of your life — one day at a time.
         url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
     }
   }
-
+  #container {
+    flex: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
   #spotlight {
     position: fixed;
     top: 0;
@@ -141,35 +141,31 @@ const description = 'A minimal visualization of your life — one day at a time.
       height 0.8s var(--ease-out);
     border-radius: 50%;
   }
-
   #spotlight.absorbed {
     width: 0 !important;
     height: 0 !important;
     opacity: 0.8;
   }
-
   #grid {
     display: grid;
     width: 100%;
-    height: 100%;
+    height: fit-content;
+    min-height: 100%;
     gap: var(--gap);
-    touch-action: none;
+    touch-action: pan-x pan-y pinch-zoom;
     outline: none;
     opacity: 0;
     animation: fadeInGrid 0.8s ease-out forwards 0.6s;
   }
-
   @keyframes fadeInGrid {
     to {
       opacity: 1;
     }
   }
-
   #grid.locked {
     pointer-events: none !important;
     cursor: wait;
   }
-
   @keyframes popIn {
     from {
       opacity: 0;
@@ -180,7 +176,6 @@ const description = 'A minimal visualization of your life — one day at a time.
       transform: scale(1);
     }
   }
-
   @keyframes pulse {
     0%,
     100% {
@@ -190,7 +185,6 @@ const description = 'A minimal visualization of your life — one day at a time.
       box-shadow: inset 0 0 28px var(--today-pulse);
     }
   }
-
   @keyframes heartbeat {
     0%,
     100% {
@@ -200,7 +194,6 @@ const description = 'A minimal visualization of your life — one day at a time.
       box-shadow: inset 0 0 50px var(--today-pulse);
     }
   }
-
   .day {
     position: relative;
     background-color: var(--c-future);
@@ -213,18 +206,14 @@ const description = 'A minimal visualization of your life — one day at a time.
     transition:
       background-color 0.8s var(--ease-out),
       box-shadow 0.2s ease-out;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
     will-change: opacity, background-color, box-shadow;
   }
-
   .day.past {
     background-color: var(--c-past);
   }
   .day.out {
     background-color: var(--c-out);
   }
-
   .day.today {
     background-color: var(--c-today);
     z-index: 2;
@@ -238,7 +227,6 @@ const description = 'A minimal visualization of your life — one day at a time.
       inset 0 0 15px var(--glow-fill),
       inset 0 0 30px var(--today-pulse);
   }
-
   body.mouse-mode .day.active,
   body.keyboard-mode .day:focus {
     box-shadow:
@@ -247,7 +235,6 @@ const description = 'A minimal visualization of your life — one day at a time.
     z-index: 20;
     transition-duration: 0.1s;
   }
-
   .day.selected {
     background-color: var(--c-today) !important;
     box-shadow:
@@ -255,95 +242,61 @@ const description = 'A minimal visualization of your life — one day at a time.
       inset 0 0 20px var(--glow-outline);
     z-index: 20;
   }
-
   body.mouse-mode .day:focus {
     outline: none;
   }
 
-  /* Tooltip Desktop */
-  #tooltip {
+  /* Tooltip & Toast */
+  #tooltip,
+  #toast {
     position: fixed;
     z-index: 999;
     pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--tt-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 0.5px solid var(--tt-brd);
-    box-shadow:
-      var(--tt-shd),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: var(--tt-shd);
     color: var(--tt-txt);
     white-space: nowrap;
     opacity: 0;
-    top: 0;
-    left: 0;
-    padding: 11px 20px;
     border-radius: 10px;
     will-change: transform, opacity;
     transition:
       opacity 0.4s ease 0.3s,
       transform 0.4s var(--ease-out) 0.3s;
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
   }
-
+  #tooltip {
+    padding: 11px 20px;
+    top: 0;
+    left: 0;
+  }
   #tooltip.on {
     opacity: 1;
   }
-
-  /* Toast Mobile */
   #toast {
-    position: fixed;
     left: 50%;
     bottom: 40px;
     transform: translate3d(-50%, 100px, 0) scale(0.9);
-    z-index: 999;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tt-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 0.5px solid var(--tt-brd);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-    color: var(--tt-txt);
-    white-space: nowrap;
-    opacity: 0;
     padding: 16px 32px;
     border-radius: 99px;
     font-size: 16px;
     font-weight: 700;
-    min-width: fit-content;
-    max-width: 90%;
-    will-change: transform, opacity;
-    transition:
-      opacity 0.5s ease 0.2s,
-      transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.4) 0.2s;
-    backface-visibility: hidden;
   }
-
   #toast.on {
     opacity: 1;
     transform: translate3d(-50%, 0, 0) scale(1);
   }
-
-  /* Sembunyikan tooltip di mobile, toast di desktop */
   @media (max-width: 768px) {
     #tooltip {
       display: none !important;
     }
   }
-
   @media (min-width: 769px) {
     #toast {
       display: none !important;
     }
   }
-
   #txt,
   #toast-txt {
     letter-spacing: -0.02em;
