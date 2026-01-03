@@ -1,4 +1,4 @@
-import { UniversalMarquee } from "../../libs/universal-marquee/main";
+import { UniversalMarquee } from '../../libs/universal-marquee/main';
 
 // Code examples for documentation
 const codeExamples = {
@@ -116,7 +116,22 @@ const initApp = () => {
   };
 
   const features = [
-    'Seamless infinite horizontal marquee', 'Automatic dynamic cycle duplication', 'Speed-based scrolling or fixed duration', 'Configurable scrolling direction', 'Customizable gap between items', 'Flexible separator support', 'Custom renderItem function', 'Built-in lazy loading', 'Dynamic gradient overlay', 'Pause on hover, focus, and touch', 'Automatic play/pause based on visibility', 'Prefers-reduced-motion support', 'Full accessibility (ARIA/SR)', 'Web Animations API performance', 'Zero dependencies', 'Fully responsive',
+    'Seamless infinite horizontal marquee',
+    'Automatic dynamic cycle duplication',
+    'Speed-based scrolling or fixed duration',
+    'Configurable scrolling direction',
+    'Customizable gap between items',
+    'Flexible separator support',
+    'Custom renderItem function',
+    'Built-in lazy loading',
+    'Dynamic gradient overlay',
+    'Pause on hover, focus, and touch',
+    'Automatic play/pause based on visibility',
+    'Prefers-reduced-motion support',
+    'Full accessibility (ARIA/SR)',
+    'Web Animations API performance',
+    'Zero dependencies',
+    'Fully responsive',
   ];
 
   // Main features marquee
@@ -138,15 +153,75 @@ const initApp = () => {
     behavior: {
       hoverAction: 'pause',
       startWhenVisible: true,
-    }
+    },
   });
 
   const reviews = [
-    { id: 1, name: 'Sarah Jenkins', handle: '@sarah_dev', role: 'Frontend Lead', company: 'Vercel', companyLogo: 'https://assets.vercel.com/image/upload/v1588805858/repositories/vercel/logo.png', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', text: 'This marquee library is an absolute game-changer. The performance on mobile is silky smooth.', source: 'twitter', stars: 5, date: '2h ago' },
-    { id: 2, name: 'Michael Chen', handle: '@mchen_design', role: 'Product Designer', company: 'Figma', companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', text: "Finally, a marquee solution that doesn't break accessibility standards. Reduced-motion is spot on.", source: 'linkedin', stars: 5, date: '5h ago' },
-    { id: 3, name: 'Alex Rivera', handle: '@arivera', role: 'CTO', company: 'Stripe', companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg', avatar: 'https://i.pravatar.cc/150?u=a04258114e29026302d', text: 'We implemented this on our landing page and saw a 15% increase in engagement.', source: 'ph', stars: 4, date: '1d ago' },
-    { id: 4, name: 'Emily Watson', handle: '@emily_w', role: 'DevRel', company: 'Supabase', companyLogo: 'https://pipedream.com/s.v0/app_1dBhP3/logo/orig', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d2', text: 'Zero dependencies and just pure Vanilla JS? Sign me up. It fits perfectly into our lightweight tech stack.', source: 'twitter', stars: 5, date: '2d ago' },
-    { id: 5, name: 'David Kim', handle: '@dkim_code', role: 'Senior Eng', company: 'Netflix', companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', avatar: 'https://i.pravatar.cc/150?u=a04258a2462d826712d', text: 'The dynamic duplication logic is smart. No more awkward jumps when the content loops.', source: 'linkedin', stars: 5, date: '3d ago' },
+    {
+      id: 1,
+      name: 'Sarah Jenkins',
+      handle: '@sarah_dev',
+      role: 'Frontend Lead',
+      company: 'Vercel',
+      companyLogo: 'https://assets.vercel.com/image/upload/v1588805858/repositories/vercel/logo.png',
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
+      text: 'This marquee library is an absolute game-changer. The performance on mobile is silky smooth.',
+      source: 'twitter',
+      stars: 5,
+      date: '2h ago',
+    },
+    {
+      id: 2,
+      name: 'Michael Chen',
+      handle: '@mchen_design',
+      role: 'Product Designer',
+      company: 'Figma',
+      companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg',
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+      text: "Finally, a marquee solution that doesn't break accessibility standards. Reduced-motion is spot on.",
+      source: 'linkedin',
+      stars: 5,
+      date: '5h ago',
+    },
+    {
+      id: 3,
+      name: 'Alex Rivera',
+      handle: '@arivera',
+      role: 'CTO',
+      company: 'Stripe',
+      companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg',
+      avatar: 'https://i.pravatar.cc/150?u=a04258114e29026302d',
+      text: 'We implemented this on our landing page and saw a 15% increase in engagement.',
+      source: 'ph',
+      stars: 4,
+      date: '1d ago',
+    },
+    {
+      id: 4,
+      name: 'Emily Watson',
+      handle: '@emily_w',
+      role: 'DevRel',
+      company: 'Supabase',
+      companyLogo: 'https://pipedream.com/s.v0/app_1dBhP3/logo/orig',
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d2',
+      text: 'Zero dependencies and just pure Vanilla JS? Sign me up. It fits perfectly into our lightweight tech stack.',
+      source: 'twitter',
+      stars: 5,
+      date: '2d ago',
+    },
+    {
+      id: 5,
+      name: 'David Kim',
+      handle: '@dkim_code',
+      role: 'Senior Eng',
+      company: 'Netflix',
+      companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+      avatar: 'https://i.pravatar.cc/150?u=a04258a2462d826712d',
+      text: 'The dynamic duplication logic is smart. No more awkward jumps when the content loops.',
+      source: 'linkedin',
+      stars: 5,
+      date: '3d ago',
+    },
   ];
 
   // Customer testimonials marquee
@@ -194,12 +269,36 @@ const initApp = () => {
   });
 
   const products = [
-    { view: 'Side Profile', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Samba_OG_Shoes_White_B75806_01_00_standard.jpg', alt: 'Adidas Samba OG - Side' },
-    { view: 'Perspective', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/8c4158c4c39a4ab09b8ba8c000c96fd0_9366/Samba_OG_Shoes_White_B75806_01_01_standard.jpg', alt: 'Adidas Samba OG - Angled' },
-    { view: 'Medial Side', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/ec595635a2994adea094a8bf0117ef1a_9366/Samba_OG_Shoes_White_B75806_02_standard.jpg', alt: 'Adidas Samba OG - Medial' },
-    { view: 'Top-Down', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/97cd0902ae2e402b895aa8bf0117f98f_9366/Samba_OG_Shoes_White_B75806_03_standard.jpg', alt: 'Adidas Samba OG - Top' },
-    { view: 'Outsole', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/07567ea7d2bb425b8651a8bf0117e4f1_9366/Samba_OG_Shoes_White_B75806_06_standard.jpg', alt: 'Adidas Samba OG - Sole' },
-    { view: 'On-Foot', img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/671c62b81c3448e980aca8bf01181a93_9366/Samba_OG_Shoes_White_B75806_41_detail.jpg', alt: 'Adidas Samba OG - Lifestyle' },
+    {
+      view: 'Side Profile',
+      img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Samba_OG_Shoes_White_B75806_01_00_standard.jpg',
+      alt: 'Adidas Samba OG - Side',
+    },
+    {
+      view: 'Perspective',
+      img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/8c4158c4c39a4ab09b8ba8c000c96fd0_9366/Samba_OG_Shoes_White_B75806_01_01_standard.jpg',
+      alt: 'Adidas Samba OG - Angled',
+    },
+    {
+      view: 'Medial Side',
+      img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/ec595635a2994adea094a8bf0117ef1a_9366/Samba_OG_Shoes_White_B75806_02_standard.jpg',
+      alt: 'Adidas Samba OG - Medial',
+    },
+    {
+      view: 'Top-Down',
+      img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/97cd0902ae2e402b895aa8bf0117f98f_9366/Samba_OG_Shoes_White_B75806_03_standard.jpg',
+      alt: 'Adidas Samba OG - Top',
+    },
+    {
+      view: 'Outsole',
+      img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/07567ea7d2bb425b8651a8bf0117e4f1_9366/Samba_OG_Shoes_White_B75806_06_standard.jpg',
+      alt: 'Adidas Samba OG - Sole',
+    },
+    {
+      view: 'On-Foot',
+      img: 'https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/671c62b81c3448e980aca8bf01181a93_9366/Samba_OG_Shoes_White_B75806_41_detail.jpg',
+      alt: 'Adidas Samba OG - Lifestyle',
+    },
   ];
 
   // Product gallery marquee with drag support
@@ -229,7 +328,7 @@ const initApp = () => {
       gap: '2rem',
       mask: 'both',
       maskWidth: '10%',
-      direction: 'reverse'
+      direction: 'reverse',
     },
     behavior: {
       autoStart: true,
@@ -246,10 +345,42 @@ const initApp = () => {
   });
 
   const stocks = [
-    { sym: 'BTC', name: 'Bitcoin', val: '96,420', diff: '3,840', change: '4.2', up: true, trend: [10, 30, 25, 50, 45, 80, 75] },
-    { sym: 'ETH', name: 'Ethereum', val: '3,124', diff: '34', change: '1.1', up: false, trend: [80, 70, 85, 60, 50, 40, 30] },
-    { sym: 'SOL', name: 'Solana', val: '242.1', diff: '18.4', change: '8.4', up: true, trend: [5, 20, 40, 35, 70, 85, 95] },
-    { sym: 'NVDA', name: 'Nvidia', val: '145.2', diff: '0.6', change: '0.4', up: true, trend: [40, 45, 42, 55, 50, 60, 65] },
+    {
+      sym: 'BTC',
+      name: 'Bitcoin',
+      val: '96,420',
+      diff: '3,840',
+      change: '4.2',
+      up: true,
+      trend: [10, 30, 25, 50, 45, 80, 75],
+    },
+    {
+      sym: 'ETH',
+      name: 'Ethereum',
+      val: '3,124',
+      diff: '34',
+      change: '1.1',
+      up: false,
+      trend: [80, 70, 85, 60, 50, 40, 30],
+    },
+    {
+      sym: 'SOL',
+      name: 'Solana',
+      val: '242.1',
+      diff: '18.4',
+      change: '8.4',
+      up: true,
+      trend: [5, 20, 40, 35, 70, 85, 95],
+    },
+    {
+      sym: 'NVDA',
+      name: 'Nvidia',
+      val: '145.2',
+      diff: '0.6',
+      change: '0.4',
+      up: true,
+      trend: [40, 45, 42, 55, 50, 60, 65],
+    },
   ];
 
   // Ticker marquee
@@ -310,75 +441,83 @@ const initApp = () => {
   });
 };
 
-// UI handling for code viewers
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize code examples
-  document.querySelectorAll('.code-viewer').forEach((viewer) => {
-    const id = viewer.id.replace('code-', '');
-    const data = codeExamples[id];
-    if (!data) return;
+// UI handling for code viewers (browser-only)
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize code examples
+    document.querySelectorAll('.code-viewer').forEach((viewer) => {
+      const id = viewer.id.replace('code-', '');
+      const data = codeExamples[id];
+      if (!data) return;
 
-    const htmlEl = viewer.querySelector('[data-tab="html"] code');
-    const jsEl = viewer.querySelector('[data-tab="js"] code');
-    const cssEl = viewer.querySelector('[data-tab="css"] code');
-    const cssTab = viewer.querySelector('[data-tab="css"]');
+      const htmlEl = viewer.querySelector('[data-tab="html"] code');
+      const jsEl = viewer.querySelector('[data-tab="js"] code');
+      const cssEl = viewer.querySelector('[data-tab="css"] code');
+      const cssTab = viewer.querySelector('[data-tab="css"]');
 
-    if (htmlEl && data.html) htmlEl.textContent = data.html;
-    if (jsEl && data.js) jsEl.textContent = data.js;
-    if (cssEl && data.css) cssEl.textContent = data.css;
-    else if (cssTab) cssTab.style.display = 'none';
-  });
-
-  // Syntax highlight code blocks
-  document.querySelectorAll('.code-panel code, code.inline-code').forEach((block) => {
-    if (typeof hljs !== 'undefined') hljs.highlightElement(block);
-  });
-
-  // Code viewer toggle
-  document.querySelectorAll('.code-toggle-btn').forEach((btn) => {
-    const span = btn.querySelector('span');
-    btn.addEventListener('click', () => {
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      const newState = !expanded;
-      btn.setAttribute('aria-expanded', newState);
-      span.textContent = newState ? 'Hide Implementation' : 'View Implementation';
-      const viewer = document.getElementById(btn.getAttribute('aria-controls'));
-      if (viewer) viewer.classList.toggle('open', newState);
+      if (htmlEl && data.html) htmlEl.textContent = data.html;
+      if (jsEl && data.js) jsEl.textContent = data.js;
+      if (cssEl && data.css) cssEl.textContent = data.css;
+      else if (cssTab) cssTab.style.display = 'none';
     });
-  });
 
-  // Code tab switching
-  document.querySelectorAll('.code-viewer').forEach((viewer) => {
-    const tabs = viewer.querySelectorAll('.code-tab');
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const target = tab.dataset.tab;
-        tabs.forEach((t) => t.classList.remove('active'));
-        tab.classList.add('active');
-        viewer.querySelectorAll('.code-panel').forEach((p) => p.classList.remove('active'));
-        const panel = viewer.querySelector(`.code-panel[data-tab="${target}"]`);
-        if (panel) panel.classList.add('active');
+    // Syntax highlight code blocks
+    document.querySelectorAll('.code-panel code, code.inline-code').forEach((block) => {
+      if (typeof hljs !== 'undefined') hljs.highlightElement(block);
+    });
+
+    // Code viewer toggle
+    document.querySelectorAll('.code-toggle-btn').forEach((btn) => {
+      const span = btn.querySelector('span');
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        const newState = !expanded;
+        btn.setAttribute('aria-expanded', newState);
+        span.textContent = newState ? 'Hide Implementation' : 'View Implementation';
+        const viewer = document.getElementById(btn.getAttribute('aria-controls'));
+        if (viewer) viewer.classList.toggle('open', newState);
       });
     });
 
-    // Copy to clipboard
-    const copyBtn = viewer.querySelector('.copy-tab-btn');
-    if (copyBtn) {
-      const defaultIcon = copyBtn.innerHTML;
-      copyBtn.addEventListener('click', async () => {
-        const codeEl = viewer.querySelector('.code-panel.active code');
-        if (!codeEl) return;
-        try {
-          await navigator.clipboard.writeText(codeEl.textContent.trim());
-          copyBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-        } catch (err) {
-          copyBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg>';
-        }
-        setTimeout(() => { copyBtn.innerHTML = defaultIcon; }, 2000);
+    // Code tab switching
+    document.querySelectorAll('.code-viewer').forEach((viewer) => {
+      const tabs = viewer.querySelectorAll('.code-tab');
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const target = tab.dataset.tab;
+          tabs.forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+          viewer.querySelectorAll('.code-panel').forEach((p) => p.classList.remove('active'));
+          const panel = viewer.querySelector(`.code-panel[data-tab="${target}"]`);
+          if (panel) panel.classList.add('active');
+        });
       });
-    }
-  });
 
-  // Initialize app
-  initApp();
-});
+      // Copy to clipboard
+      const copyBtn = viewer.querySelector('.copy-tab-btn');
+      if (copyBtn) {
+        const defaultIcon = copyBtn.innerHTML;
+        copyBtn.addEventListener('click', async () => {
+          const codeEl = viewer.querySelector('.code-panel.active code');
+          if (!codeEl) return;
+          try {
+            await navigator.clipboard.writeText(codeEl.textContent.trim());
+            copyBtn.innerHTML =
+              '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+          } catch (err) {
+            copyBtn.innerHTML =
+              '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg>';
+          }
+          setTimeout(() => {
+            copyBtn.innerHTML = defaultIcon;
+          }, 2000);
+        });
+      }
+    });
+
+    // Initialize app
+    initApp();
+  });
+} else {
+  console.warn('UniversalMarquee docs script skipped: window/document not available.');
+}
