@@ -2,269 +2,161 @@
 import '../libs/universal-marquee/styles.css';
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UniversalMarquee Modern Demo v8.5</title>
-  
-  <style>
-    :root {
-      --bg: #09090b;
-      --surface: #18181b;
-      --text-main: #fafafa;
-      --text-muted: #a1a1aa;
-      --accent: #6366f1; /* Indigo */
-      --glass: rgba(255, 255, 255, 0.05);
-      --border: rgba(255, 255, 255, 0.1);
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UniversalMarquee Modern Demo v8.5</title>
 
-    body {
-      margin: 0;
-      background-color: var(--bg);
-      color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* Container Utilities */
-    .section {
-      padding: 4rem 0;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-    }
-
-    .section-title {
-      text-align: center;
-      margin-bottom: 2rem;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-    }
-
-    /* --- Custom Item Styles --- */
-    
-    .ticker-item {
-      font-size: 0.9rem;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--surface);
-      border-radius: 99px;
-      border: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-
-    .tech-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 120px;
-      height: 60px;
-    }
-    .tech-item img {
-      max-width: 100%;
-      max-height: 100%;
-      filter: grayscale(100%) opacity(0.6);
-      transition: all 0.3s ease;
-      display: block; /* Mencegah gap inline */
-    }
-    .tech-item:hover img {
-      filter: grayscale(0%) opacity(1);
-      transform: scale(1.1);
-    }
-
-    .card-item {
-      width: 320px;
-      padding: 1.5rem;
-      background: var(--glass);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      box-sizing: border-box;
-    }
-
-    .card-icon {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--accent), #a855f7);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem;
-    }
-    .card-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
-    .card-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
-
-    .gradient-bg {
-      position: absolute;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-      pointer-events: none;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="gradient-bg"></div>
-
-  <div style="background: #000; border-bottom: 1px solid var(--border); padding: 10px 0;">
-    <div id="ticker-marquee"></div>
-  </div>
-
-  <section class="section">
-    <div class="section-title">Powered by Modern Stack</div>
-    <div id="tech-marquee"></div>
-  </section>
-
-  <section class="section">
-    <div class="section-title">Core Features (Drag Me / Scroll Page)</div>
-    <div id="features-marquee"></div>
-  </section>
-  
-  <section style="height: 100vh; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-    <p>Scroll down to test ScrollSync Physics...</p>
-  </section>
-
-  <script>
-  // 1. Pastikan path dan ekstensi .js sudah benar
-  import { UniversalMarquee } from "../libs/universal-marquee/main.js";
-
-  const initApp = () => {
-    // --- DEMO 1: Status Ticker (News Style) ---
-    const tickerItems = [
-      'v8.5 Released', 'Zero Jitter Update', 'ScrollSync Physics', 
-      'Drag & Throw Enabled', 'Sub-pixel Rendering', 'Lazy Loading'
-    ];
-
-    new UniversalMarquee('#ticker-marquee', {
-      content: { // Masukkan items dan renderer di sini
-        items: tickerItems,
-        renderItem: (text) => `
-          <div class="ticker-item">
-            <div class="dot"></div>
-            <span>${text}</span>
-          </div>
-        `
-      },
-      style: { // Kecepatan dan arah masuk ke kategori style
-        speed: 30,
-        gap: '1.5rem',
-        direction: 'reverse', 
-        mask: 'both',
-        maskWidth: '100px'
-      },
-      behavior: { // Logika cloning dan hover
-        cloneStrategy: 'auto',
-        hoverAction: 'pause'
-      },
-      physics: { // Draggable masuk ke kategori physics
-        draggable: true,
-        dragSpeed: 1.5
+    <style>
+      :root {
+        --bg: #09090b;
+        --surface: #18181b;
+        --text-main: #fafafa;
+        --text-muted: #a1a1aa;
+        --accent: #6366f1; /* Indigo */
+        --glass: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.1);
       }
-    });
 
-
-    // --- DEMO 2: Tech Stack (Modern Logo) ---
-    const logos = [
-      'https://www.mdpabel.com/md-pabel.png', // Logo Anda
-      'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
-      'https://upload.wikimedia.org/wikipedia/commons/9/95/Vue.js_Logo_2.svg',
-      'https://upload.wikimedia.org/wikipedia/commons/f/f1/Vitejs-logo.svg',
-      'https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg',
-      'https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg',
-      'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png'
-    ];
-
-    const techMarquee = new UniversalMarquee('#tech-marquee', {
-      content: {
-        items: logos,
-        renderItem: (src) => `<div class="tech-item"><img src="${src}" alt="Tech Logo" loading="lazy" /></div>`
-      },
-      style: {
-        speed: 50,
-        gap: '5rem',
-        mask: 'both',
-        align: 'center'
-      },
-      behavior: {
-        hoverAction: 'slow',
-        hoverSpeedFactor: 0.1
-      },
-      performance: {
-        lazyLoad: true // Membantu sinkronisasi jika gambar lambat dimuat
+      body {
+        margin: 0;
+        background-color: var(--bg);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        overflow-x: hidden;
       }
-    });
 
-
-    // --- DEMO 3: Feature Cards (Physics Focus) ---
-    const featureData = [
-      { icon: '🚀', title: 'High Performance', desc: 'Menggunakan requestAnimationFrame dan translasi 3D GPU-accelerated.' },
-      { icon: '🖱️', title: 'Draggable', desc: 'Interaksi sentuh dan mouse natural dengan momentum throw (lempar).' },
-      { icon: '📜', title: 'Scroll Sync', desc: 'Kecepatan marquee bereaksi terhadap kecepatan scroll halaman.' },
-      { icon: '🎯', title: 'Pixel Perfect', desc: 'Kalkulasi loop yang presisi hingga sub-pixel, menghilangkan efek lompatan.' },
-      { icon: '🧩', title: 'Modular', desc: 'Mudah dikonfigurasi dengan opsi deep-merge untuk kontrol penuh.' },
-      { icon: '📱', title: 'Responsive', desc: 'Breakpoint system bawaan untuk mengatur kecepatan/gap di mobile.' }
-    ];
-
-    const featuresMarquee = new UniversalMarquee('#features-marquee', {
-      content: {
-        items: featureData,
-        renderItem: (data) => `
-          <div class="card-item">
-            <div class="card-icon">${data.icon}</div>
-            <h4 class="card-title">${data.title}</h4>
-            <p class="card-desc">${data.desc}</p>
-          </div>
-        `
-      },
-      style: {
-        speed: 35,
-        gap: '2rem',
-        mask: 'both',
-        maskWidth: '8%'
-      },
-      physics: {
-        draggable: true,
-        dragSpeed: 1.1,
-        scrollSync: { // Fitur ScrollSync v8.5
-          enabled: true,
-          factor: 3.0
-        }
-      },
-      behavior: {
-        startWhenVisible: true
-      },
-      callbacks: {
-        onDragStart: () => document.body.style.cursor = 'grabbing',
-        onDragEnd: () => document.body.style.cursor = 'default'
+      /* Container Utilities */
+      .section {
+        padding: 4rem 0;
+        border-bottom: 1px solid var(--border);
+        position: relative;
       }
-    });
 
-    // --- RE-SYNC GUARD ---
-    // Kadang gambar (Modern Stack) membutuhkan waktu untuk tahu lebarnya.
-    // window 'load' memastikan semua asset (logo/image) sudah terunduh sempurna.
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        // Memicu penghitungan ulang piksel lintasan (measureAndSync)
-        techMarquee.updateItems(logos);
-        featuresMarquee.updateItems(featureData);
-      }, 500);
-    });
-  };
+      .section-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+      }
 
-  // Jalankan inisialisasi
-  initApp();
-</script>
-</body>
+      /* --- Custom Item Styles --- */
+
+      .ticker-item {
+        font-size: 0.9rem;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--surface);
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 10px var(--accent);
+      }
+
+      .tech-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 120px;
+        height: 60px;
+      }
+      .tech-item img {
+        max-width: 100%;
+        max-height: 100%;
+        filter: grayscale(100%) opacity(0.6);
+        transition: all 0.3s ease;
+        display: block; /* Mencegah gap inline */
+      }
+      .tech-item:hover img {
+        filter: grayscale(0%) opacity(1);
+        transform: scale(1.1);
+      }
+
+      .card-item {
+        width: 320px;
+        padding: 1.5rem;
+        background: var(--glass);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        box-sizing: border-box;
+      }
+
+      .card-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--accent), #a855f7);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+      .card-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+      }
+      .card-desc {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      .gradient-bg {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="gradient-bg"></div>
+
+    <div style="background: #000; border-bottom: 1px solid var(--border); padding: 10px 0;">
+      <div id="ticker-marquee"></div>
+    </div>
+
+    <section class="section">
+      <div class="section-title">Powered by Modern Stack</div>
+      <div id="tech-marquee"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">Core Features (Drag Me / Scroll Page)</div>
+      <div id="features-marquee"></div>
+    </section>
+
+    <section
+      style="height: 100vh; display: flex; align-items: center; justify-content: center; color: var(--text-muted);"
+    >
+      <p>Scroll down to test ScrollSync Physics...</p>
+    </section>
+
+    <script src="../scripts/testing.js"></script>
+  </body>
 </html>
