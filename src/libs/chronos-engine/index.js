@@ -255,5 +255,3 @@ new ChronosEngine('chronos-viewport', {
   gap: 12,
   frame: 24,
 });
-
-export { ChronosEngine };
