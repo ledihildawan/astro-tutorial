@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Background Identity v1.9</title>
+    <title>Chronos Grid 2026 - Temporal Container v1.9</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
@@ -37,35 +37,39 @@
         align-items: center;
         background-color: var(--bg-system);
         font-family: 'Inter', sans-serif;
-        transition: background-color 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-        position: relative;
+        transition: background-color 1.2s ease;
       }
 
-      /* FITUR BARU: Background Year Identity */
-      #bg-year {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 35dvw; /* Sangat besar */
-        font-weight: 900;
-        /* Warna sangat tipis (hampir transparan) */
-        color: oklch(from var(--base-hex) 0.3 0.05 h / 0.03);
-        pointer-events: none;
-        z-index: 0;
-        letter-spacing: -0.05em;
-        user-select: none;
-        transition: color 1.2s ease;
+      /* Container Utama untuk membungkus Grid & Watermark */
+      #chronos-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       #chronos-viewport {
         display: grid;
         will-change: transform, filter;
         backface-visibility: hidden;
-        z-index: 1; /* Pastikan di atas background year */
+        z-index: 2; /* Di atas watermark */
       }
 
-      /* [Style lainnya tetap sama seperti v1.8] */
+      /* YEAR WATERMARK: Sangat samar dan di latar belakang */
+      #year-watermark {
+        position: absolute;
+        z-index: 1;
+        font-weight: 900;
+        /* Ukuran font dinamis agar tidak melebihi grid */
+        font-size: clamp(100px, 25vw, 400px);
+        color: var(--color-ghost);
+        opacity: 0.04; /* Sangat samar agar tidak mengganggu fokus */
+        letter-spacing: -0.05em;
+        pointer-events: none;
+        user-select: none;
+        transition: color 1s ease;
+      }
+
       @keyframes theme-pulse-anim {
         0% {
           transform: scale(1);
@@ -80,6 +84,7 @@
           filter: brightness(1);
         }
       }
+
       .theme-pulse {
         animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
@@ -96,6 +101,7 @@
         position: relative;
         overflow: hidden;
       }
+
       .day--past {
         background-color: var(--color-past);
       }
@@ -108,6 +114,7 @@
         background-color: var(--color-past);
         filter: grayscale(100%);
       }
+
       .day--today {
         background-color: var(--color-today) !important;
         opacity: 1 !important;
@@ -118,6 +125,7 @@
         border-radius: 3px;
         filter: none !important;
       }
+
       .now-indicator {
         position: absolute;
         bottom: 0;
@@ -128,6 +136,7 @@
         transition: width 1s linear;
         z-index: 5;
       }
+
       .day--monday::after {
         content: '';
         position: absolute;
@@ -137,6 +146,7 @@
         width: 1px;
         background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.1);
       }
+
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
@@ -151,6 +161,7 @@
         pointer-events: none;
         white-space: nowrap;
       }
+
       .day:hover {
         transform: scale(1.3);
         z-index: 20;
@@ -159,6 +170,7 @@
         background-color: var(--color-today);
         filter: brightness(1.1) grayscale(0%) !important;
       }
+
       #tooltip {
         position: fixed;
         pointer-events: none;
@@ -176,6 +188,7 @@
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
         border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h);
       }
+
       #tooltip b {
         color: var(--color-past);
         display: block;
@@ -186,9 +199,11 @@
     </style>
   </head>
   <body>
-    <div id="bg-year">2026</div>
+    <div id="chronos-container">
+      <div id="year-watermark">2026</div>
+      <div id="chronos-viewport"></div>
+    </div>
 
-    <div id="chronos-viewport"></div>
     <div id="tooltip"></div>
 
     <script type="module">
@@ -207,7 +222,9 @@
 
       class ChronosEngine {
         constructor() {
+          this.container = document.getElementById('chronos-container');
           this.viewport = document.getElementById('chronos-viewport');
+          this.watermark = document.getElementById('year-watermark');
           this.tooltip = document.getElementById('tooltip');
           this.year = 2026;
           const savedIndex = localStorage.getItem('chronos_theme_index');
@@ -272,10 +289,13 @@
           let x = e.clientX,
             y = e.clientY;
           const rect = this.tooltip.getBoundingClientRect();
+
           if (x + rect.width / 2 + padding > window.innerWidth) x = x - rect.width / 2 - padding;
           else if (x - rect.width / 2 - padding < 0) x = x + rect.width / 2 + padding;
+
           if (y - rect.height - padding < 0) y = y + padding + rect.height;
           else y = y - padding;
+
           this.tooltip.style.left = `${x}px`;
           this.tooltip.style.top = `${y}px`;
           this.tooltip.style.transform = `translate(-50%, -100%)`;
@@ -296,6 +316,11 @@
           startDate.setDate(startDate.getDate() - startOffset);
 
           this.viewport.style.cssText = `gap: ${layout.gap}px; grid-template-columns: repeat(${layout.c}, ${layout.s}px); grid-template-rows: repeat(${layout.r}, ${layout.s}px);`;
+
+          // Pastikan watermark tidak melebihi lebar grid
+          const gridWidth = layout.c * layout.s + (layout.c - 1) * layout.gap;
+          this.watermark.style.width = `${gridWidth}px`;
+          this.watermark.style.textAlign = 'center';
 
           const fragment = document.createDocumentFragment();
           const cursor = new Date(startDate);
@@ -318,10 +343,10 @@
               el.style.filter = `grayscale(${Math.min(100, diff * 0.5)}%)`;
             }
             if (type === 'today') {
-              const progressBar = document.createElement('div');
-              progressBar.className = 'now-indicator';
-              progressBar.id = 'today-progress-bar';
-              el.appendChild(progressBar);
+              const bar = document.createElement('div');
+              bar.className = 'now-indicator';
+              bar.id = 'today-progress-bar';
+              el.appendChild(bar);
             }
             if (isTargetYear && cursor.getDate() === 1) el.setAttribute('data-ghost-label', months[cursor.getMonth()]);
 
@@ -350,8 +375,8 @@
           const scale = Math.max(w, 240) / 1200;
           const gap = Math.max(2, 10 * scale);
           const frame = Math.max(25, 50 * scale);
-          const availW = w - frame * 2;
-          const availH = h - frame * 2;
+          const availW = w - frame * 2,
+            availH = h - frame * 2;
           let bestS = 0;
           for (let c = 1; c <= days; c++) {
             const r = Math.ceil(days / c);
