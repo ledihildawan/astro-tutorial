@@ -39,7 +39,7 @@
         background-color: var(--bg-system);
         font-family: 'Inter', sans-serif;
         transition: background-color 1.2s ease;
-        cursor: pointer;
+        cursor: pointer; /* Hanya hint halus untuk mobile */
       }
 
       #chronos-container {
@@ -208,6 +208,7 @@
       class ChronosEngine {
         constructor() {
           this.viewport = document.getElementById('chronos-viewport');
+          this.watermark = document.getElementById('year-watermark');
           this.year = 2026;
           const savedIndex = localStorage.getItem('chronos_theme_index');
           this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
@@ -217,7 +218,7 @@
         init() {
           this.applyTheme(THEME_COLORS[this.colorIndex]);
 
-          // Tekan 'C' → cycle theme + random day
+          // Tombol 'C' untuk desktop
           window.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'c') {
               e.preventDefault();
@@ -225,9 +226,21 @@
             }
           });
 
-          // Triple-tap → cycle theme + random day
+          // Triple-tap untuk mobile/tablet
           let tapCount = 0;
           let tapTimer;
+          document.body.addEventListener('touchend', () => {
+            tapCount++;
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => {
+              if (tapCount === 3) {
+                this.cycleTheme();
+              }
+              tapCount = 0;
+            }, 600);
+          });
+
+          // Click fallback untuk desktop (jika tidak pakai keyboard)
           document.body.addEventListener('click', () => {
             tapCount++;
             clearTimeout(tapTimer);
