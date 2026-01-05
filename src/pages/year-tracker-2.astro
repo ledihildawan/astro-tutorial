@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Subliminal Edition v2.1</title>
+    <title>Chronos Grid 2026 - Precision Edition v2.3</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
@@ -12,20 +12,13 @@
       :root {
         --base-hex: #f0eee9;
         --full-h: 100dvh;
-
-        /* BG System: Dasar Ketenangan */
         --bg-system: oklch(from var(--base-hex) 0.97 0.01 h);
-
         --color-today: var(--base-hex);
         --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
 
-        /* GHOST COLOR: Label Bulan (Lebih gelap agar terbaca namun pudar) */
+        /* Default Label Color */
         --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
-
-        /* YEAR WATERMARK: Kunci Rahasia. Dibuat Mandiri.
-           Lightness 0.93 vs BG 0.97 = Hanya selisih 4% kecerahan.
-           Sangat samar, sangat bersih. */
         --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
 
         --radius-standard: 2px;
@@ -38,7 +31,6 @@
         padding: 0;
         cursor: default;
       }
-
       body {
         height: var(--full-h);
         width: 100dvw;
@@ -57,25 +49,21 @@
         justify-content: center;
         align-items: center;
       }
-
       #chronos-viewport {
         display: grid;
         will-change: transform, filter;
-        backface-visibility: hidden;
         z-index: 2;
       }
-
       #year-watermark {
         position: absolute;
         z-index: 1;
         font-weight: 900;
         font-size: clamp(100px, 25vw, 400px);
         color: var(--color-year-subliminal);
-        opacity: 0.4; /* Opacity rendah dipadu dengan warna yang sudah pudar */
+        opacity: 0.4;
         letter-spacing: -0.06em;
         pointer-events: none;
         user-select: none;
-        transition: color 1s ease;
       }
 
       @keyframes theme-pulse-anim {
@@ -92,7 +80,6 @@
           filter: brightness(1);
         }
       }
-
       .theme-pulse {
         animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
@@ -148,13 +135,18 @@
       .day--monday::after {
         content: '';
         position: absolute;
-        left: 1.5px;
-        top: 20%;
-        bottom: 20%;
-        width: 1px;
-        background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.08);
+        bottom: 12%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background-color: var(--color-ghost-label);
+        opacity: 0.15;
+        z-index: 4;
       }
 
+      /* PERBAIKAN: Smart Contrast Ghost Label */
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
@@ -168,6 +160,13 @@
         opacity: 0.25;
         pointer-events: none;
         white-space: nowrap;
+        z-index: 3;
+      }
+
+      /* Jika day adalah past (gelap), invert warna label agar terlihat */
+      .day--past[data-ghost-label]::before {
+        color: oklch(from var(--base-hex) 0.9 0.05 h); /* Menjadi cerah */
+        opacity: 0.4;
       }
 
       .day:hover {
@@ -177,6 +176,11 @@
         box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.2);
         background-color: var(--color-today);
         filter: brightness(1.1) grayscale(0%) !important;
+      }
+
+      /* Hover juga harus mengembalikan warna label ke gelap agar kontras dengan warna today yang cerah */
+      .day--past[data-ghost-label]:hover::before {
+        color: var(--color-ghost-label);
       }
 
       #tooltip {
@@ -196,7 +200,6 @@
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
         border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h / 0.5);
       }
-
       #tooltip b {
         color: var(--color-past);
         display: block;
@@ -212,7 +215,6 @@
       <div id="year-watermark">2026</div>
       <div id="chronos-viewport"></div>
     </div>
-
     <div id="tooltip"></div>
 
     <script type="module">
@@ -231,7 +233,6 @@
 
       class ChronosEngine {
         constructor() {
-          this.container = document.getElementById('chronos-container');
           this.viewport = document.getElementById('chronos-viewport');
           this.watermark = document.getElementById('year-watermark');
           this.tooltip = document.getElementById('tooltip');
@@ -246,7 +247,6 @@
           window.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'c') this.cycleTheme();
           });
-
           let tapCount = 0;
           document.body.addEventListener('click', (e) => {
             if (e.target === document.body) {
@@ -258,7 +258,6 @@
               setTimeout(() => (tapCount = 0), 500);
             }
           });
-
           window.addEventListener('resize', () => this.debounceRender());
           this.render();
           setInterval(() => this.updateTimeProgress(), 60000);
@@ -277,7 +276,6 @@
         applyTheme(hex) {
           document.documentElement.style.setProperty('--base-hex', hex);
         }
-
         debounceRender() {
           clearTimeout(this.timer);
           this.timer = setTimeout(() => this.render(), 100);
@@ -287,8 +285,7 @@
           const bar = document.getElementById('today-progress-bar');
           if (bar) {
             const now = new Date();
-            const totalMinutes = now.getHours() * 60 + now.getMinutes();
-            const percentage = (totalMinutes / 1440) * 100;
+            const percentage = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
             bar.style.width = `${percentage}%`;
           }
         }
@@ -298,13 +295,10 @@
           let x = e.clientX,
             y = e.clientY;
           const rect = this.tooltip.getBoundingClientRect();
-
           if (x + rect.width / 2 + padding > window.innerWidth) x = x - rect.width / 2 - padding;
           else if (x - rect.width / 2 - padding < 0) x = x + rect.width / 2 + padding;
-
           if (y - rect.height - padding < 0) y = y + padding + rect.height;
           else y = y - padding;
-
           this.tooltip.style.left = `${x}px`;
           this.tooltip.style.top = `${y}px`;
           this.tooltip.style.transform = `translate(-50%, -100%)`;
@@ -312,20 +306,19 @@
 
         render() {
           const now = new Date();
-          const todayInfo = {
-            str: now.toDateString(),
-            time: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(),
-          };
-          const days = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0 ? 366 : 365;
-          const layout = this.calculateGrid(window.innerWidth, window.innerHeight, days);
+          // Normalisasi Today ke Tengah Hari (12:00) untuk akurasi selisih hari
+          const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+          const todayInfo = { str: now.toDateString(), time: todayMid.getTime() };
+
+          const daysInYear = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0 ? 366 : 365;
+          const layout = this.calculateGrid(window.innerWidth, window.innerHeight, daysInYear);
           const totalCells = layout.c * layout.r;
 
-          const startOffset = Math.floor((totalCells - days) / 2);
-          const startDate = new Date(this.year, 0, 1);
+          const startOffset = Math.floor((totalCells - daysInYear) / 2);
+          const startDate = new Date(this.year, 0, 1, 12, 0, 0); // Start juga di 12:00
           startDate.setDate(startDate.getDate() - startOffset);
 
           this.viewport.style.cssText = `gap: ${layout.gap}px; grid-template-columns: repeat(${layout.c}, ${layout.s}px); grid-template-rows: repeat(${layout.r}, ${layout.s}px);`;
-
           const gridWidth = layout.c * layout.s + (layout.c - 1) * layout.gap;
           this.watermark.style.width = `${gridWidth}px`;
           this.watermark.style.textAlign = 'center';
@@ -345,11 +338,14 @@
             }
             el.className = `day day--${type}`;
             if (cursor.getDay() === 1) el.classList.add('day--monday');
+
             if (type === 'past') {
-              const diff = Math.floor((todayInfo.time - cursor.getTime()) / 86400000);
+              // PERBAIKAN: Selisih hari yang presisi
+              const diff = Math.round((todayInfo.time - cursor.getTime()) / 86400000);
               el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
               el.style.filter = `grayscale(${Math.min(100, diff * 0.5)}%)`;
             }
+
             if (type === 'today') {
               const bar = document.createElement('div');
               bar.className = 'now-indicator';
@@ -359,8 +355,11 @@
             if (isTargetYear && cursor.getDate() === 1) el.setAttribute('data-ghost-label', months[cursor.getMonth()]);
 
             if (type !== 'filler') {
-              const dayNum = Math.floor((cursor - new Date(this.year, 0, 0)) / 86400000) + 1;
-              const yearPercent = ((dayNum / days) * 100).toFixed(1);
+              // PERBAIKAN: Day Number yang akurat (Day 1 di 1 Jan)
+              const jan1 = new Date(this.year, 0, 1, 12, 0, 0);
+              const dayNum = Math.round((cursor.getTime() - jan1.getTime()) / 86400000) + 1;
+              const yearPercent = ((dayNum / daysInYear) * 100).toFixed(1);
+
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
               el.onmouseenter = (e) => {
