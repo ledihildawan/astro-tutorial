@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Final Polish v1.2</title>
+    <title>Chronos Grid 2026 - Fluid Typography Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
@@ -12,8 +12,6 @@
       :root {
         --base-hex: #f0eee9;
         --full-h: 100dvh;
-        --full-w: 100dvw;
-
         --bg-system: oklch(from var(--base-hex) 0.97 0.01 h);
         --color-today: var(--base-hex);
         --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
@@ -32,23 +30,19 @@
 
       body {
         height: var(--full-h);
-        width: var(--full-w);
+        width: 100dvw;
         overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
         background-color: var(--bg-system);
-        font-family:
-          'Inter',
-          -apple-system,
-          sans-serif;
-        transition: background-color 1s ease;
+        font-family: 'Inter', sans-serif;
+        transition: background-color 1.2s ease;
       }
 
       #chronos-viewport {
         display: grid;
         will-change: transform;
-        backface-visibility: hidden;
       }
 
       .day {
@@ -67,9 +61,8 @@
       }
       .day--future {
         background-color: var(--color-future);
-        box-shadow: inset 0 0 0 0.5px oklch(from var(--base-hex) 0.8 0.02 h / 0.3);
+        box-shadow: inset 0 0 0 0.5px oklch(from var(--base-hex) 0.8 0.02 h / 0.2);
       }
-      /* Saran #6: Filler dinaikkan ke 0.08 untuk visibilitas monitor 2K */
       .day--filler {
         opacity: 0.08;
         background-color: var(--color-past);
@@ -78,7 +71,6 @@
       .day--today {
         background-color: var(--color-today) !important;
         opacity: 1 !important;
-        /* Saran #2: Opsi 2 (Mengambang Lembut) menggunakan OKLCH */
         box-shadow:
           0 0 0 2px var(--bg-system),
           0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.4);
@@ -93,26 +85,30 @@
         top: 20%;
         bottom: 20%;
         width: 1px;
-        background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.15);
+        background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.1);
       }
 
+      /* FLUID TYPOGRAPHY: Mengatur font bulan agar adaptif */
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        /* Saran #1: Font ditingkatkan ke 9px */
-        font-size: 9px;
+        /* - 6px: ukuran minimal (saat layar 240px)
+           - 0.8vw: ukuran dinamis berdasarkan lebar layar
+           - 11px: ukuran maksimal (saat layar lebar/4K)
+        */
+        font-size: clamp(6px, 0.8vw, 11px);
         font-weight: 800;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.12em;
         color: var(--color-ghost);
         opacity: 0.35;
         pointer-events: none;
+        white-space: nowrap;
       }
 
       .day:hover {
-        /* Saran #5: Scale disesuaikan ke 1.3 agar tidak terlalu agresif */
         transform: scale(1.3);
         z-index: 20;
         opacity: 1 !important;
@@ -131,14 +127,13 @@
         font-size: 12px;
         font-weight: 600;
         color: #1a1a1a;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
         opacity: 0;
         transition: opacity 0.2s;
         z-index: 100;
         transform: translate(-50%, -135%);
-        border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h);
-        /* Saran #4: Tooltip tidak pecah baris */
         white-space: nowrap;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h);
       }
 
       #tooltip b {
@@ -147,46 +142,25 @@
         font-size: 10px;
         margin-top: 4px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-
-      #hint {
-        position: fixed;
-        bottom: 3dvh;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--color-ghost);
-        opacity: 0.5;
-        letter-spacing: 2px;
-        text-transform: uppercase;
       }
     </style>
   </head>
   <body>
     <div id="chronos-viewport"></div>
     <div id="tooltip"></div>
-    <div id="hint">Press <b>'C'</b> to Cycle Themes</div>
 
     <script type="module">
       const THEME_COLORS = [
         '#F0EEE9',
         '#2F6364',
-        '#C9D3C0',
-        '#F0D9CC',
-        '#DBD3DC',
-        '#79B6D8',
-        '#BB2649',
+        '#FFBE98',
         '#0F4C81',
-        '#FF6F61',
         '#88B04B',
+        '#F7CAC9',
+        '#92A8D1',
+        '#955251',
         '#AD5E99',
         '#009473',
-        '#DD4124',
-        '#45B5AA',
-        '#9B1B30',
-        '#53B0AE',
       ];
 
       class ChronosEngine {
@@ -194,62 +168,55 @@
           this.viewport = document.getElementById('chronos-viewport');
           this.tooltip = document.getElementById('tooltip');
           this.year = 2026;
-          this.colorIndex = 0;
+          const savedIndex = localStorage.getItem('chronos_theme_index');
+          this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
           this.init();
         }
 
         init() {
           this.applyTheme(THEME_COLORS[this.colorIndex]);
           window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'c') {
-              this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
-              this.applyTheme(THEME_COLORS[this.colorIndex]);
-              this.renderWithCurrentToday();
+            if (e.key.toLowerCase() === 'c') this.cycleTheme();
+          });
+
+          let tapCount = 0;
+          document.body.addEventListener('click', (e) => {
+            if (e.target === document.body) {
+              tapCount++;
+              if (tapCount === 3) {
+                this.cycleTheme();
+                tapCount = 0;
+              }
+              setTimeout(() => (tapCount = 0), 500);
             }
           });
+
           window.addEventListener('resize', () => this.debounceRender());
-          this.renderWithRealToday();
+          this.render();
+        }
+
+        cycleTheme() {
+          this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
+          this.applyTheme(THEME_COLORS[this.colorIndex]);
+          localStorage.setItem('chronos_theme_index', this.colorIndex);
+          this.render();
         }
 
         applyTheme(hex) {
           document.documentElement.style.setProperty('--base-hex', hex);
         }
 
-        calculateGrid(w, h, days) {
-          const scale = Math.max(w, 240) / 1200;
-          const gap = Math.max(2, 10 * scale);
-          const frame = Math.max(30, 60 * scale);
-          const availW = w - frame * 2;
-          const availH = h - frame * 2;
-          let bestS = 0;
-          for (let c = 1; c <= days; c++) {
-            const r = Math.ceil(days / c);
-            const s = Math.min((availW - (c - 1) * gap) / c, (availH - (r - 1) * gap) / r);
-            if (s > bestS) bestS = s;
-          }
-          const s = Math.floor(bestS);
-          return { s, gap, c: Math.floor((availW + gap) / (s + gap)), r: Math.floor((availH + gap) / (s + gap)) };
-        }
-
         debounceRender() {
           clearTimeout(this.timer);
-          this.timer = setTimeout(() => this.renderWithCurrentToday(), 100);
+          this.timer = setTimeout(() => this.render(), 100);
         }
 
-        renderWithRealToday() {
-          const d = new Date();
-          this.currentTodayInfo = {
-            str: d.toDateString(),
-            time: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
+        render() {
+          const now = new Date();
+          const todayInfo = {
+            str: now.toDateString(),
+            time: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(),
           };
-          this._render(this.currentTodayInfo);
-        }
-
-        renderWithCurrentToday() {
-          if (this.currentTodayInfo) this._render(this.currentTodayInfo);
-        }
-
-        _render(todayInfo) {
           const days = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0 ? 366 : 365;
           const layout = this.calculateGrid(window.innerWidth, window.innerHeight, days);
           const totalCells = layout.c * layout.r;
@@ -267,12 +234,11 @@
           for (let i = 0; i < totalCells; i++) {
             const el = document.createElement('div');
             const isTargetYear = cursor.getFullYear() === this.year;
-            const dTime = cursor.getTime();
 
             let type = 'filler';
             if (isTargetYear) {
               if (cursor.toDateString() === todayInfo.str) type = 'today';
-              else if (dTime < todayInfo.time) type = 'past';
+              else if (cursor.getTime() < todayInfo.time) type = 'past';
               else type = 'future';
             }
 
@@ -280,8 +246,7 @@
             if (cursor.getDay() === 1) el.classList.add('day--monday');
 
             if (type === 'past') {
-              const diff = Math.floor((todayInfo.time - dTime) / 86400000);
-              // Saran #3: Koefisien Fading dioptimalkan ke 0.008 (0.8% per hari)
+              const diff = Math.floor((todayInfo.time - cursor.getTime()) / 86400000);
               el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
             }
 
@@ -292,7 +257,6 @@
             if (type !== 'filler') {
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.daynum = Math.floor((cursor - new Date(this.year, 0, 0)) / 86400000);
-
               el.onmouseenter = (e) => {
                 this.tooltip.innerHTML = `${el.dataset.date}<b>Day ${el.dataset.daynum}</b>`;
                 this.tooltip.style.opacity = 1;
@@ -309,6 +273,22 @@
           }
           this.viewport.innerHTML = '';
           this.viewport.appendChild(fragment);
+        }
+
+        calculateGrid(w, h, days) {
+          const scale = Math.max(w, 240) / 1200;
+          const gap = Math.max(2, 10 * scale);
+          const frame = Math.max(25, 50 * scale);
+          const availW = w - frame * 2;
+          const availH = h - frame * 2;
+          let bestS = 0;
+          for (let c = 1; c <= days; c++) {
+            const r = Math.ceil(days / c);
+            const s = Math.min((availW - (c - 1) * gap) / c, (availH - (r - 1) * gap) / r);
+            if (s > bestS) bestS = s;
+          }
+          const s = Math.floor(bestS);
+          return { s, gap, c: Math.floor((availW + gap) / (s + gap)), r: Math.floor((availH + gap) / (s + gap)) };
         }
       }
 
