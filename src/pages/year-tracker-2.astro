@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Symmetry Edition v2.5</title>
+    <title>Chronos Grid 2026 - Meditative v2.6</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
@@ -27,8 +27,8 @@
         margin: 0;
         padding: 0;
         cursor: default;
+        -webkit-tap-highlight-color: transparent;
       }
-
       body {
         height: var(--full-h);
         width: 100dvw;
@@ -38,8 +38,9 @@
         align-items: center;
         background-color: var(--bg-system);
         font-family: 'Inter', sans-serif;
-        transition: background-color 1.2s ease;
-        cursor: pointer; /* Hanya hint halus untuk mobile */
+        transition:
+          background-color 1.2s ease,
+          opacity 0.3s ease;
       }
 
       #chronos-container {
@@ -55,6 +56,9 @@
         display: grid;
         will-change: transform, filter;
         z-index: 2;
+        justify-content: center;
+        align-content: center;
+        transition: opacity 0.4s ease;
       }
 
       #year-watermark {
@@ -87,7 +91,6 @@
           filter: brightness(1);
         }
       }
-
       .theme-pulse {
         animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
@@ -117,6 +120,7 @@
         background-color: var(--color-past);
         filter: grayscale(100%);
       }
+
       .day--today {
         background-color: var(--color-today) !important;
         opacity: 1 !important;
@@ -127,6 +131,7 @@
         border-radius: 3px;
         filter: none !important;
       }
+
       .now-indicator {
         position: absolute;
         bottom: 0;
@@ -137,6 +142,7 @@
         transition: width 1s linear;
         z-index: 5;
       }
+
       .day--monday::after {
         content: '';
         position: absolute;
@@ -150,6 +156,7 @@
         opacity: 0.15;
         z-index: 4;
       }
+
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
@@ -165,21 +172,50 @@
         white-space: nowrap;
         z-index: 3;
       }
+
       .day--past[data-ghost-label]::before {
         color: oklch(from var(--base-hex) 0.9 0.05 h);
         opacity: 0.5;
       }
+
       .day:hover {
         transform: scale(1.3);
         z-index: 20;
         opacity: 1 !important;
-        box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.25);
+        box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.2);
         background-color: var(--color-today);
         filter: brightness(1.1) grayscale(0%) !important;
       }
+
       .day--past[data-ghost-label]:hover::before {
         color: var(--color-ghost-label);
         opacity: 0.3;
+      }
+
+      #tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #1a1a1a;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 100;
+        white-space: nowrap;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h / 0.5);
+      }
+      #tooltip b {
+        color: var(--color-past);
+        display: block;
+        font-size: 10px;
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     </style>
   </head>
@@ -188,6 +224,7 @@
       <div id="year-watermark">2026</div>
       <div id="chronos-viewport"></div>
     </div>
+    <div id="tooltip"></div>
 
     <script type="module">
       const THEME_COLORS = [
@@ -203,12 +240,11 @@
         '#009473',
       ];
 
-      const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
-
       class ChronosEngine {
         constructor() {
           this.viewport = document.getElementById('chronos-viewport');
           this.watermark = document.getElementById('year-watermark');
+          this.tooltip = document.getElementById('tooltip');
           this.year = 2026;
           const savedIndex = localStorage.getItem('chronos_theme_index');
           this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
@@ -218,143 +254,141 @@
         init() {
           this.applyTheme(THEME_COLORS[this.colorIndex]);
 
-          // Tombol 'C' untuk desktop
+          // Easter Egg: Keyboard 'C' tetap ada untuk efisiensi Desktop
           window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'c') {
-              e.preventDefault();
-              this.cycleTheme();
+            if (e.key.toLowerCase() === 'c') this.cycleTheme();
+          });
+
+          // EASTER EGG UNIFIKASI: Long Press Logic
+          let pressTimer;
+          const handleStart = (e) => {
+            // Hanya aktif jika menekan background kosong
+            if (e.target.id === 'chronos-container' || e.target.tagName === 'BODY') {
+              pressTimer = setTimeout(() => {
+                this.cycleTheme();
+                // Visual feedback: grid pudar sesaat
+                this.viewport.style.opacity = '0.3';
+                setTimeout(() => (this.viewport.style.opacity = '1'), 300);
+              }, 800); // 0.8 detik tekan untuk ganti tema
             }
-          });
+          };
+          const handleCancel = () => clearTimeout(pressTimer);
 
-          // Triple-tap untuk mobile/tablet
-          let tapCount = 0;
-          let tapTimer;
-          document.body.addEventListener('touchend', () => {
-            tapCount++;
-            clearTimeout(tapTimer);
-            tapTimer = setTimeout(() => {
-              if (tapCount === 3) {
-                this.cycleTheme();
-              }
-              tapCount = 0;
-            }, 600);
-          });
-
-          // Click fallback untuk desktop (jika tidak pakai keyboard)
-          document.body.addEventListener('click', () => {
-            tapCount++;
-            clearTimeout(tapTimer);
-            tapTimer = setTimeout(() => {
-              if (tapCount === 3) {
-                this.cycleTheme();
-              }
-              tapCount = 0;
-            }, 600);
-          });
+          // Listeners untuk Mouse & Touch
+          document.addEventListener('mousedown', handleStart);
+          document.addEventListener('mouseup', handleCancel);
+          document.addEventListener('touchstart', handleStart, { passive: true });
+          document.addEventListener('touchend', handleCancel);
 
           window.addEventListener('resize', () => this.debounceRender());
-
-          this.renderWithRealToday();
-
-          // Update progress bar setiap menit
-          this.updateProgressBar();
-          setInterval(() => this.updateProgressBar(), 60000);
+          this.render();
+          setInterval(() => this.updateTimeProgress(), 60000);
         }
 
         cycleTheme() {
           this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
           this.applyTheme(THEME_COLORS[this.colorIndex]);
           localStorage.setItem('chronos_theme_index', this.colorIndex);
-
-          // Pulse feedback
           this.viewport.classList.remove('theme-pulse');
           void this.viewport.offsetWidth;
           this.viewport.classList.add('theme-pulse');
-
-          this.renderWithRandomToday();
+          this.render();
         }
 
         applyTheme(hex) {
           document.documentElement.style.setProperty('--base-hex', hex);
         }
-
         debounceRender() {
-          clearTimeout(this.resizeTimer);
-          this.resizeTimer = setTimeout(() => this.renderWithCurrentToday(), 100);
+          clearTimeout(this.timer);
+          this.timer = setTimeout(() => this.render(), 100);
         }
 
-        updateProgressBar() {
-          const bar = document.querySelector('.now-indicator');
+        updateTimeProgress() {
+          const bar = document.getElementById('today-progress-bar');
           if (bar) {
             const now = new Date();
-            const minutes = now.getHours() * 60 + now.getMinutes();
-            const percentage = (minutes / 1440) * 100;
+            const percentage = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
             bar.style.width = `${percentage}%`;
           }
         }
 
-        renderWithRealToday() {
-          const realToday = new Date();
-          this.currentTodayInfo = {
-            str: realToday.toDateString(),
-            time: new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate(), 12).getTime(),
-            month: realToday.getMonth(),
-          };
-          this._render(this.currentTodayInfo);
+        moveTooltip(e) {
+          const padding = 20;
+          let x = e.clientX,
+            y = e.clientY;
+          const rect = this.tooltip.getBoundingClientRect();
+          if (x + rect.width / 2 + padding > window.innerWidth) x = x - rect.width / 2 - padding;
+          else if (x - rect.width / 2 - padding < 0) x = x + rect.width / 2 + padding;
+          if (y - rect.height - padding < 0) y = y + padding + rect.height;
+          else y = y - padding;
+          this.tooltip.style.left = `${x}px`;
+          this.tooltip.style.top = `${y}px`;
+          this.tooltip.style.transform = `translate(-50%, -100%)`;
         }
 
-        renderWithRandomToday() {
-          const isLeap = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0;
-          const days = isLeap ? 366 : 365;
-          const randomDay = Math.floor(Math.random() * days) + 1;
-          const randomDate = new Date(this.year, 0, randomDay);
+        render() {
+          const now = new Date();
+          const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+          const todayInfo = { str: now.toDateString(), time: todayMid.getTime() };
+          const daysInYear = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0 ? 366 : 365;
+          const layout = this.calculateGrid(window.innerWidth, window.innerHeight, daysInYear);
+          const totalCells = layout.c * layout.r;
 
-          this.currentTodayInfo = {
-            str: randomDate.toDateString(),
-            time: new Date(randomDate.getFullYear(), randomDate.getMonth(), randomDate.getDate(), 12).getTime(),
-            month: randomDate.getMonth(),
-          };
-          this._render(this.currentTodayInfo);
-        }
-
-        renderWithCurrentToday() {
-          if (this.currentTodayInfo) {
-            this._render(this.currentTodayInfo);
-          }
-        }
-
-        _render(todayInfo) {
-          const isLeap = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0;
-          const days = isLeap ? 366 : 365;
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          const scale = Math.max(w, 240) / 1200;
-          const gap = Math.max(2, 10 * scale);
-          const frame = Math.max(25, 50 * scale);
-          const availW = w - frame * 2;
-          const availH = h - frame * 2;
-
-          let bestS = 0;
-          for (let c = 1; c <= days; c++) {
-            const r = Math.ceil(days / c);
-            const s = Math.min((availW - (c - 1) * gap) / c, (availH - (r - 1) * gap) / r);
-            if (s > bestS) bestS = s;
-          }
-
-          const s = Math.floor(bestS);
-          const cols = Math.floor((availW + gap) / (s + gap));
-          const rows = Math.floor((availH + gap) / (s + gap));
-
-          const totalCells = cols * rows;
-          const startOffset = Math.floor((totalCells - days) / 2);
-          const startDate = new Date(this.year, 0, 1, 12);
+          const startOffset = Math.floor((totalCells - daysInYear) / 2);
+          const startDate = new Date(this.year, 0, 1, 12, 0, 0);
           startDate.setDate(startDate.getDate() - startOffset);
 
-          this.viewport.style.cssText = `
-            gap: ${gap}px;
-            grid-template-columns: repeat(${cols}, ${s}px);
-            grid-template-rows: repeat(${rows}, ${s}px);
-          `;
+          this.viewport.style.cssText = `gap: ${layout.gap}px; grid-template-columns: repeat(${layout.c}, ${layout.s}px); grid-template-rows: repeat(${layout.r}, ${layout.s}px);`;
+          const fragment = document.createDocumentFragment();
+          const cursor = new Date(startDate);
+          const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+
+          for (let i = 0; i < totalCells; i++) {
+            const el = document.createElement('div');
+            const isTargetYear = cursor.getFullYear() === this.year;
+            let type = 'filler';
+            if (isTargetYear) {
+              if (cursor.toDateString() === todayInfo.str) type = 'today';
+              else if (cursor.getTime() < todayInfo.time) type = 'past';
+              else type = 'future';
+            }
+            el.className = `day day--${type}`;
+            if (cursor.getDay() === 1) el.classList.add('day--monday');
+
+            if (type === 'past') {
+              const diff = Math.round((todayInfo.time - cursor.getTime()) / 86400000);
+              const baseOpacity = Math.max(0.12, 1 - diff * 0.008);
+              el.style.opacity = isTargetYear && cursor.getDate() === 1 ? Math.max(0.3, baseOpacity) : baseOpacity;
+              el.style.filter = `grayscale(${Math.min(100, diff * 0.5)}%)`;
+            }
+
+            if (type === 'today') {
+              const bar = document.createElement('div');
+              bar.className = 'now-indicator';
+              bar.id = 'today-progress-bar';
+              el.appendChild(bar);
+            }
+            if (isTargetYear && cursor.getDate() === 1) el.setAttribute('data-ghost-label', months[cursor.getMonth()]);
+
+            if (type !== 'filler') {
+              const jan1 = new Date(this.year, 0, 1, 12, 0, 0);
+              const dayNum = Math.round((cursor.getTime() - jan1.getTime()) / 86400000) + 1;
+              const yearPercent = ((dayNum / daysInYear) * 100).toFixed(1);
+              el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+              el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
+              el.onmouseenter = (e) => {
+                this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
+                this.tooltip.style.opacity = 1;
+                this.moveTooltip(e);
+              };
+              el.onmousemove = (e) => this.moveTooltip(e);
+              el.onmouseleave = () => (this.tooltip.style.opacity = 0);
+            }
+            fragment.appendChild(el);
+            cursor.setDate(cursor.getDate() + 1);
+          }
+          this.viewport.innerHTML = '';
+          this.viewport.appendChild(fragment);
 
           requestAnimationFrame(() => {
             const gridRect = this.viewport.getBoundingClientRect();
@@ -362,52 +396,23 @@
             this.watermark.style.height = `${gridRect.height}px`;
           });
 
-          const fragment = document.createDocumentFragment();
-          const cursor = new Date(startDate);
+          this.updateTimeProgress();
+        }
 
-          for (let i = 0; i < totalCells; i++) {
-            const el = document.createElement('div');
-            const dYear = cursor.getFullYear();
-            const dTime = cursor.getTime();
-
-            let type = 'filler';
-            if (dYear === this.year) {
-              if (cursor.toDateString() === todayInfo.str) {
-                type = 'today';
-              } else if (dTime < todayInfo.time) {
-                type = 'past';
-                const diff = Math.floor((todayInfo.time - dTime) / 86400000);
-                el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
-                const grayscale = Math.min(100, diff * 0.5);
-                el.style.filter = `grayscale(${grayscale}%)`;
-              } else {
-                type = 'future';
-              }
-
-              if (cursor.getDay() === 1) el.classList.add('day--monday');
-
-              if (cursor.getDate() === 1) {
-                el.setAttribute('data-ghost-label', MONTHS[cursor.getMonth()]);
-              }
-            } else {
-              el.style.opacity = '0.06';
-            }
-
-            el.className = `day day--${type}`;
-
-            if (type === 'today') {
-              const bar = document.createElement('div');
-              bar.className = 'now-indicator';
-              el.appendChild(bar);
-            }
-
-            fragment.appendChild(el);
-            cursor.setDate(cursor.getDate() + 1);
+        calculateGrid(w, h, days) {
+          const scale = Math.max(w, 240) / 1200;
+          const gap = Math.max(2, 10 * scale);
+          const frame = Math.max(25, 50 * scale);
+          const availW = w - frame * 2,
+            availH = h - frame * 2;
+          let bestS = 0;
+          for (let c = 1; c <= days; c++) {
+            const r = Math.ceil(days / c);
+            const s = Math.min((availW - (c - 1) * gap) / c, (availH - (r - 1) * gap) / r);
+            if (s > bestS) bestS = s;
           }
-
-          this.viewport.innerHTML = '';
-          this.viewport.appendChild(fragment);
-          this.updateProgressBar();
+          const s = Math.floor(bestS);
+          return { s, gap, c: Math.floor((availW + gap) / (s + gap)), r: Math.floor((availH + gap) / (s + gap)) };
         }
       }
 
