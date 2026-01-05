@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Master Edition v2.0</title>
+    <title>Chronos Grid 2026 - Subliminal Edition v2.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
@@ -13,15 +13,20 @@
         --base-hex: #f0eee9;
         --full-h: 100dvh;
 
-        /* BG System: 97% Lightness dari base */
+        /* BG System: Dasar Ketenangan */
         --bg-system: oklch(from var(--base-hex) 0.97 0.01 h);
 
         --color-today: var(--base-hex);
         --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
 
-        /* GHOST COLOR: Diambil dari BG agar harmonis (85% Lightness) */
-        --color-ghost: oklch(from var(--bg-system) 0.85 0.02 h);
+        /* GHOST COLOR: Label Bulan (Lebih gelap agar terbaca namun pudar) */
+        --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
+
+        /* YEAR WATERMARK: Kunci Rahasia. Dibuat Mandiri.
+           Lightness 0.93 vs BG 0.97 = Hanya selisih 4% kecerahan.
+           Sangat samar, sangat bersih. */
+        --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
 
         --radius-standard: 2px;
         --transition-smooth: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
@@ -65,10 +70,9 @@
         z-index: 1;
         font-weight: 900;
         font-size: clamp(100px, 25vw, 400px);
-        color: var(--color-ghost);
-        /* Opacity sedikit dinaikkan karena warnanya sudah dibuat sangat tipis di OKLCH */
-        opacity: 0.5;
-        letter-spacing: -0.05em;
+        color: var(--color-year-subliminal);
+        opacity: 0.4; /* Opacity rendah dipadu dengan warna yang sudah pudar */
+        letter-spacing: -0.06em;
         pointer-events: none;
         user-select: none;
         transition: color 1s ease;
@@ -80,8 +84,8 @@
           filter: brightness(1);
         }
         50% {
-          transform: scale(1.02);
-          filter: brightness(1.1);
+          transform: scale(1.01);
+          filter: brightness(1.05);
         }
         100% {
           transform: scale(1);
@@ -111,10 +115,10 @@
       }
       .day--future {
         background-color: var(--color-future);
-        box-shadow: inset 0 0 0 0.5px oklch(from var(--base-hex) 0.8 0.02 h / 0.2);
+        box-shadow: inset 0 0 0 0.5px oklch(from var(--base-hex) 0.8 0.02 h / 0.15);
       }
       .day--filler {
-        opacity: 0.08;
+        opacity: 0.06;
         background-color: var(--color-past);
         filter: grayscale(100%);
       }
@@ -124,7 +128,7 @@
         opacity: 1 !important;
         box-shadow:
           0 0 0 2px var(--bg-system),
-          0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.4);
+          0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.35);
         z-index: 10;
         border-radius: 3px;
         filter: none !important;
@@ -135,7 +139,7 @@
         bottom: 0;
         left: 0;
         height: 3px;
-        background-color: oklch(from var(--base-hex) 0.3 0.1 h / 0.6);
+        background-color: oklch(from var(--base-hex) 0.3 0.1 h / 0.5);
         width: 0%;
         transition: width 1s linear;
         z-index: 5;
@@ -148,7 +152,7 @@
         top: 20%;
         bottom: 20%;
         width: 1px;
-        background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.1);
+        background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.08);
       }
 
       .day[data-ghost-label]::before {
@@ -160,8 +164,8 @@
         font-size: clamp(6px, 0.8vw, 11px);
         font-weight: 800;
         letter-spacing: 0.12em;
-        color: var(--color-ghost);
-        opacity: 0.8; /* Opacity label bulan mengikuti harmoni ghost */
+        color: var(--color-ghost-label);
+        opacity: 0.25;
         pointer-events: none;
         white-space: nowrap;
       }
@@ -170,7 +174,7 @@
         transform: scale(1.3);
         z-index: 20;
         opacity: 1 !important;
-        box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.25);
+        box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.2);
         background-color: var(--color-today);
         filter: brightness(1.1) grayscale(0%) !important;
       }
@@ -178,7 +182,7 @@
       #tooltip {
         position: fixed;
         pointer-events: none;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(12px);
         padding: 10px 16px;
         border-radius: 8px;
@@ -189,8 +193,8 @@
         transition: opacity 0.2s;
         z-index: 100;
         white-space: nowrap;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h / 0.5);
       }
 
       #tooltip b {
@@ -199,6 +203,7 @@
         font-size: 10px;
         margin-top: 4px;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     </style>
   </head>
