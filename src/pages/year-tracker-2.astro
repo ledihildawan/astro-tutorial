@@ -1,17 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Final Awareness v1.7</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
-
+    <title>Chronos Grid 2026 - Smart Tooltip v1.8</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style is:global>
+      /* [Semua Style Root, Body, Day Tetap Sama] */
       :root {
         --base-hex: #f0eee9;
-        --full-h: 100dvh;
+        --full-h: 100dvh; 
         --bg-system: oklch(from var(--base-hex) 0.97 0.01 h);
         --color-today: var(--base-hex);
         --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
@@ -21,176 +22,106 @@
         --transition-smooth: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        cursor: default;
-      }
+      * { box-sizing: border-box; margin: 0; padding: 0; cursor: default; }
 
       body {
-        height: var(--full-h);
-        width: 100dvw;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        height: var(--full-h); width: 100dvw; overflow: hidden;
+        display: flex; justify-content: center; align-items: center;
         background-color: var(--bg-system);
         font-family: 'Inter', sans-serif;
         transition: background-color 1.2s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      #chronos-viewport {
-        display: grid;
-        will-change: transform, filter;
-        backface-visibility: hidden;
-      }
+      #chronos-viewport { display: grid; will-change: transform, filter; backface-visibility: hidden; }
 
       @keyframes theme-pulse-anim {
-        0% {
-          transform: scale(1);
-          filter: brightness(1);
-        }
-        50% {
-          transform: scale(1.02);
-          filter: brightness(1.1);
-        }
-        100% {
-          transform: scale(1);
-          filter: brightness(1);
-        }
+        0% { transform: scale(1); filter: brightness(1); }
+        50% { transform: scale(1.02); filter: brightness(1.1); }
+        100% { transform: scale(1); filter: brightness(1); }
       }
-
-      .theme-pulse {
-        animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
+      
+      .theme-pulse { animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
       .day {
-        width: 100%;
-        height: 100%;
+        width: 100%; height: 100%;
         border-radius: var(--radius-standard);
-        transition:
-          background-color var(--transition-smooth),
-          opacity var(--transition-smooth),
-          transform 0.3s ease,
-          filter var(--transition-smooth);
+        transition: background-color var(--transition-smooth), opacity var(--transition-smooth), transform 0.3s ease, filter var(--transition-smooth);
         position: relative;
         overflow: hidden;
       }
 
-      .day--past {
-        background-color: var(--color-past);
-      }
+      .day--past { background-color: var(--color-past); }
       .day--future {
         background-color: var(--color-future);
         box-shadow: inset 0 0 0 0.5px oklch(from var(--base-hex) 0.8 0.02 h / 0.2);
       }
-      .day--filler {
-        opacity: 0.08;
-        background-color: var(--color-past);
-        filter: grayscale(100%);
-      }
+      .day--filler { opacity: 0.08; background-color: var(--color-past); filter: grayscale(100%); }
 
       .day--today {
         background-color: var(--color-today) !important;
         opacity: 1 !important;
-        box-shadow:
-          0 0 0 2px var(--bg-system),
-          0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.4);
-        z-index: 10;
-        border-radius: 3px;
+        box-shadow: 0 0 0 2px var(--bg-system), 0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.4);
+        z-index: 10; border-radius: 3px;
         filter: none !important;
       }
 
       .now-indicator {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 3px;
+        position: absolute; bottom: 0; left: 0; height: 3px;
         background-color: oklch(from var(--base-hex) 0.3 0.1 h / 0.6);
-        width: 0%;
-        transition: width 1s linear;
-        z-index: 5;
+        width: 0%; transition: width 1s linear; z-index: 5;
       }
 
       .day--monday::after {
-        content: '';
-        position: absolute;
-        left: 1.5px;
-        top: 20%;
-        bottom: 20%;
-        width: 1px;
-        background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.1);
+        content: ''; position: absolute; left: 1.5px; top: 20%; bottom: 20%;
+        width: 1px; background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.1);
       }
 
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: clamp(6px, 0.8vw, 11px);
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        color: var(--color-ghost);
-        opacity: 0.35;
-        pointer-events: none;
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        font-size: clamp(6px, 0.8vw, 11px); 
+        font-weight: 800; letter-spacing: 0.12em;
+        color: var(--color-ghost); opacity: 0.35; pointer-events: none;
         white-space: nowrap;
       }
 
       .day:hover {
-        transform: scale(1.3);
-        z-index: 20;
-        opacity: 1 !important;
+        transform: scale(1.3); z-index: 20; opacity: 1 !important;
         box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.25);
-        background-color: var(--color-today);
+        background-color: var(--color-today); 
         filter: brightness(1.1) grayscale(0%) !important;
       }
 
       #tooltip {
-        position: fixed;
-        pointer-events: none;
+        position: fixed; 
+        pointer-events: none; 
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(12px);
-        padding: 10px 16px;
+        backdrop-filter: blur(12px); 
+        padding: 10px 16px; 
         border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 12px; 
+        font-weight: 600; 
         color: #1a1a1a;
-        opacity: 0;
-        transition: opacity 0.2s;
+        opacity: 0; 
+        transition: opacity 0.2s; 
         z-index: 100;
-        transform: translate(-50%, -135%);
+        /* Hapus transform translate tetap, kita akan hitung dinamis */
         white-space: nowrap;
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
         border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h);
       }
 
-      #tooltip b {
-        color: var(--color-past);
-        display: block;
-        font-size: 10px;
-        margin-top: 4px;
-        text-transform: uppercase;
-      }
+      #tooltip b { color: var(--color-past); display: block; font-size: 10px; margin-top: 4px; text-transform: uppercase; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="chronos-viewport"></div>
     <div id="tooltip"></div>
 
     <script type="module">
       const THEME_COLORS = [
-        '#F0EEE9',
-        '#2F6364',
-        '#FFBE98',
-        '#0F4C81',
-        '#88B04B',
-        '#F7CAC9',
-        '#92A8D1',
-        '#955251',
-        '#AD5E99',
-        '#009473',
+        '#F0EEE9', '#2F6364', '#FFBE98', '#0F4C81', '#88B04B', 
+        '#F7CAC9', '#92A8D1', '#955251', '#AD5E99', '#009473'
       ];
 
       class ChronosEngine {
@@ -213,11 +144,8 @@
           document.body.addEventListener('click', (e) => {
             if (e.target === document.body) {
               tapCount++;
-              if (tapCount === 3) {
-                this.cycleTheme();
-                tapCount = 0;
-              }
-              setTimeout(() => (tapCount = 0), 500);
+              if (tapCount === 3) { this.cycleTheme(); tapCount = 0; }
+              setTimeout(() => tapCount = 0, 500);
             }
           });
 
@@ -230,15 +158,13 @@
           this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
           this.applyTheme(THEME_COLORS[this.colorIndex]);
           localStorage.setItem('chronos_theme_index', this.colorIndex);
-          this.viewport.classList.remove('theme-pulse');
-          void this.viewport.offsetWidth;
+          this.viewport.classList.remove('theme-pulse'); 
+          void this.viewport.offsetWidth; 
           this.viewport.classList.add('theme-pulse');
           this.render();
         }
 
-        applyTheme(hex) {
-          document.documentElement.style.setProperty('--base-hex', hex);
-        }
+        applyTheme(hex) { document.documentElement.style.setProperty('--base-hex', hex); }
 
         debounceRender() {
           clearTimeout(this.timer);
@@ -255,13 +181,39 @@
           }
         }
 
+        // FUNGSI BARU: Smart Positioning Tooltip
+        moveTooltip(e) {
+            const padding = 20; // Jarak aman dari pinggir layar
+            let x = e.clientX;
+            let y = e.clientY;
+
+            const rect = this.tooltip.getBoundingClientRect();
+            const tipWidth = rect.width;
+            const tipHeight = rect.height;
+
+            // Horizontal logic: Jika terlalu kanan, pindah ke kiri kursor
+            if (x + tipWidth / 2 + padding > window.innerWidth) {
+                x = x - tipWidth / 2 - padding;
+            } else if (x - tipWidth / 2 - padding < 0) {
+                x = x + tipWidth / 2 + padding;
+            }
+
+            // Vertical logic: Jika terlalu atas, pindah ke bawah kursor
+            if (y - tipHeight - padding < 0) {
+                y = y + padding + tipHeight; // Muncul di bawah
+            } else {
+                y = y - padding; // Muncul di atas (default)
+            }
+
+            this.tooltip.style.left = `${x}px`;
+            this.tooltip.style.top = `${y}px`;
+            this.tooltip.style.transform = `translate(-50%, -100%)`;
+        }
+
         render() {
           const now = new Date();
-          const todayInfo = {
-            str: now.toDateString(),
-            time: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(),
-          };
-          const days = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0 ? 366 : 365;
+          const todayInfo = { str: now.toDateString(), time: new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() };
+          const days = ((this.year % 4 === 0 && this.year % 100 !== 0) || (this.year % 400 === 0)) ? 366 : 365;
           const layout = this.calculateGrid(window.innerWidth, window.innerHeight, days);
           const totalCells = layout.c * layout.r;
 
@@ -278,7 +230,7 @@
           for (let i = 0; i < totalCells; i++) {
             const el = document.createElement('div');
             const isTargetYear = cursor.getFullYear() === this.year;
-
+            
             let type = 'filler';
             if (isTargetYear) {
               if (cursor.toDateString() === todayInfo.str) type = 'today';
@@ -288,10 +240,10 @@
 
             el.className = `day day--${type}`;
             if (cursor.getDay() === 1) el.classList.add('day--monday');
-
+            
             if (type === 'past') {
               const diff = Math.floor((todayInfo.time - cursor.getTime()) / 86400000);
-              el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
+              el.style.opacity = Math.max(0.12, 1 - (diff * 0.008));
               const grayscaleAmount = Math.min(100, diff * 0.5);
               el.style.filter = `grayscale(${grayscaleAmount}%)`;
             }
@@ -310,19 +262,19 @@
             if (type !== 'filler') {
               const dayNum = Math.floor((cursor - new Date(this.year, 0, 0)) / 86400000) + 1;
               const yearPercent = ((dayNum / days) * 100).toFixed(1);
-
+              
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
 
               el.onmouseenter = (e) => {
                 this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
                 this.tooltip.style.opacity = 1;
+                this.moveTooltip(e);
               };
               el.onmousemove = (e) => {
-                this.tooltip.style.left = e.clientX + 'px';
-                this.tooltip.style.top = e.clientY - 15 + 'px';
+                this.moveTooltip(e);
               };
-              el.onmouseleave = () => (this.tooltip.style.opacity = 0);
+              el.onmouseleave = () => this.tooltip.style.opacity = 0;
             }
 
             fragment.appendChild(el);
@@ -352,5 +304,5 @@
 
       new ChronosEngine();
     </script>
-  </body>
+</body>
 </html>
