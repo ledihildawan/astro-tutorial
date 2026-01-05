@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid - Integrity v2.8</title>
+    <title>Chronos Grid 2026 - Adaptive Contrast v2.9</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
@@ -18,9 +18,15 @@
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
         --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
         --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
+
+        /* DYNAMIC BAR COLOR: Diatur secara dinamis via JS atau CSS modern */
+        /* Default: kontras gelap untuk base terang */
+        --color-bar-adaptive: oklch(from var(--base-hex) 0.3 0.1 h / 0.6);
+
         --radius-standard: 2px;
         --transition-smooth: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
       }
+
       *,
       *::before,
       *::after {
@@ -30,6 +36,7 @@
         cursor: default;
         -webkit-tap-highlight-color: transparent;
       }
+
       body {
         height: var(--full-h);
         width: 100dvw;
@@ -41,6 +48,7 @@
         font-family: 'Inter', sans-serif;
         transition: background-color 1.2s ease;
       }
+
       #chronos-container {
         position: relative;
         display: flex;
@@ -49,6 +57,7 @@
         width: 100%;
         height: 100%;
       }
+
       #chronos-viewport {
         display: grid;
         will-change: transform, filter;
@@ -57,6 +66,7 @@
         align-content: center;
         transition: opacity 0.4s ease;
       }
+
       #year-watermark {
         position: absolute;
         z-index: 1;
@@ -72,23 +82,7 @@
         align-items: center;
         line-height: 0;
       }
-      @keyframes theme-pulse-anim {
-        0% {
-          transform: scale(1);
-          filter: brightness(1);
-        }
-        50% {
-          transform: scale(1.01);
-          filter: brightness(1.05);
-        }
-        100% {
-          transform: scale(1);
-          filter: brightness(1);
-        }
-      }
-      .theme-pulse {
-        animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
+
       .day {
         width: 100%;
         height: 100%;
@@ -100,7 +94,11 @@
           filter var(--transition-smooth);
         position: relative;
         overflow: hidden;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+        will-change: transform, background-color, opacity;
       }
+
       .day--past {
         background-color: var(--color-past);
       }
@@ -113,6 +111,7 @@
         background-color: var(--color-past);
         filter: grayscale(100%);
       }
+
       .day--today {
         background-color: var(--color-today) !important;
         opacity: 1 !important;
@@ -123,16 +122,21 @@
         border-radius: 3px;
         filter: none !important;
       }
+
+      /* FIX: Now Indicator dengan warna adaptif */
       .now-indicator {
         position: absolute;
         bottom: 0;
         left: 0;
         height: 3px;
-        background-color: oklch(from var(--base-hex) 0.3 0.1 h / 0.5);
+        background-color: var(--color-bar-adaptive);
         width: 0%;
         transition: width 1s linear;
         z-index: 5;
+        /* Tambahkan glow tipis jika di warna gelap */
+        box-shadow: 0 0 8px var(--color-bar-adaptive);
       }
+
       .day--monday::after {
         content: '';
         position: absolute;
@@ -146,6 +150,7 @@
         opacity: 0.15;
         z-index: 4;
       }
+
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
@@ -162,10 +167,12 @@
         z-index: 3;
         line-height: 0;
       }
+
       .day--past[data-ghost-label]::before {
         color: oklch(from var(--base-hex) 0.9 0.05 h);
         opacity: 0.5;
       }
+
       .day:hover {
         transform: scale(1.3);
         z-index: 20;
@@ -174,10 +181,7 @@
         background-color: var(--color-today);
         filter: brightness(1.1) grayscale(0%) !important;
       }
-      .day--past[data-ghost-label]:hover::before {
-        color: var(--color-ghost-label);
-        opacity: 0.3;
-      }
+
       #tooltip {
         position: fixed;
         pointer-events: none;
@@ -207,10 +211,11 @@
   </head>
   <body>
     <div id="chronos-container">
-      <div id="year-watermark"></div>
+      <div id="year-watermark">2026</div>
       <div id="chronos-viewport"></div>
     </div>
     <div id="tooltip"></div>
+
     <script type="module">
       const THEME_COLORS = [
         '#F0EEE9',
@@ -230,33 +235,28 @@
           this.viewport = document.getElementById('chronos-viewport');
           this.watermark = document.getElementById('year-watermark');
           this.tooltip = document.getElementById('tooltip');
-
-          // Gunakan tahun sekarang
-          this.year = new Date().getFullYear();
-          this.watermark.textContent = this.year;
-
+          this.year = 2026;
           const savedIndex = localStorage.getItem('chronos_theme_index');
           this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
           this.init();
         }
 
         init() {
-          this.applyTheme(THEME_COLORS[this.colorIndex]);
+          this.updateDynamicColors(THEME_COLORS[this.colorIndex]);
+          window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'c') this.cycleTheme();
+          });
 
           let pressTimer;
-          const longPressDuration = 800;
-
           const handleStart = (e) => {
-            // Hanya trigger jika tekan di container atau body
-            if (e.target.closest('#chronos-container') || e.target.tagName === 'BODY') {
+            if (e.target.id === 'chronos-container' || e.target.tagName === 'BODY') {
               pressTimer = setTimeout(() => {
-                this.randomizeThemeAndToday();
+                this.cycleTheme();
                 this.viewport.style.opacity = '0.3';
                 setTimeout(() => (this.viewport.style.opacity = '1'), 300);
-              }, longPressDuration);
+              }, 800);
             }
           };
-
           const handleCancel = () => clearTimeout(pressTimer);
 
           document.addEventListener('mousedown', handleStart);
@@ -269,25 +269,41 @@
           setInterval(() => this.updateTimeProgress(), 60000);
         }
 
-        // Fungsi baru: acak warna + acak tanggal hari ini di tahun yang sama
-        randomizeThemeAndToday() {
-          // 1. Acak warna tema
-          const newIndex = Math.floor(Math.random() * THEME_COLORS.length);
-          this.colorIndex = newIndex;
-          this.applyTheme(THEME_COLORS[newIndex]);
-          localStorage.setItem('chronos_theme_index', newIndex);
+        // FUNGSI CERDAS: Mengatur kontras bar berdasarkan kecerahan tema
+        updateDynamicColors(hex) {
+          document.documentElement.style.setProperty('--base-hex', hex);
 
-          // 2. Animasi pulse
+          // Deteksi kecerahan menggunakan trik temporer elemen untuk ambil nilai oklch
+          const temp = document.createElement('div');
+          temp.style.color = `oklch(from ${hex} l c h)`;
+          document.body.appendChild(temp);
+          const oklchValue = window.getComputedStyle(temp).color;
+          document.body.removeChild(temp);
+
+          // Parsing nilai L (lightness)
+          const lValue = parseFloat(oklchValue.match(/[\d.]+/)[0]);
+
+          // Tentukan warna progres bar:
+          // Jika tema gelap (l < 0.6), buat bar terang. Jika terang, buat bar gelap.
+          const barLightness = lValue < 0.6 ? 0.9 : 0.3;
+          const barChroma = lValue < 0.6 ? 0.05 : 0.1;
+
+          document.documentElement.style.setProperty(
+            '--color-bar-adaptive',
+            `oklch(from ${hex} ${barLightness} ${barChroma} h / 0.7)`
+          );
+        }
+
+        cycleTheme() {
+          this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
+          this.updateDynamicColors(THEME_COLORS[this.colorIndex]);
+          localStorage.setItem('chronos_theme_index', this.colorIndex);
+
           this.viewport.classList.remove('theme-pulse');
           void this.viewport.offsetWidth;
           this.viewport.classList.add('theme-pulse');
-
-          // 3. Render ulang dengan tanggal today yang baru (akan diacak di render())
           this.render();
-        }
-
-        applyTheme(hex) {
-          document.documentElement.style.setProperty('--base-hex', hex);
+          this.updateTimeProgress();
         }
 
         debounceRender() {
@@ -300,7 +316,9 @@
           if (bar) {
             const now = new Date();
             const percentage = ((now.getHours() * 60 + now.getMinutes()) / 1440) * 100;
-            bar.style.width = `${percentage}%`;
+            requestAnimationFrame(() => {
+              bar.style.width = `${percentage}%`;
+            });
           }
         }
 
@@ -319,28 +337,18 @@
         }
 
         render() {
-          const realNow = new Date();
-
-          // Acak tanggal "today" di tahun ini (1 Jan - 31 Des)
-          const randomDayOfYear = Math.floor(Math.random() * 365) + 1;
-          const isLeapYear = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0;
-          const daysInYear = isLeapYear ? 366 : 365;
-          const clampedDay = Math.min(randomDayOfYear, daysInYear);
-
-          const fakeToday = new Date(this.year, 0, clampedDay, 12, 0, 0);
-          const todayInfo = {
-            str: fakeToday.toDateString(),
-            time: fakeToday.getTime(),
-          };
-
+          const now = new Date();
+          const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+          const todayInfo = { str: now.toDateString(), time: todayMid.getTime() };
+          const daysInYear = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0 ? 366 : 365;
           const layout = this.calculateGrid(window.innerWidth, window.innerHeight, daysInYear);
           const totalCells = layout.c * layout.r;
+
           const startOffset = Math.floor((totalCells - daysInYear) / 2);
           const startDate = new Date(this.year, 0, 1, 12, 0, 0);
           startDate.setDate(startDate.getDate() - startOffset);
 
           this.viewport.style.cssText = `gap: ${layout.gap}px; grid-template-columns: repeat(${layout.c}, ${layout.s}px); grid-template-rows: repeat(${layout.r}, ${layout.s}px);`;
-
           const fragment = document.createDocumentFragment();
           const cursor = new Date(startDate);
           const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
@@ -354,7 +362,6 @@
               else if (cursor.getTime() < todayInfo.time) type = 'past';
               else type = 'future';
             }
-
             el.className = `day day--${type}`;
             if (cursor.getDay() === 1) el.classList.add('day--monday');
 
@@ -371,10 +378,7 @@
               bar.id = 'today-progress-bar';
               el.appendChild(bar);
             }
-
-            if (isTargetYear && cursor.getDate() === 1) {
-              el.setAttribute('data-ghost-label', months[cursor.getMonth()]);
-            }
+            if (isTargetYear && cursor.getDate() === 1) el.setAttribute('data-ghost-label', months[cursor.getMonth()]);
 
             if (type !== 'filler') {
               const jan1 = new Date(this.year, 0, 1, 12, 0, 0);
@@ -382,7 +386,6 @@
               const yearPercent = ((dayNum / daysInYear) * 100).toFixed(1);
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
-
               el.onmouseenter = (e) => {
                 this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
                 this.tooltip.style.opacity = 1;
@@ -391,11 +394,9 @@
               el.onmousemove = (e) => this.moveTooltip(e);
               el.onmouseleave = () => (this.tooltip.style.opacity = 0);
             }
-
             fragment.appendChild(el);
             cursor.setDate(cursor.getDate() + 1);
           }
-
           this.viewport.innerHTML = '';
           this.viewport.appendChild(fragment);
 
@@ -404,7 +405,6 @@
             this.watermark.style.width = `${gridRect.width}px`;
             this.watermark.style.height = `${gridRect.height}px`;
           });
-
           this.updateTimeProgress();
         }
 
