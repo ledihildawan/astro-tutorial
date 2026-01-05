@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Fluid Typography Edition</title>
+    <title>Chronos Grid 2026 - Psychological Completion v1.5</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
@@ -37,22 +37,46 @@
         align-items: center;
         background-color: var(--bg-system);
         font-family: 'Inter', sans-serif;
-        transition: background-color 1.2s ease;
+        transition: background-color 1.2s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
       #chronos-viewport {
         display: grid;
-        will-change: transform;
+        will-change: transform, filter;
+        backface-visibility: hidden;
+      }
+
+      /* PIECE A: Sensory Feedback Animation Keyframes */
+      @keyframes theme-pulse-anim {
+        0% {
+          transform: scale(1);
+          filter: brightness(1);
+        }
+        50% {
+          transform: scale(1.02);
+          filter: brightness(1.1);
+        } /* Sedikit membesar & mencerah */
+        100% {
+          transform: scale(1);
+          filter: brightness(1);
+        }
+      }
+
+      /* Kelas yang akan ditambahkan sesaat saat ganti tema */
+      .theme-pulse {
+        animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
 
       .day {
         width: 100%;
         height: 100%;
         border-radius: var(--radius-standard);
+        /* Menambahkan transition untuk filter agar desaturasi halus */
         transition:
           background-color var(--transition-smooth),
           opacity var(--transition-smooth),
-          transform 0.3s ease;
+          transform 0.3s ease,
+          filter var(--transition-smooth);
         position: relative;
       }
 
@@ -66,6 +90,7 @@
       .day--filler {
         opacity: 0.08;
         background-color: var(--color-past);
+        filter: grayscale(100%);
       }
 
       .day--today {
@@ -76,6 +101,7 @@
           0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.4);
         z-index: 10;
         border-radius: 3px;
+        filter: none !important; /* Hari ini selalu penuh warna */
       }
 
       .day--monday::after {
@@ -88,17 +114,12 @@
         background-color: oklch(from var(--base-hex) 0.2 0.05 h / 0.1);
       }
 
-      /* FLUID TYPOGRAPHY: Mengatur font bulan agar adaptif */
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        /* - 6px: ukuran minimal (saat layar 240px)
-           - 0.8vw: ukuran dinamis berdasarkan lebar layar
-           - 11px: ukuran maksimal (saat layar lebar/4K)
-        */
         font-size: clamp(6px, 0.8vw, 11px);
         font-weight: 800;
         letter-spacing: 0.12em;
@@ -114,7 +135,7 @@
         opacity: 1 !important;
         box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.25);
         background-color: var(--color-today);
-        filter: brightness(1.1);
+        filter: brightness(1.1) grayscale(0%) !important; /* Hover mengembalikan warna */
       }
 
       #tooltip {
@@ -199,6 +220,12 @@
           this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
           this.applyTheme(THEME_COLORS[this.colorIndex]);
           localStorage.setItem('chronos_theme_index', this.colorIndex);
+
+          // PIECE A: Trigger Sensory Feedback Pulse
+          this.viewport.classList.remove('theme-pulse'); // Reset jika ada
+          void this.viewport.offsetWidth; // Force reflow untuk restart animasi
+          this.viewport.classList.add('theme-pulse');
+
           this.render();
         }
 
@@ -247,7 +274,13 @@
 
             if (type === 'past') {
               const diff = Math.floor((todayInfo.time - cursor.getTime()) / 86400000);
+              // Existing Opacity Fading
               el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
+
+              // PIECE B: Temporal Desaturation Logic
+              // Meningkat 0.5% per hari, maksimal 100% grayscale setelah 200 hari.
+              const grayscaleAmount = Math.min(100, diff * 0.5);
+              el.style.filter = `grayscale(${grayscaleAmount}%)`;
             }
 
             if (isTargetYear && cursor.getDate() === 1) {
