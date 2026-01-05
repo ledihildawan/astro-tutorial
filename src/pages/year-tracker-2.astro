@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Temporal Container v1.9</title>
+    <title>Chronos Grid 2026 - Master Edition v2.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
@@ -12,11 +12,17 @@
       :root {
         --base-hex: #f0eee9;
         --full-h: 100dvh;
+
+        /* BG System: 97% Lightness dari base */
         --bg-system: oklch(from var(--base-hex) 0.97 0.01 h);
+
         --color-today: var(--base-hex);
         --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
-        --color-ghost: oklch(from var(--base-hex) 0.3 0.05 h);
+
+        /* GHOST COLOR: Diambil dari BG agar harmonis (85% Lightness) */
+        --color-ghost: oklch(from var(--bg-system) 0.85 0.02 h);
+
         --radius-standard: 2px;
         --transition-smooth: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -40,7 +46,6 @@
         transition: background-color 1.2s ease;
       }
 
-      /* Container Utama untuk membungkus Grid & Watermark */
       #chronos-container {
         position: relative;
         display: flex;
@@ -52,18 +57,17 @@
         display: grid;
         will-change: transform, filter;
         backface-visibility: hidden;
-        z-index: 2; /* Di atas watermark */
+        z-index: 2;
       }
 
-      /* YEAR WATERMARK: Sangat samar dan di latar belakang */
       #year-watermark {
         position: absolute;
         z-index: 1;
         font-weight: 900;
-        /* Ukuran font dinamis agar tidak melebihi grid */
         font-size: clamp(100px, 25vw, 400px);
         color: var(--color-ghost);
-        opacity: 0.04; /* Sangat samar agar tidak mengganggu fokus */
+        /* Opacity sedikit dinaikkan karena warnanya sudah dibuat sangat tipis di OKLCH */
+        opacity: 0.5;
         letter-spacing: -0.05em;
         pointer-events: none;
         user-select: none;
@@ -157,7 +161,7 @@
         font-weight: 800;
         letter-spacing: 0.12em;
         color: var(--color-ghost);
-        opacity: 0.35;
+        opacity: 0.8; /* Opacity label bulan mengikuti harmoni ghost */
         pointer-events: none;
         white-space: nowrap;
       }
@@ -317,7 +321,6 @@
 
           this.viewport.style.cssText = `gap: ${layout.gap}px; grid-template-columns: repeat(${layout.c}, ${layout.s}px); grid-template-rows: repeat(${layout.r}, ${layout.s}px);`;
 
-          // Pastikan watermark tidak melebihi lebar grid
           const gridWidth = layout.c * layout.s + (layout.c - 1) * layout.gap;
           this.watermark.style.width = `${gridWidth}px`;
           this.watermark.style.textAlign = 'center';
