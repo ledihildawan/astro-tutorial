@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Chronos Grid 2026 - Precision Edition v2.3</title>
+    <title>Chronos Grid 2026 - Persistent Edition v2.4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
 
-    <style is:global>
+    <style>
       :root {
         --base-hex: #f0eee9;
         --full-h: 100dvh;
@@ -16,11 +16,8 @@
         --color-today: var(--base-hex);
         --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
-
-        /* Default Label Color */
         --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
         --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
-
         --radius-standard: 2px;
         --transition-smooth: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -146,7 +143,7 @@
         z-index: 4;
       }
 
-      /* PERBAIKAN: Smart Contrast Ghost Label */
+      /* Ghost Label dengan Smart Contrast */
       .day[data-ghost-label]::before {
         content: attr(data-ghost-label);
         position: absolute;
@@ -163,10 +160,10 @@
         z-index: 3;
       }
 
-      /* Jika day adalah past (gelap), invert warna label agar terlihat */
+      /* INVERSION: Untuk label di masa lalu agar tetap terbaca meski kotak pudar */
       .day--past[data-ghost-label]::before {
-        color: oklch(from var(--base-hex) 0.9 0.05 h); /* Menjadi cerah */
-        opacity: 0.4;
+        color: oklch(from var(--base-hex) 0.9 0.05 h);
+        opacity: 0.5; /* Ditingkatkan agar navigasi tidak hilang */
       }
 
       .day:hover {
@@ -178,9 +175,9 @@
         filter: brightness(1.1) grayscale(0%) !important;
       }
 
-      /* Hover juga harus mengembalikan warna label ke gelap agar kontras dengan warna today yang cerah */
       .day--past[data-ghost-label]:hover::before {
         color: var(--color-ghost-label);
+        opacity: 0.3;
       }
 
       #tooltip {
@@ -306,7 +303,6 @@
 
         render() {
           const now = new Date();
-          // Normalisasi Today ke Tengah Hari (12:00) untuk akurasi selisih hari
           const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
           const todayInfo = { str: now.toDateString(), time: todayMid.getTime() };
 
@@ -315,7 +311,7 @@
           const totalCells = layout.c * layout.r;
 
           const startOffset = Math.floor((totalCells - daysInYear) / 2);
-          const startDate = new Date(this.year, 0, 1, 12, 0, 0); // Start juga di 12:00
+          const startDate = new Date(this.year, 0, 1, 12, 0, 0);
           startDate.setDate(startDate.getDate() - startOffset);
 
           this.viewport.style.cssText = `gap: ${layout.gap}px; grid-template-columns: repeat(${layout.c}, ${layout.s}px); grid-template-rows: repeat(${layout.r}, ${layout.s}px);`;
@@ -340,9 +336,11 @@
             if (cursor.getDay() === 1) el.classList.add('day--monday');
 
             if (type === 'past') {
-              // PERBAIKAN: Selisih hari yang presisi
               const diff = Math.round((todayInfo.time - cursor.getTime()) / 86400000);
-              el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
+              const baseOpacity = Math.max(0.12, 1 - diff * 0.008);
+
+              // RESISTENSI NAVIGASI: Jika ada label bulan, jangan memudar lebih dari 0.3
+              el.style.opacity = isTargetYear && cursor.getDate() === 1 ? Math.max(0.3, baseOpacity) : baseOpacity;
               el.style.filter = `grayscale(${Math.min(100, diff * 0.5)}%)`;
             }
 
@@ -355,11 +353,9 @@
             if (isTargetYear && cursor.getDate() === 1) el.setAttribute('data-ghost-label', months[cursor.getMonth()]);
 
             if (type !== 'filler') {
-              // PERBAIKAN: Day Number yang akurat (Day 1 di 1 Jan)
               const jan1 = new Date(this.year, 0, 1, 12, 0, 0);
               const dayNum = Math.round((cursor.getTime() - jan1.getTime()) / 86400000) + 1;
               const yearPercent = ((dayNum / daysInYear) * 100).toFixed(1);
-
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
               el.onmouseenter = (e) => {
