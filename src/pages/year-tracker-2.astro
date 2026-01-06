@@ -27,11 +27,8 @@
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
         --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
         --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
-
-        /* Adaptive Vars */
         --color-bar-adaptive: oklch(from var(--base-hex) 0.3 0.1 h / 0.6);
         --color-hover-adaptive: var(--base-hex);
-
         --radius-standard: 2px;
         --transition-smooth: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -58,8 +55,7 @@
         transition:
           background-color 1.2s ease,
           --base-hex 1.2s ease;
-        /* Mencegah refresh pull-to-refresh di mobile agar scrubbing lancar */
-        overscroll-behavior: none;
+        overscroll-behavior: none; /* Mencegah refresh tarik-turun di mobile */
       }
 
       #trace-container {
@@ -77,7 +73,7 @@
           justify-content: center;
           align-content: center;
           transition: opacity 0.4s ease;
-          /* Penting untuk mobile scrubbing: */
+          /* KRUSIAL: Mematikan gesture browser bawaan agar JS bisa menangani touch sepenuhnya */
           touch-action: none;
         }
 
@@ -97,23 +93,19 @@
           line-height: 0;
         }
 
-        /* Focus Mode */
         &:has(.day:hover) #year-watermark {
           opacity: 0.15;
           transition: opacity 0.5s ease;
         }
       }
 
-      /* [UNIVERSAL LOCK - FIXED] */
-      /* Kita HAPUS lock tooltip disini agar mobile touch tidak menyembunyikan tooltip. */
-      /* Lock hanya berlaku untuk efek fisik grid. */
+      /* UNIVERSAL LOCK: Mematikan interaksi fisik grid saat ditekan */
       :root:active {
         & .day {
           pointer-events: none !important;
           transform: translateY(0) scale(1) !important;
           transition-delay: 0ms !important;
         }
-        /* Tooltip dikontrol via JS sekarang */
       }
 
       @keyframes theme-pulse-anim {
@@ -175,7 +167,7 @@
           transition-delay: 0ms !important;
         }
 
-        /* Museum Exhibit Hover */
+        /* Museum Hover (Desktop) */
         &:hover {
           transform: translateY(-2px) scale(1.02);
           z-index: 20;
@@ -188,16 +180,15 @@
           transition-delay: 0ms !important;
         }
 
-        /* [MOBILE ACTIVE STATE] */
-        /* Class ini ditambahkan JS saat scrubbing di mobile untuk simulasi hover */
+        /* Mobile Active State (Scrubbing) */
         &.is-touch-active {
-          transform: translateY(-2px) scale(1.02);
+          transform: translateY(-2px) scale(1.02) !important;
           z-index: 20;
           opacity: 1 !important;
           box-shadow:
             0 12px 24px -10px oklch(from var(--base-hex) 0.1 0.1 h / 0.4),
-            0 0 0 1.5px var(--bg-system);
-          background-color: var(--color-hover-adaptive);
+            0 0 0 1.5px var(--bg-system) !important;
+          background-color: var(--color-hover-adaptive) !important;
           filter: brightness(1.1) saturate(1.2) !important;
           transition-delay: 0ms !important;
         }
@@ -259,23 +250,33 @@
         box-shadow: 0 0 clamp(4px, 1vw, 8px) var(--color-bar-adaptive);
       }
 
+      /* [THE UNIFIED LENS] - Consistent Design System */
       #tooltip {
         position: fixed;
         pointer-events: none;
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(12px);
+
+        /* High-Grade Glassmorphism */
+        background: rgba(255, 255, 255, 0.92); /* Sedikit lebih transparan agar menyatu */
+        backdrop-filter: blur(20px); /* Blur lebih kuat untuk memisahkan teks dari grid */
+        -webkit-backdrop-filter: blur(20px);
+
         padding: 10px 16px;
         border-radius: 8px;
         font-size: clamp(12px, 1.5vw, 14px);
         font-weight: 600;
         color: #1a1a1a;
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity 0.15s ease-out;
         z-index: 100;
         white-space: nowrap;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+
+        /* Subtle Depth */
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(255, 255, 255, 0.6) inset;
         border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h / 0.5);
-        /* Hardware acceleration untuk performa mobile */
+
+        /* Hardware Accel */
         transform: translateZ(0);
 
         & b {
@@ -316,7 +317,7 @@
           this.watermark = document.getElementById('year-watermark');
           this.tooltip = document.getElementById('tooltip');
           this.year = 2026;
-          this.lastTouchElement = null; // [MOBILE] Track element under finger
+          this.lastTouchElement = null;
 
           const savedIndex = localStorage.getItem('trace_theme_index');
           this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
@@ -329,79 +330,83 @@
             if (e.key.toLowerCase() === 'c') this.cycleTheme();
           });
 
-          // --- LOGIKA INTERAKSI HYBRID (MOUSE & TOUCH) ---
+          // --- UNIFIED INTERACTION SYSTEM ---
           let pressTimer;
-          let isMoving = false;
+          let isDragging = false;
 
-          const handleStart = (e) => {
-            isMoving = false;
-            // Jika ini touch event, kita tidak langsung matikan tooltip
-            // Kita tunggu lihat apakah user hold (ganti tema) atau move (scrubbing)
+          // 1. Mouse Handler
+          const handleMouseDown = () => {
+            pressTimer = setTimeout(() => this.cycleTheme(), 800);
+          };
+          const handleMouseUp = () => clearTimeout(pressTimer);
+
+          // 2. Touch Handler (Enhanced)
+          const handleTouchStart = (e) => {
+            isDragging = false;
+            // Deteksi instan saat TAP
+            this.handleTouchInteraction(e);
 
             pressTimer = setTimeout(() => {
-              if (!isMoving) {
+              if (!isDragging) {
                 this.cycleTheme();
-                // Matikan tooltip saat tema berubah
                 this.tooltip.style.opacity = 0;
               }
             }, 800);
           };
 
-          const handleCancel = () => {
+          const handleTouchMove = (e) => {
+            isDragging = true;
             clearTimeout(pressTimer);
-            // [MOBILE] Cleanup class aktif saat jari diangkat
+            this.handleTouchInteraction(e);
+          };
+
+          const handleTouchEnd = () => {
+            clearTimeout(pressTimer);
             if (this.lastTouchElement) {
               this.lastTouchElement.classList.remove('is-touch-active');
               this.lastTouchElement = null;
             }
-            // Hide tooltip after delay
             setTimeout(() => {
               this.tooltip.style.opacity = 0;
-            }, 100);
+            }, 50);
           };
 
-          // [MOBILE SCRUBBING ENGINE]
-          const handleTouchMove = (e) => {
-            isMoving = true;
-            clearTimeout(pressTimer); // Batalkan ganti tema jika jari bergerak
+          document.addEventListener('mousedown', handleMouseDown);
+          document.addEventListener('mouseup', handleMouseUp);
 
-            const touch = e.touches[0];
-            // Cari elemen di bawah jari
-            const target = document.elementFromPoint(touch.clientX, touch.clientY);
-
-            if (target && target.classList.contains('day') && !target.classList.contains('day--filler')) {
-              // Visual Feedback (Simulasi Hover)
-              if (this.lastTouchElement && this.lastTouchElement !== target) {
-                this.lastTouchElement.classList.remove('is-touch-active');
-              }
-              target.classList.add('is-touch-active');
-              this.lastTouchElement = target;
-
-              // Update Tooltip
-              if (target.dataset.date) {
-                this.tooltip.innerHTML = `${target.dataset.date}<b>${target.dataset.info}</b>`;
-                this.tooltip.style.opacity = 1;
-
-                // Posisi Tooltip (Sedikit di atas jari agar tidak tertutup)
-                const x = touch.clientX;
-                const y = touch.clientY - 40;
-                this.positionTooltip(x, y);
-              }
-            }
-          };
-
-          // Event Listeners
-          document.addEventListener('mousedown', handleStart);
-          document.addEventListener('mouseup', handleCancel);
-
-          // Touch Events (Passive: false diperlukan untuk preventDefault jika perlu)
-          document.addEventListener('touchstart', handleStart, { passive: true });
-          document.addEventListener('touchend', handleCancel);
-          document.addEventListener('touchmove', handleTouchMove, { passive: false });
+          const vp = this.viewport;
+          vp.addEventListener('touchstart', handleTouchStart, { passive: false });
+          vp.addEventListener('touchmove', handleTouchMove, { passive: false });
+          document.addEventListener('touchend', handleTouchEnd);
 
           window.addEventListener('resize', () => this.debounceRender());
           this.render();
           setInterval(() => this.updateTimeProgress(), 60000);
+        }
+
+        // Logic Sentuhan Cerdas
+        handleTouchInteraction(e) {
+          if (e.cancelable) e.preventDefault();
+
+          const touch = e.touches[0];
+          const target = document.elementFromPoint(touch.clientX, touch.clientY);
+
+          if (target && target.classList.contains('day') && !target.classList.contains('day--filler')) {
+            if (this.lastTouchElement && this.lastTouchElement !== target) {
+              this.lastTouchElement.classList.remove('is-touch-active');
+            }
+
+            target.classList.add('is-touch-active');
+            this.lastTouchElement = target;
+
+            if (target.dataset.date) {
+              this.tooltip.innerHTML = `${target.dataset.date}<b>${target.dataset.info}</b>`;
+              this.tooltip.style.opacity = 1;
+
+              // Unified Position Logic
+              this.positionTooltip(touch.clientX, touch.clientY);
+            }
+          }
         }
 
         updateDynamicColors(hex) {
@@ -458,21 +463,30 @@
           }
         }
 
-        // [SHARED LOGIC] Reusable position logic for mouse & touch
+        // [THE UNIFIED LENS LOGIC]
+        // Satu logika untuk semua device. Konsisten.
         positionTooltip(clientX, clientY) {
-          const padding = 20;
+          // "The Breathing Space"
+          // Jarak 30px adalah titik temu harmonis antara
+          // - Desktop (terlihat elegan, tidak menempel kursor)
+          // - Mobile (cukup untuk melihat di atas ujung jari rata-rata)
+          const gap = 30;
+
           let x = clientX,
             y = clientY;
           const rect = this.tooltip.getBoundingClientRect();
 
-          // Smart Boundary Logic
-          if (x + rect.width / 2 + padding > window.innerWidth) x = x - rect.width / 2 - padding;
-          else if (x - rect.width / 2 - padding < 0) x = x + rect.width / 2 + padding;
+          // Boundary X
+          if (x + rect.width / 2 + 10 > window.innerWidth) x = x - rect.width / 2 - 10;
+          else if (x - rect.width / 2 - 10 < 0) x = x + rect.width / 2 + 10;
 
-          // Priority: Show above finger/cursor
-          if (y - rect.height - padding < 0)
-            y = y + padding + rect.height + 40; // Flip down if top tight
-          else y = y - padding;
+          // Boundary Y (Smart Flip)
+          // Jika mentok atas, tooltip pindah ke bawah jari/kursor
+          if (y - rect.height - gap < 0) {
+            y = y + gap + rect.height;
+          } else {
+            y = y - gap;
+          }
 
           this.tooltip.style.left = `${x}px`;
           this.tooltip.style.top = `${y}px`;
@@ -539,20 +553,21 @@
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
 
-              // [MOUSE ONLY] - Untuk mobile ditangani oleh touchmove handler
+              // Desktop Mouse Only (Mobile handled via Touch API)
               el.onmouseenter = (e) => {
-                // Cek apakah device punya pointer halus (mouse)
-                if (window.matchMedia('(pointer: fine)').matches) {
+                // Deteksi jika input adalah mouse murni (bukan touch simulasi)
+                if (e.sourceCapabilities && !e.sourceCapabilities.firesTouchEvents) {
+                  this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
+                  this.tooltip.style.opacity = 1;
+                  this.moveTooltip(e);
+                } else if (!('sourceCapabilities' in e)) {
+                  // Fallback browser lama
                   this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
                   this.tooltip.style.opacity = 1;
                   this.moveTooltip(e);
                 }
               };
-              el.onmousemove = (e) => {
-                if (window.matchMedia('(pointer: fine)').matches) {
-                  this.moveTooltip(e);
-                }
-              };
+              el.onmousemove = (e) => this.moveTooltip(e);
               el.onmouseleave = () => (this.tooltip.style.opacity = 0);
             }
             fragment.appendChild(el);
