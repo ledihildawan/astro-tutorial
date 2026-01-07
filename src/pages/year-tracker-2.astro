@@ -45,6 +45,12 @@
         --tr-tooltip-bg: oklch(from var(--tr-bg-system) 0.99 0.01 h / 0.98);
         --tr-tooltip-text: oklch(from var(--tr-base-hex) 0.18 0.02 h);
         --tr-tooltip-accent: oklch(from var(--tr-base-hex) 0.26 0.1 h);
+
+        /* [TUNING] Strength controls (adapted per theme in JS) */
+        --tr-watermark-boost-opacity: 0.22;
+        --tr-today-ring-mix: 55%;
+        --tr-today-shadow-alpha: 0.28;
+
         --tr-radius-standard: 2px;
         --tr-transition-smooth: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -82,6 +88,7 @@
         align-items: center;
         width: 100%;
         height: 100%;
+        isolation: isolate;
 
         & #tr-viewport {
           display: grid;
@@ -98,10 +105,71 @@
 
         & #tr-year-watermark {
           position: absolute;
-          z-index: 1;
+          z-index: 3;
           font-weight: 900;
           font-size: clamp(100px, 25vw, 450px);
-          color: var(--tr-color-year-subliminal);
+          /* Blend watermark into the grid with a center-weighted mask */
+          color: transparent;
+          background: linear-gradient(var(--tr-color-year-subliminal), var(--tr-color-year-subliminal));
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+
+          /* Blend into each grid cell color (adaptive per theme tone) */
+          mix-blend-mode: multiply;
+
+          /* [MINDFULNESS] Local boost around "today" (does not affect edges) */
+          &::after {
+            content: attr(data-tr-year);
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font: inherit;
+            letter-spacing: inherit;
+            line-height: inherit;
+            color: transparent;
+            background: linear-gradient(var(--tr-color-year-subliminal), var(--tr-color-year-subliminal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            mix-blend-mode: multiply;
+            opacity: var(--tr-watermark-boost-opacity, 0.22);
+            pointer-events: none;
+            user-select: none;
+
+            -webkit-mask-image: radial-gradient(
+              circle at var(--tr-now-x, 50%) var(--tr-now-y, 50%),
+              rgba(0, 0, 0, 1) 0%,
+              rgba(0, 0, 0, 1) calc(var(--tr-now-r1, 140px) * 0.6),
+              rgba(0, 0, 0, 0) calc(var(--tr-now-r1, 140px) * 1.15),
+              rgba(0, 0, 0, 0) 100%
+            );
+            mask-image: radial-gradient(
+              circle at var(--tr-now-x, 50%) var(--tr-now-y, 50%),
+              rgba(0, 0, 0, 1) 0%,
+              rgba(0, 0, 0, 1) calc(var(--tr-now-r1, 140px) * 0.6),
+              rgba(0, 0, 0, 0) calc(var(--tr-now-r1, 140px) * 1.15),
+              rgba(0, 0, 0, 0) 100%
+            );
+          }
+
+          /* [MINDFULNESS] Watermark dips away from the "now" area */
+          -webkit-mask-image: radial-gradient(
+            circle at var(--tr-now-x, 50%) var(--tr-now-y, 50%),
+            rgba(0, 0, 0, 0.95) 0%,
+            rgba(0, 0, 0, 0.95) var(--tr-now-r1, 140px),
+            rgba(0, 0, 0, 0.22) var(--tr-now-r2, 360px),
+            rgba(0, 0, 0, 0.22) 100%
+          );
+          mask-image: radial-gradient(
+            circle at var(--tr-now-x, 50%) var(--tr-now-y, 50%),
+            rgba(0, 0, 0, 0.95) 0%,
+            rgba(0, 0, 0, 0.95) var(--tr-now-r1, 140px),
+            rgba(0, 0, 0, 0.22) var(--tr-now-r2, 360px),
+            rgba(0, 0, 0, 0.22) 100%
+          );
           opacity: 0.28;
           letter-spacing: -0.06em;
           pointer-events: none;
@@ -111,14 +179,22 @@
           align-items: center;
           line-height: 0;
           transform: translateZ(0);
-          transition: opacity 0.5s ease;
+          transition: opacity var(--tr-transition-smooth);
         }
 
         /* Use viewport hover/focus to avoid flicker when cursor crosses grid gaps */
         &:has(#tr-viewport:hover) #tr-year-watermark,
         &:has(#tr-viewport:focus-within) #tr-year-watermark {
-          opacity: 0.15;
+          opacity: 0.21;
         }
+      }
+
+      html[data-tr-tone='dark'] #tr-year-watermark {
+        mix-blend-mode: screen;
+      }
+
+      html[data-tr-tone='dark'] #tr-year-watermark::after {
+        mix-blend-mode: screen;
       }
 
       :root:active .tr-day:not(.tr-is-pressing) {
@@ -133,7 +209,7 @@
           transform: scale(1);
         }
         50% {
-          transform: scale(1.01);
+          transform: scale(1.006);
         }
         100% {
           transform: scale(1);
@@ -176,7 +252,8 @@
           opacity: 1 !important;
           box-shadow:
             0 0 0 2px var(--tr-bg-system),
-            0 12px 30px oklch(from var(--tr-base-hex) 0.2 0.1 h / 0.35);
+            0 0 0 5px color-mix(in oklch, var(--tr-color-bar-adaptive) var(--tr-today-ring-mix, 55%), transparent),
+            0 14px 34px oklch(from var(--tr-base-hex) 0.2 0.1 h / var(--tr-today-shadow-alpha, 0.28));
           z-index: 10;
           border-radius: 3px;
           transition-delay: 0ms !important;
@@ -195,7 +272,7 @@
         /* [PERFORMANCE] Simplified hover/touch - no filter/box-shadow animation */
         &:hover,
         &.tr-is-touch-active {
-          transform: translateY(-2px) scale(1.02);
+          transform: translateY(-1px) scale(1.01);
           z-index: 20;
           opacity: 1 !important;
           background-color: var(--tr-color-hover-adaptive);
@@ -258,13 +335,17 @@
       .tr-now-indicator {
         position: absolute;
         bottom: 0;
-        left: 0;
+        inset-inline-start: 0;
         height: clamp(1.5px, 0.4vh, 3px);
         background-color: var(--tr-color-bar-adaptive);
         width: 0%;
         transition: width 1s linear;
         z-index: 5;
         box-shadow: 0 0 clamp(4px, 1vw, 8px) var(--tr-color-bar-adaptive);
+      }
+
+      .tr-day--today .tr-now-indicator {
+        opacity: 0.95;
       }
 
       #tr-tooltip {
@@ -362,18 +443,18 @@
     <script type="module">
       /* [THEME] Best of Pantone Color of the Year selections */
       const THEME_COLORS = [
-        '#F0EEE9', // 2024: Peach Fuzz (approximated warm neutral base)
-        '#BB2649', // 2023: Viva Magenta (brave and fearless red)
-        '#6667AB', // 2022: Very Peri (dynamic periwinkle blue hue)
-        '#F5DF4D', // 2021: Illuminating (friendly and joyful yellow)
-        '#939597', // 2021: Ultimate Gray (solid and dependable)
-        '#0F4C81', // 2020: Classic Blue (instilling calm and confidence)
-        '#FF6F61', // 2019: Living Coral (animating and life-affirming)
-        '#5F4B8B', // 2018: Ultra Violet (inventive and imaginative)
-        '#88B04B', // 2017: Greenery (refreshing and revitalizing)
-        '#F7CAC9', // 2016: Rose Quartz (compassionate and composed)
-        '#92A8D1', // 2016: Serenity (weightless and airy)
-        '#955251', // 2015: Marsala (robust and earthy wine red)
+        '#F0EEE9', // 2024: Peach Fuzz (warm neutral base)
+        '#BB2649', // 2023: Viva Magenta (deep accent)
+        '#6667AB', // 2022: Very Peri (soft periwinkle)
+        '#F5DF4D', // 2021: Illuminating (gentle warmth)
+        '#939597', // 2021: Ultimate Gray (quiet stability)
+        '#0F4C81', // 2020: Classic Blue (calm depth)
+        '#FF6F61', // 2019: Living Coral (soft vitality)
+        '#5F4B8B', // 2018: Ultra Violet (muted mystery)
+        '#88B04B', // 2017: Greenery (restful green)
+        '#F7CAC9', // 2016: Rose Quartz (soft blush)
+        '#92A8D1', // 2016: Serenity (airy blue)
+        '#955251', // 2015: Marsala (earthy warmth)
       ];
 
       /**
@@ -383,6 +464,10 @@
       class TraceEngine {
         static MS_PER_DAY = 86_400_000;
         static MINUTES_PER_DAY = 1_440;
+
+        // [TUNING] Tone thresholds (hysteresis) for blend-mode switching
+        static TONE_TO_DARK_LUM = 0.38;
+        static TONE_TO_LIGHT_LUM = 0.44;
 
         // Timing constants
         static LONG_PRESS_DURATION = 500;
@@ -403,6 +488,7 @@
         _pendingY = 0;
         _lastHoveredElement = null;
         _pressedElement = null;
+        _lastHapticAt = { scrub: 0, success: 0 };
 
         constructor() {
           this._ac = new AbortController();
@@ -629,7 +715,24 @@
           const hoverC = lum > 0.75 ? 0.15 : 0.1;
           const hover = `oklch(from ${hex} ${hoverL} ${hoverC} h)`;
           const ghostLabelToday = `oklch(from ${hex} ${lum < 0.35 ? 0.92 : 0.22} ${lum < 0.35 ? 0.05 : 0.04} h)`;
-          return { bar, hover, ghostLabelToday };
+
+          // Base tone (will be stabilized with hysteresis in updateDynamicColors)
+          const tone = lum < TraceEngine.TONE_TO_DARK_LUM ? 'dark' : 'light';
+
+          // [TUNING] Calm defaults that adapt slightly per theme luminance
+          const watermarkBoostOpacity = lum > 0.72 ? 0.18 : lum < 0.3 ? 0.24 : 0.22;
+          const todayRingMixPct = lum > 0.72 ? 45 : lum < 0.3 ? 60 : 55;
+          const todayShadowAlpha = lum > 0.72 ? 0.22 : lum < 0.3 ? 0.3 : 0.28;
+
+          return {
+            bar,
+            hover,
+            ghostLabelToday,
+            tone,
+            watermarkBoostOpacity,
+            todayRingMixPct,
+            todayShadowAlpha,
+          };
         }
 
         getNow() {
@@ -645,7 +748,9 @@
 
           // Update document language + direction (basic RTL support)
           document.documentElement.lang = activeLocale;
-          if (activeLocale.toLowerCase().startsWith('ar')) document.documentElement.dir = 'rtl';
+          const primaryRaw = activeLocale.toLowerCase().split('-')[0];
+          const rtlLangs = new Set(['ar', 'fa', 'he', 'iw', 'ur', 'ps']);
+          if (rtlLangs.has(primaryRaw)) document.documentElement.dir = 'rtl';
           else document.documentElement.removeAttribute('dir');
 
           // Rebuild locale-dependent formatters
@@ -683,9 +788,9 @@
           }
 
           // Resolve translations by primary language subtag
-          const primaryRaw = activeLocale.toLowerCase().split('-')[0];
+          const primaryRaw2 = primaryRaw;
           const alias = { jp: 'ja', gr: 'de' };
-          const primary = alias[primaryRaw] ?? primaryRaw;
+          const primary = alias[primaryRaw2] ?? primaryRaw2;
           this._lang = this._i18n[primary] ? primary : 'en';
           this._t = this._i18n[this._lang] ?? this._i18n.en;
 
@@ -702,6 +807,7 @@
           this.todayStr = this.getUTCDateString(now);
           this.todayTime = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
           this.watermark.innerText = this.year;
+          this.watermark.dataset.trYear = String(this.year);
         }
 
         setSimulatedNowUTC(dateUTC) {
@@ -1095,18 +1201,34 @@
             { signal: this._signal }
           );
 
+          // [LIGHTNESS] Page Lifecycle: freeze/resume (Chrome)
+          document.addEventListener('freeze', () => this.stopTimeProgressTicker(), { signal: this._signal });
+          document.addEventListener('resume', () => this.startTimeProgressTicker(), { signal: this._signal });
+
           this.startTimeProgressTicker();
         }
 
         startTimeProgressTicker() {
           this.stopTimeProgressTicker();
           this.updateTimeProgress();
-          this.timeUpdateInterval = setInterval(() => this.updateTimeProgress(), TraceEngine.TIME_UPDATE_INTERVAL);
+
+          const scheduleNext = () => {
+            const now = this.getNow();
+            const msToNextMinute =
+              (60 - now.getSeconds()) * 1000 - now.getMilliseconds() + (now.getSeconds() === 0 ? 60_000 : 0);
+            const delay = Math.max(250, Math.min(60_000, msToNextMinute));
+            this.timeUpdateInterval = setTimeout(() => {
+              this.updateTimeProgress();
+              if (this.timeUpdateInterval) scheduleNext();
+            }, delay);
+          };
+
+          scheduleNext();
         }
 
         stopTimeProgressTicker() {
           if (this.timeUpdateInterval) {
-            clearInterval(this.timeUpdateInterval);
+            clearTimeout(this.timeUpdateInterval);
             this.timeUpdateInterval = null;
           }
         }
@@ -1259,6 +1381,10 @@
          */
         triggerHaptic(type) {
           if (!navigator.vibrate) return;
+          const now = performance.now();
+          const minGap = type === 'scrub' ? 90 : 350;
+          if (now - (this._lastHapticAt[type] ?? 0) < minGap) return;
+          this._lastHapticAt[type] = now;
           navigator.vibrate(type === 'scrub' ? TraceEngine.HAPTIC_SCRUB_MS : TraceEngine.HAPTIC_SUCCESS_MS);
         }
 
@@ -1305,6 +1431,35 @@
           document.documentElement.style.setProperty('--tr-color-bar-adaptive', cached.bar);
           document.documentElement.style.setProperty('--tr-color-hover-adaptive', cached.hover);
           document.documentElement.style.setProperty('--tr-color-ghost-label-today', cached.ghostLabelToday);
+
+          // [TUNING] Adaptive strength knobs (kept subtle)
+          if (typeof cached.watermarkBoostOpacity === 'number') {
+            document.documentElement.style.setProperty(
+              '--tr-watermark-boost-opacity',
+              String(Math.max(0, Math.min(1, cached.watermarkBoostOpacity)))
+            );
+          }
+          if (typeof cached.todayRingMixPct === 'number') {
+            const pct = Math.max(0, Math.min(100, cached.todayRingMixPct));
+            document.documentElement.style.setProperty('--tr-today-ring-mix', `${pct}%`);
+          }
+          if (typeof cached.todayShadowAlpha === 'number') {
+            document.documentElement.style.setProperty(
+              '--tr-today-shadow-alpha',
+              String(Math.max(0, Math.min(1, cached.todayShadowAlpha)))
+            );
+          }
+
+          // [TUNING] Stable tone switching (hysteresis) for blend-mode choice
+          const prevTone = document.documentElement.dataset.trTone;
+          let nextTone = cached.tone;
+          const lum = TraceEngine.#relativeLuminanceFromHex(normalized);
+          if (prevTone === 'dark') {
+            nextTone = lum > TraceEngine.TONE_TO_LIGHT_LUM ? 'light' : 'dark';
+          } else if (prevTone === 'light') {
+            nextTone = lum < TraceEngine.TONE_TO_DARK_LUM ? 'dark' : 'light';
+          }
+          if (nextTone) document.documentElement.dataset.trTone = nextTone;
         }
 
         /**
@@ -1376,6 +1531,10 @@
 
           const gridCells = [];
 
+          let todayCol = 0;
+          let todayRow = 0;
+          let hasToday = false;
+
           for (let i = 0; i < totalCells; i++) {
             const el = document.createElement('div');
             const isTargetYear = startDate.getUTCFullYear() === this.year;
@@ -1398,9 +1557,12 @@
             if (type === 'future') {
               // [MINDFULNESS] Let the future recede by distance from "now"
               const diff = Math.max(0, Math.round((cellDayTime - this.todayTime) / TraceEngine.MS_PER_DAY));
-              el.style.opacity = Math.max(0.35, 0.95 - diff * 0.0013);
+              el.style.opacity = Math.max(0.28, 0.9 - diff * 0.0016);
             }
             if (type === 'today') {
+              hasToday = true;
+              todayCol = i % layout.columns;
+              todayRow = Math.floor(i / layout.columns);
               const bar = document.createElement('div');
               bar.className = 'tr-now-indicator';
               bar.id = 'tr-today-bar';
@@ -1462,8 +1624,26 @@
           this.viewport.appendChild(fragment);
           requestAnimationFrame(() => {
             const r = this.viewport.getBoundingClientRect();
+            // Align watermark box to the grid bounds for perfect blending
             this.watermark.style.width = `${r.width}px`;
             this.watermark.style.height = `${r.height}px`;
+            this.watermark.style.left = `${this.viewport.offsetLeft}px`;
+            this.watermark.style.top = `${this.viewport.offsetTop}px`;
+
+            // Position the watermark mask around the current-day cell
+            if (hasToday) {
+              const step = layout.cellSize + layout.gapSize;
+              const rawNowX = todayCol * step + layout.cellSize / 2;
+              const isRtl = document.documentElement.dir === 'rtl';
+              const nowX = isRtl ? r.width - rawNowX : rawNowX;
+              const nowY = todayRow * step + layout.cellSize / 2;
+              const radius2 = Math.max(175, Math.min(r.width, r.height) * 0.26);
+              const radius1 = Math.max(105, radius2 * 0.4);
+              this.watermark.style.setProperty('--tr-now-x', `${nowX}px`);
+              this.watermark.style.setProperty('--tr-now-y', `${nowY}px`);
+              this.watermark.style.setProperty('--tr-now-r1', `${radius1.toFixed(0)}px`);
+              this.watermark.style.setProperty('--tr-now-r2', `${radius2.toFixed(0)}px`);
+            }
           });
           this.updateTimeProgress();
         }
