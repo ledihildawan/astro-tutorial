@@ -68,6 +68,8 @@
 
         & #trace-viewport {
           display: grid;
+          /* [PERFORMANCE] contain: strict mengisolasi kalkulasi layout grid dari sisa halaman */
+          contain: strict;
           will-change: transform, filter;
           z-index: 2;
           justify-content: center;
@@ -90,6 +92,8 @@
           justify-content: center;
           align-items: center;
           line-height: 0;
+          /* [PERFORMANCE] Render watermark di layer GPU terpisah */
+          transform: translateZ(0);
         }
 
         &:has(.day:hover) #year-watermark {
@@ -98,7 +102,7 @@
         }
       }
 
-      /* UNIVERSAL LOCK: Mematikan interaksi fisik grid saat ditekan */
+      /* UNIVERSAL LOCK */
       :root:active {
         & .day {
           pointer-events: none !important;
@@ -138,7 +142,10 @@
         overflow: hidden;
         backface-visibility: hidden;
         transform-style: preserve-3d;
-        will-change: transform, background-color, opacity;
+
+        /* [PERFORMANCE] Hanya aktifkan will-change pada property berat jika diperlukan
+           Terlalu banyak will-change bisa memakan memori HP */
+        /* will-change: transform, background-color; <- Dihapus untuk efisiensi memori, browser modern sudah cukup pintar */
 
         &.day--past {
           background-color: var(--color-past);
@@ -166,7 +173,6 @@
           transition-delay: 0ms !important;
         }
 
-        /* Desktop Hover */
         &:hover {
           transform: translateY(-2px) scale(1.02);
           z-index: 20;
@@ -179,7 +185,6 @@
           transition-delay: 0ms !important;
         }
 
-        /* Mobile Touch Active State */
         &.is-touch-active {
           transform: translateY(-2px) scale(1.02) !important;
           z-index: 20;
@@ -267,6 +272,8 @@
           0 15px 40px rgba(0, 0, 0, 0.1),
           0 0 0 1px rgba(255, 255, 255, 0.5) inset;
         border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h / 0.5);
+        /* [PERFORMANCE] Promote ke layer GPU untuk animasi opacity super mulus */
+        will-change: transform, opacity;
         transform: translateZ(0);
 
         & b {
@@ -314,6 +321,13 @@
           this.startX = 0;
           this.startY = 0;
 
+          // [CACHE] Simpan kemampuan hover untuk optimasi mousemove
+          this.hasHover = window.matchMedia('(hover: hover)').matches;
+
+          // [CACHE] Simpan ukuran tooltip untuk mencegah Layout Thrashing
+          this.tooltipWidth = 0;
+          this.tooltipHeight = 0;
+
           const savedIndex = localStorage.getItem('trace_theme_index');
           this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
           this.init();
@@ -325,17 +339,14 @@
             if (e.key.toLowerCase() === 'c') this.cycleTheme();
           });
 
-          // --- UNIVERSAL INTERACTION & HAPTIC ENGINE ---
           let pressTimer;
           let isDragging = false;
 
-          // 1. Mouse Handler
           const handleMouseDown = () => {
             pressTimer = setTimeout(() => this.cycleTheme(), 800);
           };
           const handleMouseUp = () => clearTimeout(pressTimer);
 
-          // 2. Touch Handler
           const handleTouchStart = (e) => {
             const touch = e.touches[0];
             this.startX = touch.clientX;
@@ -347,14 +358,11 @@
               this.tooltipHideTimer = null;
             }
 
-            // Instant Feedback
             this.handleTouchInteraction(e);
 
-            // Timer Ritual
             pressTimer = setTimeout(() => {
               if (!isDragging) {
                 this.cycleTheme();
-                // Bersihkan UI setelah ganti tema
                 this.tooltip.style.opacity = 0;
                 if (this.lastTouchElement) {
                   this.lastTouchElement.classList.remove('is-touch-active');
@@ -366,7 +374,6 @@
 
           const handleTouchMove = (e) => {
             const touch = e.touches[0];
-            // Toleransi gerak 10px (Deadzone)
             const moveDistance = Math.hypot(touch.clientX - this.startX, touch.clientY - this.startY);
 
             if (moveDistance > 10) {
@@ -385,8 +392,6 @@
 
           const handleTouchEnd = () => {
             clearTimeout(pressTimer);
-
-            // Linger Effect: 2.5 Detik
             this.tooltipHideTimer = setTimeout(() => {
               this.tooltip.style.opacity = 0;
               if (this.lastTouchElement) {
@@ -396,8 +401,6 @@
             }, 2500);
           };
 
-          // Event Listeners Global
-          // Kita tidak perlu listener khusus di body, karena document capture semuanya
           document.addEventListener('mousedown', handleMouseDown);
           document.addEventListener('mouseup', handleMouseUp);
 
@@ -406,22 +409,32 @@
           vp.addEventListener('touchmove', handleTouchMove, { passive: false });
           document.addEventListener('touchend', handleTouchEnd);
 
-          window.addEventListener('resize', () => this.debounceRender());
+          window.addEventListener('resize', () => {
+            this.hasHover = window.matchMedia('(hover: hover)').matches;
+            this.debounceRender();
+          });
+
           this.render();
           setInterval(() => this.updateTimeProgress(), 60000);
         }
 
-        // [HAPTIC UTILITY]
         triggerHaptic(type) {
           if (!navigator.vibrate) return;
+          if (type === 'scrub') navigator.vibrate(5);
+          else if (type === 'success') navigator.vibrate(50);
+        }
 
-          if (type === 'scrub') {
-            // Getaran sangat halus untuk tekstur (tik..tik..)
-            navigator.vibrate(5);
-          } else if (type === 'success') {
-            // Getaran berat untuk konfirmasi aksi (DUMM)
-            navigator.vibrate(50);
+        // [OPTIMIZED] Helper untuk Update Konten Tooltip dengan Cache Ukuran
+        updateTooltipContent(html) {
+          if (this.tooltip.innerHTML !== html) {
+            this.tooltip.innerHTML = html;
+            // Hanya hitung ulang ukuran saat konten berubah!
+            // Ini mencegah Layout Thrashing saat hanya menggeser mouse.
+            const rect = this.tooltip.getBoundingClientRect();
+            this.tooltipWidth = rect.width;
+            this.tooltipHeight = rect.height;
           }
+          this.tooltip.style.opacity = 1;
         }
 
         handleTouchInteraction(e) {
@@ -431,12 +444,10 @@
           const target = document.elementFromPoint(touch.clientX, touch.clientY);
 
           if (target && target.classList.contains('day') && !target.classList.contains('day--filler')) {
-            // Cek jika pindah ke kotak baru (untuk memicu getaran)
             if (this.lastTouchElement !== target) {
               if (this.lastTouchElement) {
                 this.lastTouchElement.classList.remove('is-touch-active');
               }
-              // [HAPTIC] Trigger getaran tekstur saat pindah kotak
               this.triggerHaptic('scrub');
             }
 
@@ -444,13 +455,8 @@
             this.lastTouchElement = target;
 
             if (target.dataset.date) {
-              const newContent = `${target.dataset.date}<b>${target.dataset.info}</b>`;
-              if (this.tooltip.innerHTML !== newContent) {
-                this.tooltip.innerHTML = newContent;
-              }
-              this.tooltip.style.opacity = 1;
-
-              // Smart HUD Position
+              const content = `${target.dataset.date}<b>${target.dataset.info}</b>`;
+              this.updateTooltipContent(content);
               this.positionTooltip(touch.clientX, touch.clientY, true);
             }
           }
@@ -482,9 +488,7 @@
         }
 
         cycleTheme() {
-          // [HAPTIC] Trigger getaran sukses saat tema berubah
           this.triggerHaptic('success');
-
           this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
           this.updateDynamicColors(THEME_COLORS[this.colorIndex]);
           localStorage.setItem('trace_theme_index', this.colorIndex);
@@ -513,16 +517,18 @@
           }
         }
 
+        // [OPTIMIZED] Position Logic menggunakan Cached Dimensions
         positionTooltip(clientX, clientY, isTouch = false) {
-          let x = clientX,
-            y = clientY;
-          const rect = this.tooltip.getBoundingClientRect();
+          const gap = isTouch ? 40 : 20;
 
-          // X Boundary
-          if (x + rect.width / 2 + 10 > window.innerWidth) x = x - rect.width / 2 - 10;
-          else if (x - rect.width / 2 - 10 < 0) x = x + rect.width / 2 + 10;
+          let x = clientX;
+          let y = clientY;
 
-          // Y Boundary & HUD Logic
+          // Gunakan Cached Dimensions (tooltipWidth/Height)
+          // Menghindari getBoundingClientRect() berulang
+          if (x + this.tooltipWidth / 2 + 10 > window.innerWidth) x = x - this.tooltipWidth / 2 - 10;
+          else if (x - this.tooltipWidth / 2 - 10 < 0) x = x + this.tooltipWidth / 2 + 10;
+
           if (isTouch) {
             const isTopHalf = clientY < window.innerHeight / 2;
             if (isTopHalf) {
@@ -539,10 +545,6 @@
 
           this.tooltip.style.left = `${x}px`;
           this.tooltip.style.top = `${y}px`;
-        }
-
-        moveTooltip(e) {
-          this.positionTooltip(e.clientX, e.clientY, false);
         }
 
         render() {
@@ -601,17 +603,21 @@
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
 
-              // Desktop Mouse
+              // [OPTIMIZED] Desktop Mouse Listeners
               el.onmouseenter = (e) => {
-                if (window.matchMedia('(hover: hover)').matches) {
-                  this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
-                  this.tooltip.style.opacity = 1;
-                  this.moveTooltip(e);
+                if (this.hasHover) {
+                  // Gunakan variable cached
+                  const content = `${el.dataset.date}<b>${el.dataset.info}</b>`;
+                  this.updateTooltipContent(content);
+                  // Posisikan tooltip sekali saat masuk
+                  this.positionTooltip(e.clientX, e.clientY, false);
                 }
               };
               el.onmousemove = (e) => {
-                if (window.matchMedia('(hover: hover)').matches) {
-                  this.moveTooltip(e);
+                if (this.hasHover) {
+                  // Throttling tidak terlalu perlu di mousemove desktop modern
+                  // Tapi karena positionTooltip sudah ringan (no reflow), ini aman
+                  this.positionTooltip(e.clientX, e.clientY, false);
                 }
               };
               el.onmouseleave = () => (this.tooltip.style.opacity = 0);
