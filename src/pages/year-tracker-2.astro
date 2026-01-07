@@ -1,45 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';"
-    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TRACE - The Shape of Time</title>
-    <meta name="description" content="A meditative time landscape designed to silence digital noise." />
-
+    <title>Chronos Grid 2026 - Symmetry Edition v2.5</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet" />
 
     <style is:global>
-      /* [PERFORMANCE] CSS Houdini for GPU Theme Interpolation */
-      @property --tr-base-hex {
-        syntax: '<color>';
-        initial-value: #f0eee9;
-        inherits: true;
-      }
-
       :root {
-        --tr-base-hex: #f0eee9;
-        --tr-full-h: 100dvh;
-        --tr-bg-system: oklch(from var(--tr-base-hex) 0.97 0.01 h);
-        --tr-color-today: var(--tr-base-hex);
-        --tr-color-past: oklch(from var(--tr-base-hex) 0.45 0.05 h);
-        --tr-color-future: oklch(from var(--tr-base-hex) 0.93 0.02 h);
-        --tr-color-ghost-label: oklch(from var(--tr-base-hex) 0.3 0.05 h);
-        --tr-color-year-subliminal: oklch(from var(--tr-bg-system) 0.93 0.01 h);
-        --tr-color-bar-adaptive: oklch(from var(--tr-base-hex) 0.3 0.1 h / 0.6);
-        --tr-color-hover-adaptive: var(--tr-base-hex);
-        --tr-radius-standard: 2px;
-        --tr-transition-smooth: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        --base-hex: #f0eee9;
+        --full-h: 100dvh;
+        --bg-system: oklch(from var(--base-hex) 0.97 0.01 h);
+        --color-today: var(--base-hex);
+        --color-past: oklch(from var(--base-hex) 0.45 0.05 h);
+        --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
+        --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
+        --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
+        --radius-standard: 2px;
+        --transition-smooth: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
@@ -48,887 +31,415 @@
       }
 
       body {
-        height: var(--tr-full-h);
+        height: var(--full-h);
         width: 100dvw;
         overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: var(--tr-bg-system);
-        font-family:
-          'Inter',
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          Roboto,
-          sans-serif;
-        transition:
-          background-color 1.2s ease,
-          --tr-base-hex 1.2s ease;
-        overscroll-behavior: none;
+        background-color: var(--bg-system);
+        font-family: 'Inter', sans-serif;
+        transition: background-color 1.2s ease;
       }
 
-      #tr-container {
+      #chronos-container {
         position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
         width: 100%;
         height: 100%;
-
-        & #tr-viewport {
-          display: grid;
-          /* [v1.0.6] layout style containment allows visual breathing room */
-          /* Using 'layout style' instead of 'strict' to avoid size containment issues with grid */
-          contain: layout style;
-          will-change: transform;
-          z-index: 2;
-          justify-content: center;
-          align-content: center;
-          transition: opacity 0.4s ease;
-          touch-action: none;
-        }
-
-        & #tr-year-watermark {
-          position: absolute;
-          z-index: 1;
-          font-weight: 900;
-          font-size: clamp(100px, 25vw, 450px);
-          color: var(--tr-color-year-subliminal);
-          opacity: 0.4;
-          letter-spacing: -0.06em;
-          pointer-events: none;
-          user-select: none;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          line-height: 0;
-          transform: translateZ(0);
-        }
-
-        &:has(.tr-day:hover) #tr-year-watermark,
-        &:has(.tr-day:focus-visible) #tr-year-watermark {
-          opacity: 0.15;
-          transition: opacity 0.5s ease;
-        }
+        touch-action: none; /* Cegah scroll saat long press */
       }
 
-      :root:active .tr-day {
-        transform: translateY(0) scale(1) !important;
-        transition-delay: 0ms !important;
-        box-shadow: none !important;
-        filter: none !important;
+      #chronos-viewport {
+        display: grid;
+        will-change: transform, filter;
+        z-index: 2;
+        justify-content: center;
+        align-content: center;
       }
 
-      @keyframes tr-theme-pulse-anim {
+      #year-watermark {
+        position: absolute;
+        z-index: 1;
+        font-weight: 900;
+        font-size: clamp(100px, 25vw, 450px);
+        color: var(--color-year-subliminal);
+        opacity: 0.4;
+        letter-spacing: -0.06em;
+        pointer-events: none;
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        line-height: 0;
+      }
+
+      @keyframes theme-pulse-anim {
         0% {
           transform: scale(1);
+          filter: brightness(1);
         }
         50% {
           transform: scale(1.01);
+          filter: brightness(1.05);
         }
         100% {
           transform: scale(1);
+          filter: brightness(1);
         }
       }
-      .tr-theme-pulse {
-        animation: tr-theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      .theme-pulse {
+        animation: theme-pulse-anim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
 
-      .tr-day {
+      .day {
         width: 100%;
         height: 100%;
-        border-radius: var(--tr-radius-standard);
-        /* [PERFORMANCE] Reduce transition properties - only animate essential properties */
+        border-radius: var(--radius-standard);
         transition:
-          background-color var(--tr-transition-smooth),
-          opacity var(--tr-transition-smooth);
-        transition-delay: var(--tr-delay, 0ms);
+          background-color var(--transition-smooth),
+          opacity var(--transition-smooth),
+          transform 0.3s ease,
+          filter var(--transition-smooth);
         position: relative;
-        overflow: visible;
-        /* [PERFORMANCE] Use contain for isolation */
-        contain: layout style paint;
-        outline: none;
-
-        &.tr-day--past {
-          background-color: var(--tr-color-past);
-        }
-        &.tr-day--future {
-          background-color: var(--tr-color-future);
-          box-shadow: inset 0 0 0 0.5px oklch(from var(--tr-base-hex) 0.8 0.02 h / 0.15);
-        }
-        &.tr-day--filler {
-          opacity: 0.06;
-          background-color: var(--tr-color-past);
-          filter: grayscale(100%);
-          pointer-events: none;
-        }
-        &.tr-day--today {
-          background-color: var(--tr-color-today) !important;
-          opacity: 1 !important;
-          box-shadow:
-            0 0 0 2px var(--tr-bg-system),
-            0 12px 30px oklch(from var(--tr-base-hex) 0.2 0.1 h / 0.35);
-          z-index: 10;
-          border-radius: 3px;
-          transition-delay: 0ms !important;
-        }
-
-        /* [ACCESSIBILITY] Focus ring management */
-        &:focus-visible {
-          transform: translateY(-4px) scale(1.15);
-          z-index: 50;
-          box-shadow:
-            0 0 0 4px var(--tr-bg-system),
-            0 0 0 7px var(--tr-color-hover-adaptive),
-            0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        /* [PERFORMANCE] Simplified hover/touch - no filter/box-shadow animation */
-        &:hover,
-        &.tr-is-touch-active {
-          transform: translateY(-2px) scale(1.02);
-          z-index: 20;
-          opacity: 1 !important;
-          background-color: var(--tr-color-hover-adaptive);
-          box-shadow: 0 8px 16px -8px oklch(from var(--tr-base-hex) 0.1 0.1 h / 0.3);
-          transition:
-            transform 0.15s ease-out,
-            background-color 0.15s ease-out,
-            opacity 0.15s ease-out;
-          transition-delay: 0ms !important;
-        }
-
-        &.tr-day--monday::after {
-          content: '';
-          position: absolute;
-          bottom: 12%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 2px;
-          height: 2px;
-          border-radius: 50%;
-          background-color: var(--tr-color-ghost-label);
-          opacity: 0.15;
-          z-index: 4;
-          pointer-events: none;
-        }
-        &[data-tr-ghost-label]::before {
-          content: attr(data-tr-ghost-label);
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: clamp(6px, 0.8vw, 11px);
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          color: var(--tr-color-ghost-label);
-          opacity: 0.25;
-          pointer-events: none;
-          white-space: nowrap;
-          z-index: 3;
-          transition: color var(--tr-transition-smooth);
-          transition-delay: inherit;
-        }
-        &.tr-day--past[data-tr-ghost-label]::before {
-          color: oklch(from var(--tr-base-hex) 0.9 0.05 h);
-          opacity: 0.5;
-        }
+        overflow: hidden;
       }
 
-      .tr-now-indicator {
+      .day--past {
+        background-color: var(--color-past);
+      }
+      .day--future {
+        background-color: var(--color-future);
+        box-shadow: inset 0 0 0 0.5px oklch(from var(--base-hex) 0.8 0.02 h / 0.15);
+      }
+      .day--filler {
+        opacity: 0.06;
+        background-color: var(--color-past);
+        filter: grayscale(100%);
+      }
+      .day--today {
+        background-color: var(--color-today) !important;
+        opacity: 1 !important;
+        box-shadow:
+          0 0 0 2px var(--bg-system),
+          0 12px 30px oklch(from var(--base-hex) 0.2 0.1 h / 0.35);
+        z-index: 10;
+        border-radius: 3px;
+        filter: none !important;
+      }
+      .now-indicator {
         position: absolute;
         bottom: 0;
         left: 0;
-        height: clamp(1.5px, 0.4vh, 3px);
-        background-color: var(--tr-color-bar-adaptive);
+        height: 3px;
+        background-color: oklch(from var(--base-hex) 0.3 0.1 h / 0.5);
         width: 0%;
         transition: width 1s linear;
         z-index: 5;
-        box-shadow: 0 0 clamp(4px, 1vw, 8px) var(--tr-color-bar-adaptive);
       }
-
-      #tr-tooltip {
+      .day--monday::after {
+        content: '';
+        position: absolute;
+        bottom: 12%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background-color: var(--color-ghost-label);
+        opacity: 0.15;
+        z-index: 4;
+      }
+      .day[data-ghost-label]::before {
+        content: attr(data-ghost-label);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: clamp(6px, 0.8vw, 11px);
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        color: var(--color-ghost-label);
+        opacity: 0.25;
+        pointer-events: none;
+        white-space: nowrap;
+        z-index: 3;
+      }
+      .day--past[data-ghost-label]::before {
+        color: oklch(from var(--base-hex) 0.9 0.05 h);
+        opacity: 0.5;
+      }
+      .day:hover {
+        transform: scale(1.3);
+        z-index: 20;
+        opacity: 1 !important;
+        box-shadow: 0 8px 25px oklch(from var(--base-hex) 0.2 0.1 h / 0.25);
+        background-color: var(--color-today);
+        filter: brightness(1.1) grayscale(0%) !important;
+      }
+      .day--past[data-ghost-label]:hover::before {
+        color: var(--color-ghost-label);
+        opacity: 0.3;
+      }
+      #tooltip {
         position: fixed;
         pointer-events: none;
-        background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(16px);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
         padding: 10px 16px;
         border-radius: 8px;
-        font-size: clamp(12px, 1.5vw, 14px);
+        font-size: 12px;
         font-weight: 600;
         color: #1a1a1a;
         opacity: 0;
-        transition: opacity 0.15s ease-out;
+        transition: opacity 0.2s;
         z-index: 100;
         white-space: nowrap;
-        /* [PERFORMANCE] GPU layer for smooth positioning */
-        will-change: transform, opacity;
-        transform: translateZ(0);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid oklch(from var(--tr-base-hex) 0.9 0.05 h / 0.5);
-        & b {
-          color: var(--tr-color-past);
-          display: block;
-          font-size: 85%;
-          margin-top: 4px;
-          text-transform: uppercase;
-        }
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid oklch(from var(--base-hex) 0.9 0.05 h / 0.5);
       }
-
-      .tr-sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-      }
-
-      /* [PERFORMANCE] Reduced motion preference - disable expensive animations */
-      @media (prefers-reduced-motion: reduce) {
-        .tr-day {
-          transition: none !important;
-        }
-        .tr-day:hover,
-        .tr-day.tr-is-touch-active {
-          transition: none !important;
-          transform: none !important;
-        }
-        #tr-tooltip {
-          transition: none !important;
-        }
-        .tr-theme-pulse {
-          animation: none !important;
-        }
-      }
-
-      /* [PERFORMANCE] Touch device optimizations - coarse pointer = touch */
-      @media (pointer: coarse) {
-        .tr-day {
-          /* Disable hover transitions on touch - use class toggle instead */
-          transition:
-            background-color 0.2s ease-out,
-            opacity 0.2s ease-out;
-        }
-        .tr-day:hover {
-          transform: none;
-          box-shadow: none;
-        }
-        .tr-day.tr-is-touch-active {
-          transform: translateY(-1px) scale(1.01);
-          transition:
-            transform 0.1s ease-out,
-            background-color 0.1s ease-out;
-        }
+      #tooltip b {
+        color: var(--color-past);
+        display: block;
+        font-size: 10px;
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     </style>
   </head>
   <body>
-    <div id="tr-a11y-announcer" class="tr-sr-only" aria-live="polite"></div>
-    <div id="tr-sr-status" class="tr-sr-only" aria-live="polite" aria-atomic="true"></div>
-
-    <div id="tr-container" role="application" aria-label="Annual Time Landscape Visualization">
-      <div id="tr-year-watermark" aria-hidden="true"></div>
-      <div id="tr-viewport" role="grid" aria-readonly="true"></div>
+    <div id="chronos-container">
+      <div id="year-watermark">2026</div>
+      <div id="chronos-viewport"></div>
     </div>
-
-    <div id="tr-tooltip" aria-hidden="true"></div>
+    <div id="tooltip"></div>
 
     <script type="module">
-      /* [THEME] Best of Pantone Color of the Year selections */
       const THEME_COLORS = [
-        '#F0EEE9', // 2024: Peach Fuzz (approximated warm neutral base)
-        '#BB2649', // 2023: Viva Magenta (brave and fearless red)
-        '#6667AB', // 2022: Very Peri (dynamic periwinkle blue hue)
-        '#F5DF4D', // 2021: Illuminating (friendly and joyful yellow)
-        '#939597', // 2021: Ultimate Gray (solid and dependable)
-        '#0F4C81', // 2020: Classic Blue (instilling calm and confidence)
-        '#FF6F61', // 2019: Living Coral (animating and life-affirming)
-        '#5F4B8B', // 2018: Ultra Violet (inventive and imaginative)
-        '#88B04B', // 2017: Greenery (refreshing and revitalizing)
-        '#F7CAC9', // 2016: Rose Quartz (compassionate and composed)
-        '#92A8D1', // 2016: Serenity (weightless and airy)
-        '#955251', // 2015: Marsala (robust and earthy wine red)
+        '#F0EEE9',
+        '#2F6364',
+        '#FFBE98',
+        '#0F4C81',
+        '#88B04B',
+        '#F7CAC9',
+        '#92A8D1',
+        '#955251',
+        '#AD5E99',
+        '#009473',
       ];
 
-      /**
-       * Core engine for rendering the temporal landscape visualization
-       * Manages theme cycling, grid rendering, and user interactions
-       */
-      class TraceEngine {
-        // Timing constants
-        static LONG_PRESS_DURATION = 800;
-        static TOOLTIP_LINGER_MS = 2500;
-        static TIME_UPDATE_INTERVAL = 60000;
-        static RESIZE_DEBOUNCE_MS = 100;
+      const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
 
-        // Visual effect constants
-        static OPACITY_DECAY_RATE = 0.008;
-        static GRAYSCALE_RATE = 0.5;
-        static HAPTIC_SCRUB_MS = 5;
-        static HAPTIC_SUCCESS_MS = 50;
-        static DRAG_THRESHOLD_PX = 10;
-
-        // [PERFORMANCE] RAF throttle state
-        _rafPending = false;
-        _pendingX = 0;
-        _pendingY = 0;
-        _lastHoveredElement = null;
-
+      class ChronosEngine {
         constructor() {
-          this.viewport = document.getElementById('tr-viewport');
-          this.watermark = document.getElementById('tr-year-watermark');
-          this.tooltip = document.getElementById('tr-tooltip');
-          this.announcer = document.getElementById('tr-a11y-announcer');
-          this.srStatus = document.getElementById('tr-sr-status');
-
-          // [SINGLE TRUTH] Centralized Reference using UTC to avoid timezone issues
-          const now = new Date();
-          this.year = now.getUTCFullYear();
-          this.todayStr = this.getUTCDateString(now);
-          this.todayTime = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-          this.watermark.innerText = this.year;
-
-          this.lastTouchElement = null;
-          this.isTicking = false;
-          this.tooltipHideTimer = null;
-          this.pressTimer = null;
-          this.resizeTimer = null;
-          this.timeUpdateInterval = null;
-          this.startX = 0;
-          this.startY = 0;
-          this.hasHover = window.matchMedia('(hover: hover)').matches;
-          this.tooltipWidth = 0;
-          this.currentFocusIndex = -1;
-
-          // Error handling for localStorage with system preference detection
-          try {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const savedIndex = localStorage.getItem('tr_theme_index');
-            this.colorIndex = savedIndex ? parseInt(savedIndex, 10) : prefersDark ? 1 : 0;
-            if (isNaN(this.colorIndex) || this.colorIndex < 0 || this.colorIndex >= THEME_COLORS.length) {
-              this.colorIndex = 0;
-            }
-          } catch (e) {
-            console.warn('localStorage unavailable, using default theme:', e);
-            this.colorIndex = 0;
-          }
-
+          this.viewport = document.getElementById('chronos-viewport');
+          this.watermark = document.getElementById('year-watermark');
+          this.tooltip = document.getElementById('tooltip');
+          this.container = document.getElementById('chronos-container');
+          this.year = 2026;
+          const savedIndex = localStorage.getItem('chronos_theme_index');
+          this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
           this.init();
         }
 
-        /**
-         * Get UTC date string for consistent comparison across timezones
-         * @param {Date} date - Date object to convert
-         * @returns {string} UTC date string
-         */
-        getUTCDateString(date) {
-          return `${date.getUTCDate()} ${date.getUTCMonth()} ${date.getUTCFullYear()}`;
-        }
-
-        /**
-         * Initialize the engine, set up event listeners and start rendering
-         */
         init() {
-          this.updateDynamicColors(THEME_COLORS[this.colorIndex]);
+          this.applyTheme(THEME_COLORS[this.colorIndex]);
 
-          // Keyboard shortcuts
+          // Long press (800ms) untuk ganti tema + hari acak
+          let pressTimer;
+          const longPressDuration = 800;
+
+          const startPress = (e) => {
+            e.preventDefault(); // Cegah select atau scroll
+            pressTimer = setTimeout(() => {
+              this.cycleTheme();
+            }, longPressDuration);
+          };
+
+          const cancelPress = () => {
+            clearTimeout(pressTimer);
+          };
+
+          // Mouse
+          this.container.addEventListener('mousedown', startPress);
+          this.container.addEventListener('mouseup', cancelPress);
+          this.container.addEventListener('mouseleave', cancelPress);
+
+          // Touch
+          this.container.addEventListener('touchstart', startPress, { passive: false });
+          this.container.addEventListener('touchend', cancelPress);
+          this.container.addEventListener('touchcancel', cancelPress);
+
+          // Bonus keyboard 'C'
           window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'c') this.cycleTheme();
+            if (e.key.toLowerCase() === 'c') {
+              e.preventDefault();
+              this.cycleTheme();
+            }
           });
 
-          let isDragging = false;
+          window.addEventListener('resize', () => this.debounceRender());
 
-          // [PERFORMANCE] Unified RAF-throttled pointer handler
-          const processPointerMove = () => {
-            this._rafPending = false;
-            const target = document.elementFromPoint(this._pendingX, this._pendingY);
-            if (target?.classList.contains('tr-day') && !target.classList.contains('tr-day--filler')) {
-              if (this._lastHoveredElement !== target) {
-                if (this._lastHoveredElement) {
-                  this._lastHoveredElement.classList.remove('tr-is-touch-active');
-                }
-                target.classList.add('tr-is-touch-active');
-                this._lastHoveredElement = target;
-                this.triggerHaptic('scrub');
-              }
-              const dateText = target.dataset.trDate;
-              const infoText = target.dataset.trInfo;
-              if (dateText && infoText) {
-                this.updateTooltipContent(dateText, infoText);
-                this.positionTooltip(this._pendingX, this._pendingY, true);
-              }
-            }
-          };
+          this.renderWithRealToday();
 
-          const schedulePointerUpdate = (x, y) => {
-            this._pendingX = x;
-            this._pendingY = y;
-            if (!this._rafPending) {
-              this._rafPending = true;
-              requestAnimationFrame(processPointerMove);
-            }
-          };
-
-          const handleStart = (e) => {
-            const touch = e.touches ? e.touches[0] : e;
-            this.startX = touch.clientX;
-            this.startY = touch.clientY;
-            isDragging = false;
-            if (this.tooltipHideTimer) clearTimeout(this.tooltipHideTimer);
-            if (e.touches) {
-              schedulePointerUpdate(touch.clientX, touch.clientY);
-            }
-            if (this.pressTimer) clearTimeout(this.pressTimer);
-            this.pressTimer = setTimeout(() => {
-              if (!isDragging) this.cycleTheme();
-            }, TraceEngine.LONG_PRESS_DURATION);
-          };
-
-          const handleMove = (e) => {
-            const touch = e.touches[0];
-            const dx = touch.clientX - this.startX;
-            const dy = touch.clientY - this.startY;
-            if (dx * dx + dy * dy > TraceEngine.DRAG_THRESHOLD_PX * TraceEngine.DRAG_THRESHOLD_PX) {
-              isDragging = true;
-              if (this.pressTimer) clearTimeout(this.pressTimer);
-              schedulePointerUpdate(touch.clientX, touch.clientY);
-            }
-          };
-
-          const handleEnd = () => {
-            if (this.pressTimer) clearTimeout(this.pressTimer);
-            this.tooltipHideTimer = setTimeout(() => {
-              this.tooltip.style.opacity = 0;
-              if (this._lastHoveredElement) {
-                this._lastHoveredElement.classList.remove('tr-is-touch-active');
-                this._lastHoveredElement = null;
-              }
-              if (this.lastTouchElement) {
-                this.lastTouchElement.classList.remove('tr-is-touch-active');
-                this.lastTouchElement = null;
-              }
-            }, TraceEngine.TOOLTIP_LINGER_MS);
-          };
-
-          document.addEventListener('mousedown', handleStart);
-          document.addEventListener('mouseup', () => {
-            if (this.pressTimer) clearTimeout(this.pressTimer);
-          });
-          // Use CSS touch-action instead of preventDefault for better performance
-          this.viewport.addEventListener('touchstart', handleStart, { passive: true });
-          this.viewport.addEventListener('touchmove', handleMove, { passive: true });
-          document.addEventListener('touchend', handleEnd);
-
-          window.addEventListener('resize', () => {
-            this.hasHover = window.matchMedia('(hover: hover)').matches;
-            this.debounceRender();
-          });
-
-          // Set up event delegation for hover (prevents memory leaks)
-          this.setupEventDelegation();
-
-          this.render();
-          this.timeUpdateInterval = setInterval(() => this.updateTimeProgress(), TraceEngine.TIME_UPDATE_INTERVAL);
+          this.updateProgressBar();
+          setInterval(() => this.updateProgressBar(), 60000);
         }
 
-        /**
-         * Setup event delegation for hover interactions to prevent memory leaks
-         */
-        setupEventDelegation() {
-          // [PERFORMANCE] Unified event delegation for both mouse and touch
-          // Using RAF throttle for mousemove to prevent layout thrashing
-          let mouseRafPending = false;
-          let pendingMouseX = 0;
-          let pendingMouseY = 0;
-
-          const processMouseMove = () => {
-            mouseRafPending = false;
-            this.tooltip.style.left = `${Math.min(
-              Math.max(pendingMouseX, this.tooltipWidth / 2 + 10),
-              window.innerWidth - this.tooltipWidth / 2 - 10
-            )}px`;
-            this.tooltip.style.top = `${pendingMouseY - 20}px`;
-          };
-
-          if (this.hasHover) {
-            this.viewport.addEventListener('mouseover', (e) => {
-              const target = e.target;
-              if (target.classList.contains('tr-day') && !target.classList.contains('tr-day--filler')) {
-                const dateText = target.dataset.trDate;
-                const infoText = target.dataset.trInfo;
-                if (dateText && infoText) {
-                  this.updateTooltipContent(dateText, infoText);
-                  this.positionTooltip(e.clientX, e.clientY, false);
-                }
-              }
-            });
-
-            this.viewport.addEventListener('mousemove', (e) => {
-              if (this.tooltip.style.opacity === '1') {
-                pendingMouseX = e.clientX;
-                pendingMouseY = e.clientY;
-                if (!mouseRafPending) {
-                  mouseRafPending = true;
-                  requestAnimationFrame(processMouseMove);
-                }
-              }
-            });
-
-            this.viewport.addEventListener('mouseout', (e) => {
-              if (!this.viewport.contains(e.relatedTarget)) {
-                this.tooltip.style.opacity = '0';
-              }
-            });
-          }
-
-          // [PERFORMANCE] Keyboard navigation via event delegation
-          this.viewport.addEventListener('keydown', (e) => {
-            const target = e.target;
-            if (!target.classList.contains('tr-day')) return;
-
-            const index = parseInt(target.dataset.trIndex, 10);
-            if (isNaN(index)) return;
-
-            let targetIndex = -1;
-            switch (e.key) {
-              case 'ArrowRight':
-                targetIndex = index + 1;
-                break;
-              case 'ArrowLeft':
-                targetIndex = index - 1;
-                break;
-              case 'ArrowDown':
-                targetIndex = index + this._currentColumns;
-                break;
-              case 'ArrowUp':
-                targetIndex = index - this._currentColumns;
-                break;
-              case 'Home':
-                targetIndex = 0;
-                break;
-              case 'End':
-                targetIndex = this.gridCells.length - 1;
-                break;
-              default:
-                return;
-            }
-
-            if (targetIndex >= 0 && targetIndex < this.gridCells.length) {
-              const targetCell = this.gridCells[targetIndex];
-              if (targetCell && !targetCell.classList.contains('tr-day--filler')) {
-                e.preventDefault();
-                targetCell.focus();
-                this.srStatus.textContent = targetCell.getAttribute('aria-label');
-              }
-            }
-          });
-
-          // [PERFORMANCE] Focus/blur via delegation
-          this.viewport.addEventListener('focusin', (e) => {
-            const target = e.target;
-            if (target.classList.contains('tr-day') && !target.classList.contains('tr-day--filler')) {
-              const rect = target.getBoundingClientRect();
-              const dateText = target.dataset.trDate;
-              const infoText = target.dataset.trInfo;
-              if (dateText && infoText) {
-                this.updateTooltipContent(dateText, infoText);
-                this.positionTooltip(rect.left + rect.width / 2, rect.top, false);
-              }
-            }
-          });
-
-          this.viewport.addEventListener('focusout', () => {
-            this.tooltip.style.opacity = '0';
-          });
-        }
-
-        /**
-         * Trigger haptic feedback for touch interactions
-         * @param {string} type - Type of haptic feedback ('scrub' or 'success')
-         */
-        triggerHaptic(type) {
-          if (!navigator.vibrate) return;
-          navigator.vibrate(type === 'scrub' ? TraceEngine.HAPTIC_SCRUB_MS : TraceEngine.HAPTIC_SUCCESS_MS);
-        }
-
-        /**
-         * Update tooltip content safely without XSS vulnerability
-         * @param {string} dateText - The date text to display
-         * @param {string} infoText - The info text to display in bold
-         */
-        updateTooltipContent(dateText, infoText) {
-          const cacheKey = `${dateText}|${infoText}`;
-          if (this.tooltip.dataset.cache !== cacheKey) {
-            // Clear and rebuild safely
-            this.tooltip.textContent = '';
-            this.tooltip.appendChild(document.createTextNode(dateText));
-
-            const boldInfo = document.createElement('b');
-            boldInfo.textContent = infoText;
-            this.tooltip.appendChild(boldInfo);
-
-            this.tooltip.dataset.cache = cacheKey;
-            this.tooltipWidth = this.tooltip.getBoundingClientRect().width;
-          }
-          this.tooltip.style.opacity = '1';
-        }
-
-        /**
-         * Update dynamic CSS color variables based on theme
-         * @param {string} hex - Hex color code for the theme
-         */
-        updateDynamicColors(hex) {
-          document.documentElement.style.setProperty('--tr-base-hex', hex);
-          const temp = document.createElement('div');
-          temp.style.color = `oklch(from ${hex} l c h)`;
-          document.body.appendChild(temp);
-          const lValue = parseFloat(window.getComputedStyle(temp).color.match(/[\d.]+/)[0]);
-          document.body.removeChild(temp);
-
-          document.documentElement.style.setProperty(
-            '--tr-color-bar-adaptive',
-            `oklch(from ${hex} ${lValue < 0.6 ? 0.9 : 0.3} ${lValue < 0.6 ? 0.05 : 0.1} h / 0.7)`
-          );
-          document.documentElement.style.setProperty(
-            '--tr-color-hover-adaptive',
-            `oklch(from ${hex} ${lValue > 0.7 ? 0.6 : lValue} ${lValue > 0.7 ? 0.15 : 0.1} h)`
-          );
-        }
-
-        /**
-         * Cycle to the next theme color
-         */
         cycleTheme() {
-          this.triggerHaptic('success');
           this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
-          this.updateDynamicColors(THEME_COLORS[this.colorIndex]);
+          this.applyTheme(THEME_COLORS[this.colorIndex]);
+          localStorage.setItem('chronos_theme_index', this.colorIndex);
 
-          // Save theme preference with error handling
-          try {
-            localStorage.setItem('tr_theme_index', this.colorIndex);
-          } catch (e) {
-            console.warn('Unable to save theme preference:', e);
-          }
-
-          this.announcer.innerText = `Theme changed to color scheme ${this.colorIndex + 1}`;
-          this.viewport.classList.remove('tr-theme-pulse');
+          this.viewport.classList.remove('theme-pulse');
           void this.viewport.offsetWidth;
-          this.viewport.classList.add('tr-theme-pulse');
-          // CSS variables handle color changes - no need to re-render
+          this.viewport.classList.add('theme-pulse');
+
+          this.renderWithRandomToday();
         }
 
-        /**
-         * Debounce render calls to avoid excessive redraws during resize
-         */
+        applyTheme(hex) {
+          document.documentElement.style.setProperty('--base-hex', hex);
+        }
+
         debounceRender() {
-          if (this.resizeTimer) clearTimeout(this.resizeTimer);
-          this.resizeTimer = setTimeout(() => this.render(), TraceEngine.RESIZE_DEBOUNCE_MS);
+          clearTimeout(this.resizeTimer);
+          this.resizeTimer = setTimeout(() => this.renderWithCurrentToday(), 100);
         }
 
-        /**
-         * Update the progress bar for today's cell
-         */
-        updateTimeProgress() {
-          const bar = document.getElementById('tr-today-bar');
-          if (bar) bar.style.width = `${((new Date().getHours() * 60 + new Date().getMinutes()) / 1440) * 100}%`;
-        }
-
-        /**
-         * Position tooltip relative to cursor or touch point
-         * @param {number} clientX - X coordinate
-         * @param {number} clientY - Y coordinate
-         * @param {boolean} isTouch - Whether this is a touch interaction
-         */
-        positionTooltip(clientX, clientY, isTouch = false) {
-          const gap = isTouch ? 40 : 20;
-          let x = clientX;
-          let y = clientY;
-          if (x + this.tooltipWidth / 2 + 10 > window.innerWidth) x = window.innerWidth - this.tooltipWidth / 2 - 10;
-          else if (x - this.tooltipWidth / 2 - 10 < 0) x = this.tooltipWidth / 2 + 10;
-
-          if (isTouch) {
-            const isTopHalf = clientY < window.innerHeight / 2;
-            y = isTopHalf ? y + 60 : y - 60;
-            this.tooltip.style.transform = `translate(-50%, ${isTopHalf ? '0' : '-100%'})`;
-          } else {
-            y -= 20;
-            this.tooltip.style.transform = `translate(-50%, -100%)`;
+        updateProgressBar() {
+          const bar = document.querySelector('.now-indicator');
+          if (bar) {
+            const now = new Date();
+            const minutes = now.getHours() * 60 + now.getMinutes();
+            const percentage = (minutes / 1440) * 100;
+            bar.style.width = `${percentage}%`;
           }
-          this.tooltip.style.left = `${x}px`;
-          this.tooltip.style.top = `${y}px`;
         }
 
-        /**
-         * Render the entire grid of days
-         */
-        render() {
+        renderWithRealToday() {
+          const realToday = new Date();
+          this.currentTodayInfo = {
+            str: realToday.toDateString(),
+            time: new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate(), 12).getTime(),
+            month: realToday.getMonth(),
+          };
+          this._render(this.currentTodayInfo);
+        }
+
+        renderWithRandomToday() {
           const isLeap = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0;
-          const daysInYear = isLeap ? 366 : 365;
-          const layout = this.calculateGrid(window.innerWidth, window.innerHeight, daysInYear);
-          const totalCells = layout.columns * layout.rows;
-          // Use UTC to avoid timezone issues
-          const startDate = new Date(Date.UTC(this.year, 0, 1, 12, 0, 0));
-          startDate.setUTCDate(startDate.getUTCDate() - Math.floor((totalCells - daysInYear) / 2));
+          const days = isLeap ? 366 : 365;
+          const randomDay = Math.floor(Math.random() * days) + 1;
+          const randomDate = new Date(this.year, 0, randomDay);
 
-          this.viewport.style.cssText = `gap:${layout.gapSize}px; grid-template-columns:repeat(${layout.columns},${layout.cellSize}px); grid-template-rows:repeat(${layout.rows},${layout.cellSize}px);`;
+          this.currentTodayInfo = {
+            str: randomDate.toDateString(),
+            time: new Date(randomDate.getFullYear(), randomDate.getMonth(), randomDate.getDate(), 12).getTime(),
+            month: randomDate.getMonth(),
+          };
+          this._render(this.currentTodayInfo);
+        }
+
+        renderWithCurrentToday() {
+          if (this.currentTodayInfo) {
+            this._render(this.currentTodayInfo);
+          }
+        }
+
+        _render(todayInfo) {
+          const isLeap = (this.year % 4 === 0 && this.year % 100 !== 0) || this.year % 400 === 0;
+          const days = isLeap ? 366 : 365;
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          const scale = Math.max(w, 240) / 1200;
+          const gap = Math.max(2, 10 * scale);
+          const frame = Math.max(25, 50 * scale);
+          const availW = w - frame * 2;
+          const availH = h - frame * 2;
+
+          let bestS = 0;
+          for (let c = 1; c <= days; c++) {
+            const r = Math.ceil(days / c);
+            const s = Math.min((availW - (c - 1) * gap) / c, (availH - (r - 1) * gap) / r);
+            if (s > bestS) bestS = s;
+          }
+
+          const s = Math.floor(bestS);
+          const cols = Math.floor((availW + gap) / (s + gap));
+          const rows = Math.floor((availH + gap) / (s + gap));
+
+          const totalCells = cols * rows;
+          const startOffset = Math.floor((totalCells - days) / 2);
+          const startDate = new Date(this.year, 0, 1, 12);
+          startDate.setDate(startDate.getDate() - startOffset);
+
+          this.viewport.style.cssText = `
+            gap: ${gap}px;
+            grid-template-columns: repeat(${cols}, ${s}px);
+            grid-template-rows: repeat(${rows}, ${s}px);
+          `;
+
+          requestAnimationFrame(() => {
+            const gridRect = this.viewport.getBoundingClientRect();
+            this.watermark.style.width = `${gridRect.width}px`;
+            this.watermark.style.height = `${gridRect.height}px`;
+          });
+
           const fragment = document.createDocumentFragment();
-          const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-
-          const gridCells = [];
+          const cursor = new Date(startDate);
 
           for (let i = 0; i < totalCells; i++) {
             const el = document.createElement('div');
-            const isTargetYear = startDate.getUTCFullYear() === this.year;
+            const dYear = cursor.getFullYear();
+            const dTime = cursor.getTime();
+
             let type = 'filler';
-            if (isTargetYear) {
-              const currentDateStr = this.getUTCDateString(startDate);
-              if (currentDateStr === this.todayStr) type = 'today';
-              else if (
-                Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()) < this.todayTime
-              )
+            if (dYear === this.year) {
+              if (cursor.toDateString() === todayInfo.str) {
+                type = 'today';
+              } else if (dTime < todayInfo.time) {
                 type = 'past';
-              else type = 'future';
+                const diff = Math.floor((todayInfo.time - dTime) / 86400000);
+                el.style.opacity = Math.max(0.12, 1 - diff * 0.008);
+                const grayscale = Math.min(100, diff * 0.5);
+                el.style.filter = `grayscale(${grayscale}%)`;
+              } else {
+                type = 'future';
+              }
+
+              if (cursor.getDay() === 1) el.classList.add('day--monday');
+
+              if (cursor.getDate() === 1) {
+                el.setAttribute('data-ghost-label', MONTHS[cursor.getMonth()]);
+              }
+            } else {
+              el.style.opacity = '0.06';
             }
-            el.className = `tr-day tr-day--${type}`;
-            el.style.setProperty('--tr-delay', `${((i % layout.columns) + Math.floor(i / layout.columns)) * 12}ms`);
-            if (startDate.getUTCDay() === 1) el.classList.add('tr-day--monday');
-            if (type === 'past') {
-              const diff = Math.round(
-                (this.todayTime -
-                  Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate())) /
-                  86400000
-              );
-              el.style.opacity = Math.max(0.12, 1 - diff * TraceEngine.OPACITY_DECAY_RATE);
-              el.style.filter = `grayscale(${Math.min(100, diff * TraceEngine.GRAYSCALE_RATE)}%)`;
-            }
+
+            el.className = `day day--${type}`;
+
             if (type === 'today') {
               const bar = document.createElement('div');
-              bar.className = 'tr-now-indicator';
-              bar.id = 'tr-today-bar';
+              bar.className = 'now-indicator';
               el.appendChild(bar);
             }
-            if (isTargetYear && startDate.getUTCDate() === 1)
-              el.setAttribute('data-tr-ghost-label', months[startDate.getUTCMonth()]);
-            if (type !== 'filler') {
-              const yearStart = Date.UTC(this.year, 0, 1, 12, 0, 0);
-              const currentDate = Date.UTC(
-                startDate.getUTCFullYear(),
-                startDate.getUTCMonth(),
-                startDate.getUTCDate(),
-                12,
-                0,
-                0
-              );
-              const dayNum = Math.round((currentDate - yearStart) / 86400000) + 1;
 
-              const dateLong = startDate.toLocaleDateString('en-US', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                timeZone: 'UTC',
-              });
-              const infoStr = `Day ${dayNum} • ${((dayNum / daysInYear) * 100).toFixed(1)}% of this year`;
-
-              el.dataset.trDate = dateLong;
-              el.dataset.trInfo = infoStr;
-              el.dataset.trIndex = i.toString();
-              el.setAttribute('role', 'gridcell');
-
-              // Roving tabindex: only today or first cell is tabbable
-              el.setAttribute('tabindex', type === 'today' ? '0' : '-1');
-              if (type === 'today') this.currentFocusIndex = i;
-
-              el.setAttribute('aria-label', `${dateLong}. ${infoStr}`);
-              if (type === 'today') el.setAttribute('aria-current', 'date');
-
-              // [PERFORMANCE] Event listeners removed - using delegation in setupEventDelegation()
-            }
-            gridCells.push(el);
             fragment.appendChild(el);
-            startDate.setUTCDate(startDate.getUTCDate() + 1);
+            cursor.setDate(cursor.getDate() + 1);
           }
 
-          // Store reference for keyboard navigation
-          this.gridCells = gridCells;
-          // [PERFORMANCE] Store columns count for keyboard navigation delegation
-          this._currentColumns = layout.columns;
-
-          // Clear viewport safely
-          while (this.viewport.firstChild) {
-            this.viewport.removeChild(this.viewport.firstChild);
-          }
+          this.viewport.innerHTML = '';
           this.viewport.appendChild(fragment);
-          requestAnimationFrame(() => {
-            const r = this.viewport.getBoundingClientRect();
-            this.watermark.style.width = `${r.width}px`;
-            this.watermark.style.height = `${r.height}px`;
-          });
-          this.updateTimeProgress();
-        }
-
-        /**
-         * Calculate optimal grid layout for given viewport dimensions
-         * @param {number} viewportWidth - Width of viewport in pixels
-         * @param {number} viewportHeight - Height of viewport in pixels
-         * @param {number} totalDays - Total number of days to display
-         * @returns {{cellSize: number, gapSize: number, columns: number, rows: number}} Layout configuration
-         */
-        calculateGrid(viewportWidth, viewportHeight, totalDays) {
-          const scaleFactor = Math.max(viewportWidth, 240) / 1200;
-          const gapSize = Math.max(2, 10 * scaleFactor);
-          const framePadding = Math.max(25, 50 * scaleFactor);
-          const availableWidth = viewportWidth - framePadding * 2;
-          const availableHeight = viewportHeight - framePadding * 2;
-
-          // Optimize search by starting near ideal aspect ratio
-          const idealColumns = Math.sqrt((totalDays * availableWidth) / availableHeight);
-          const searchStart = Math.max(1, Math.floor(idealColumns * 0.7));
-          const searchEnd = Math.min(totalDays, Math.ceil(idealColumns * 1.3));
-
-          let bestCellSize = 0;
-          let bestColumns = 1;
-
-          for (let columns = searchStart; columns <= searchEnd; columns++) {
-            const rows = Math.ceil(totalDays / columns);
-            const cellSize = Math.min(
-              (availableWidth - (columns - 1) * gapSize) / columns,
-              (availableHeight - (rows - 1) * gapSize) / rows
-            );
-            if (cellSize > bestCellSize) {
-              bestCellSize = cellSize;
-              bestColumns = columns;
-            }
-          }
-
-          const cellSize = Math.floor(bestCellSize);
-          const columns = Math.floor((availableWidth + gapSize) / (cellSize + gapSize));
-          const rows = Math.floor((availableHeight + gapSize) / (cellSize + gapSize));
-
-          return { cellSize, gapSize, columns, rows };
-        }
-
-        /**
-         * Cleanup method to prevent memory leaks
-         */
-        destroy() {
-          // Clear all timers
-          if (this.pressTimer) clearTimeout(this.pressTimer);
-          if (this.tooltipHideTimer) clearTimeout(this.tooltipHideTimer);
-          if (this.resizeTimer) clearTimeout(this.resizeTimer);
-          if (this.timeUpdateInterval) clearInterval(this.timeUpdateInterval);
-
-          // Clear viewport
-          while (this.viewport.firstChild) {
-            this.viewport.removeChild(this.viewport.firstChild);
-          }
+          this.updateProgressBar();
         }
       }
-      new TraceEngine();
+
+      new ChronosEngine();
     </script>
   </body>
 </html>
