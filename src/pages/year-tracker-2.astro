@@ -26,6 +26,7 @@
         --color-future: oklch(from var(--base-hex) 0.93 0.02 h);
         --color-ghost-label: oklch(from var(--base-hex) 0.3 0.05 h);
         --color-year-subliminal: oklch(from var(--bg-system) 0.93 0.01 h);
+
         --color-bar-adaptive: oklch(from var(--base-hex) 0.3 0.1 h / 0.6);
         --color-hover-adaptive: var(--base-hex);
         --radius-standard: 2px;
@@ -72,7 +73,8 @@
           justify-content: center;
           align-content: center;
           transition: opacity 0.4s ease;
-          touch-action: none; /* Wajib untuk scrubbing mobile */
+          /* KRUSIAL: Mematikan scroll/zoom browser bawaan untuk kontrol penuh JS */
+          touch-action: none;
         }
 
         & #year-watermark {
@@ -178,7 +180,7 @@
           transition-delay: 0ms !important;
         }
 
-        /* Mobile Touch Active State */
+        /* Mobile Touch Active State (Simulasi Hover via JS) */
         &.is-touch-active {
           transform: translateY(-2px) scale(1.02) !important;
           z-index: 20;
@@ -259,8 +261,7 @@
         font-weight: 600;
         color: #1a1a1a;
         opacity: 0;
-        /* Transisi opacity sedikit lebih lambat agar 'fade out' terasa mewah */
-        transition: opacity 0.3s ease-out;
+        transition: opacity 0.15s ease-out;
         z-index: 100;
         white-space: nowrap;
         box-shadow:
@@ -309,9 +310,11 @@
           this.year = 2026;
           this.lastTouchElement = null;
           this.isTicking = false;
-
-          // [NEW] Timer khusus untuk menghilangkan tooltip (Linger Effect)
           this.tooltipHideTimer = null;
+
+          // [MOBILE] Start Coordinates untuk deteksi drag vs tap
+          this.startX = 0;
+          this.startY = 0;
 
           const savedIndex = localStorage.getItem('trace_theme_index');
           this.colorIndex = savedIndex ? parseInt(savedIndex) : 0;
@@ -324,33 +327,37 @@
             if (e.key.toLowerCase() === 'c') this.cycleTheme();
           });
 
-          // --- INTERACTION SYSTEM ---
+          // --- PLATINUM INTERACTION ENGINE ---
           let pressTimer;
           let isDragging = false;
 
-          // 1. Mouse Handler
+          // 1. Mouse Handler (Desktop)
           const handleMouseDown = () => {
             pressTimer = setTimeout(() => this.cycleTheme(), 800);
           };
           const handleMouseUp = () => clearTimeout(pressTimer);
 
-          // 2. Touch Handler (Linger Edition)
+          // 2. Touch Handler (Smart HUD Mobile)
           const handleTouchStart = (e) => {
+            const touch = e.touches[0];
+            this.startX = touch.clientX;
+            this.startY = touch.clientY;
             isDragging = false;
 
-            // Jika user menyentuh lagi, batalkan timer hilang tooltip yg lama
-            // supaya tooltip tetap nyala atau pindah posisi dengan mulus
+            // Clear previous timers
             if (this.tooltipHideTimer) {
               clearTimeout(this.tooltipHideTimer);
               this.tooltipHideTimer = null;
             }
 
+            // Instant Feedback (Visual Only)
             this.handleTouchInteraction(e);
 
+            // Long Press Ritual Timer
             pressTimer = setTimeout(() => {
               if (!isDragging) {
                 this.cycleTheme();
-                // Jika tema ganti, tooltip HARUS hilang segera
+                // Jika tema ganti, bersihkan UI
                 this.tooltip.style.opacity = 0;
                 if (this.lastTouchElement) {
                   this.lastTouchElement.classList.remove('is-touch-active');
@@ -361,33 +368,38 @@
           };
 
           const handleTouchMove = (e) => {
-            isDragging = true;
-            clearTimeout(pressTimer);
+            const touch = e.touches[0];
 
-            // Throttling render loop
-            if (!this.isTicking) {
-              window.requestAnimationFrame(() => {
-                this.handleTouchInteraction(e);
-                this.isTicking = false;
-              });
-              this.isTicking = true;
+            // Hitung jarak gerak (Deadzone 10px)
+            // Mencegah "goyang jari sedikit" membatalkan ritual
+            const moveDistance = Math.hypot(touch.clientX - this.startX, touch.clientY - this.startY);
+
+            if (moveDistance > 10) {
+              isDragging = true;
+              clearTimeout(pressTimer); // Jari bergerak signifikan -> Batalkan ganti tema
+
+              // Throttled UI Update
+              if (!this.isTicking) {
+                window.requestAnimationFrame(() => {
+                  this.handleTouchInteraction(e);
+                  this.isTicking = false;
+                });
+                this.isTicking = true;
+              }
             }
           };
 
           const handleTouchEnd = () => {
             clearTimeout(pressTimer);
 
-            // [LINGER LOGIC]
-            // Jangan langsung hilangkan. Tunggu 2.5 detik.
-            // Ini memberi waktu user membaca setelah angkat jari.
+            // Linger Effect: Tooltip bertahan 2.5 detik agar sempat dibaca
             this.tooltipHideTimer = setTimeout(() => {
               this.tooltip.style.opacity = 0;
-              // Hilangkan juga efek highlight di grid setelah tooltip hilang
               if (this.lastTouchElement) {
                 this.lastTouchElement.classList.remove('is-touch-active');
                 this.lastTouchElement = null;
               }
-            }, 2500); // 2500ms = 2.5 Detik Linger Time
+            }, 2500);
           };
 
           document.addEventListener('mousedown', handleMouseDown);
@@ -403,8 +415,8 @@
           setInterval(() => this.updateTimeProgress(), 60000);
         }
 
-        // Logic Sentuhan
         handleTouchInteraction(e) {
+          // Mencegah scroll
           if (e.cancelable) e.preventDefault();
 
           const touch = e.touches[0];
@@ -419,8 +431,14 @@
             this.lastTouchElement = target;
 
             if (target.dataset.date) {
-              this.tooltip.innerHTML = `${target.dataset.date}<b>${target.dataset.info}</b>`;
+              // Update konten hanya jika berubah (Optimization)
+              const newContent = `${target.dataset.date}<b>${target.dataset.info}</b>`;
+              if (this.tooltip.innerHTML !== newContent) {
+                this.tooltip.innerHTML = newContent;
+              }
               this.tooltip.style.opacity = 1;
+
+              // Gunakan Smart HUD Position
               this.positionTooltip(touch.clientX, touch.clientY, true);
             }
           }
@@ -480,25 +498,40 @@
           }
         }
 
+        // [SMART HUD ENGINE]
         positionTooltip(clientX, clientY, isTouch = false) {
-          const gap = isTouch ? 40 : 20;
-
           let x = clientX,
             y = clientY;
           const rect = this.tooltip.getBoundingClientRect();
 
+          // Boundary X (Kiri/Kanan Aman)
           if (x + rect.width / 2 + 10 > window.innerWidth) x = x - rect.width / 2 - 10;
           else if (x - rect.width / 2 - 10 < 0) x = x + rect.width / 2 + 10;
 
-          if (y - rect.height - gap < 0) {
-            y = y + gap + rect.height;
+          if (isTouch) {
+            // LOGIKA SMART HUD (FLIP)
+            // Cek apakah jari berada di paruh atas atau bawah layar
+            const isTopHalf = clientY < window.innerHeight / 2;
+
+            if (isTopHalf) {
+              // Jari di atas -> Tooltip muncul DI BAWAH jari (+60px)
+              // Agar tangan tidak menutupi tooltip
+              y = y + 60;
+              // Reset transform karena tooltip sekarang mengarah ke bawah
+              this.tooltip.style.transform = `translate(-50%, 0)`;
+            } else {
+              // Jari di bawah -> Tooltip muncul DI ATAS jari (-60px)
+              y = y - 60;
+              this.tooltip.style.transform = `translate(-50%, -100%)`;
+            }
           } else {
-            y = y - gap;
+            // Desktop: Selalu di atas kursor (20px gap)
+            y = y - 20;
+            this.tooltip.style.transform = `translate(-50%, -100%)`;
           }
 
           this.tooltip.style.left = `${x}px`;
           this.tooltip.style.top = `${y}px`;
-          this.tooltip.style.transform = `translate(-50%, -100%)`;
         }
 
         moveTooltip(e) {
