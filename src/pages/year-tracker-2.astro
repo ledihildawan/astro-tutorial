@@ -73,7 +73,6 @@
           justify-content: center;
           align-content: center;
           transition: opacity 0.4s ease;
-          /* KRUSIAL: Mematikan scroll/zoom browser bawaan untuk kontrol penuh JS */
           touch-action: none;
         }
 
@@ -99,7 +98,7 @@
         }
       }
 
-      /* UNIVERSAL LOCK: Interaksi Fisik Grid Mati Saat Ditekan */
+      /* UNIVERSAL LOCK: Mematikan interaksi fisik grid saat ditekan */
       :root:active {
         & .day {
           pointer-events: none !important;
@@ -180,7 +179,7 @@
           transition-delay: 0ms !important;
         }
 
-        /* Mobile Touch Active State (Simulasi Hover via JS) */
+        /* Mobile Touch Active State */
         &.is-touch-active {
           transform: translateY(-2px) scale(1.02) !important;
           z-index: 20;
@@ -312,7 +311,6 @@
           this.isTicking = false;
           this.tooltipHideTimer = null;
 
-          // [MOBILE] Start Coordinates untuk deteksi drag vs tap
           this.startX = 0;
           this.startY = 0;
 
@@ -327,37 +325,36 @@
             if (e.key.toLowerCase() === 'c') this.cycleTheme();
           });
 
-          // --- PLATINUM INTERACTION ENGINE ---
+          // --- UNIVERSAL INTERACTION & HAPTIC ENGINE ---
           let pressTimer;
           let isDragging = false;
 
-          // 1. Mouse Handler (Desktop)
+          // 1. Mouse Handler
           const handleMouseDown = () => {
             pressTimer = setTimeout(() => this.cycleTheme(), 800);
           };
           const handleMouseUp = () => clearTimeout(pressTimer);
 
-          // 2. Touch Handler (Smart HUD Mobile)
+          // 2. Touch Handler
           const handleTouchStart = (e) => {
             const touch = e.touches[0];
             this.startX = touch.clientX;
             this.startY = touch.clientY;
             isDragging = false;
 
-            // Clear previous timers
             if (this.tooltipHideTimer) {
               clearTimeout(this.tooltipHideTimer);
               this.tooltipHideTimer = null;
             }
 
-            // Instant Feedback (Visual Only)
+            // Instant Feedback
             this.handleTouchInteraction(e);
 
-            // Long Press Ritual Timer
+            // Timer Ritual
             pressTimer = setTimeout(() => {
               if (!isDragging) {
                 this.cycleTheme();
-                // Jika tema ganti, bersihkan UI
+                // Bersihkan UI setelah ganti tema
                 this.tooltip.style.opacity = 0;
                 if (this.lastTouchElement) {
                   this.lastTouchElement.classList.remove('is-touch-active');
@@ -369,16 +366,13 @@
 
           const handleTouchMove = (e) => {
             const touch = e.touches[0];
-
-            // Hitung jarak gerak (Deadzone 10px)
-            // Mencegah "goyang jari sedikit" membatalkan ritual
+            // Toleransi gerak 10px (Deadzone)
             const moveDistance = Math.hypot(touch.clientX - this.startX, touch.clientY - this.startY);
 
             if (moveDistance > 10) {
               isDragging = true;
-              clearTimeout(pressTimer); // Jari bergerak signifikan -> Batalkan ganti tema
+              clearTimeout(pressTimer);
 
-              // Throttled UI Update
               if (!this.isTicking) {
                 window.requestAnimationFrame(() => {
                   this.handleTouchInteraction(e);
@@ -392,7 +386,7 @@
           const handleTouchEnd = () => {
             clearTimeout(pressTimer);
 
-            // Linger Effect: Tooltip bertahan 2.5 detik agar sempat dibaca
+            // Linger Effect: 2.5 Detik
             this.tooltipHideTimer = setTimeout(() => {
               this.tooltip.style.opacity = 0;
               if (this.lastTouchElement) {
@@ -402,6 +396,8 @@
             }, 2500);
           };
 
+          // Event Listeners Global
+          // Kita tidak perlu listener khusus di body, karena document capture semuanya
           document.addEventListener('mousedown', handleMouseDown);
           document.addEventListener('mouseup', handleMouseUp);
 
@@ -415,30 +411,46 @@
           setInterval(() => this.updateTimeProgress(), 60000);
         }
 
+        // [HAPTIC UTILITY]
+        triggerHaptic(type) {
+          if (!navigator.vibrate) return;
+
+          if (type === 'scrub') {
+            // Getaran sangat halus untuk tekstur (tik..tik..)
+            navigator.vibrate(5);
+          } else if (type === 'success') {
+            // Getaran berat untuk konfirmasi aksi (DUMM)
+            navigator.vibrate(50);
+          }
+        }
+
         handleTouchInteraction(e) {
-          // Mencegah scroll
           if (e.cancelable) e.preventDefault();
 
           const touch = e.touches[0];
           const target = document.elementFromPoint(touch.clientX, touch.clientY);
 
           if (target && target.classList.contains('day') && !target.classList.contains('day--filler')) {
-            if (this.lastTouchElement && this.lastTouchElement !== target) {
-              this.lastTouchElement.classList.remove('is-touch-active');
+            // Cek jika pindah ke kotak baru (untuk memicu getaran)
+            if (this.lastTouchElement !== target) {
+              if (this.lastTouchElement) {
+                this.lastTouchElement.classList.remove('is-touch-active');
+              }
+              // [HAPTIC] Trigger getaran tekstur saat pindah kotak
+              this.triggerHaptic('scrub');
             }
 
             target.classList.add('is-touch-active');
             this.lastTouchElement = target;
 
             if (target.dataset.date) {
-              // Update konten hanya jika berubah (Optimization)
               const newContent = `${target.dataset.date}<b>${target.dataset.info}</b>`;
               if (this.tooltip.innerHTML !== newContent) {
                 this.tooltip.innerHTML = newContent;
               }
               this.tooltip.style.opacity = 1;
 
-              // Gunakan Smart HUD Position
+              // Smart HUD Position
               this.positionTooltip(touch.clientX, touch.clientY, true);
             }
           }
@@ -470,6 +482,9 @@
         }
 
         cycleTheme() {
+          // [HAPTIC] Trigger getaran sukses saat tema berubah
+          this.triggerHaptic('success');
+
           this.colorIndex = (this.colorIndex + 1) % THEME_COLORS.length;
           this.updateDynamicColors(THEME_COLORS[this.colorIndex]);
           localStorage.setItem('trace_theme_index', this.colorIndex);
@@ -498,34 +513,26 @@
           }
         }
 
-        // [SMART HUD ENGINE]
         positionTooltip(clientX, clientY, isTouch = false) {
           let x = clientX,
             y = clientY;
           const rect = this.tooltip.getBoundingClientRect();
 
-          // Boundary X (Kiri/Kanan Aman)
+          // X Boundary
           if (x + rect.width / 2 + 10 > window.innerWidth) x = x - rect.width / 2 - 10;
           else if (x - rect.width / 2 - 10 < 0) x = x + rect.width / 2 + 10;
 
+          // Y Boundary & HUD Logic
           if (isTouch) {
-            // LOGIKA SMART HUD (FLIP)
-            // Cek apakah jari berada di paruh atas atau bawah layar
             const isTopHalf = clientY < window.innerHeight / 2;
-
             if (isTopHalf) {
-              // Jari di atas -> Tooltip muncul DI BAWAH jari (+60px)
-              // Agar tangan tidak menutupi tooltip
               y = y + 60;
-              // Reset transform karena tooltip sekarang mengarah ke bawah
               this.tooltip.style.transform = `translate(-50%, 0)`;
             } else {
-              // Jari di bawah -> Tooltip muncul DI ATAS jari (-60px)
               y = y - 60;
               this.tooltip.style.transform = `translate(-50%, -100%)`;
             }
           } else {
-            // Desktop: Selalu di atas kursor (20px gap)
             y = y - 20;
             this.tooltip.style.transform = `translate(-50%, -100%)`;
           }
@@ -594,7 +601,7 @@
               el.dataset.date = cursor.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
               el.dataset.info = `Day ${dayNum} • ${yearPercent}% of Year`;
 
-              // Desktop Mouse Only
+              // Desktop Mouse
               el.onmouseenter = (e) => {
                 if (window.matchMedia('(hover: hover)').matches) {
                   this.tooltip.innerHTML = `${el.dataset.date}<b>${el.dataset.info}</b>`;
