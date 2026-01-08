@@ -14,7 +14,7 @@
       /* [PERFORMANCE] CSS Houdini for GPU Theme Interpolation */
       @property --tr-base-hex {
         syntax: '<color>';
-        initial-value: #f0eee9;
+        initial-value: #f6f2ea;
         inherits: true;
       }
 
@@ -26,7 +26,7 @@
       }
 
       :root {
-        --tr-base-hex: #f0eee9;
+        --tr-base-hex: #f6f2ea;
         --tr-full-h: 100dvh;
         --tr-bg-system: oklch(from var(--tr-base-hex) 0.97 0.01 h);
         --tr-color-today: var(--tr-base-hex);
@@ -46,6 +46,14 @@
         --tr-tooltip-text: oklch(from var(--tr-base-hex) 0.18 0.02 h);
         --tr-tooltip-accent: oklch(from var(--tr-base-hex) 0.26 0.1 h);
 
+        /* [SAFETY] Viewport-safe positioning (including notches) */
+        --tr-safe-top: env(safe-area-inset-top, 0px);
+        --tr-safe-right: env(safe-area-inset-right, 0px);
+        --tr-safe-bottom: env(safe-area-inset-bottom, 0px);
+        --tr-safe-left: env(safe-area-inset-left, 0px);
+
+        /* Unified tooltip vertical offset (middle-ground between desktop/touch) */
+        --tr-tooltip-vertical-offset: 40px;
         /* [TUNING] Strength controls (adapted per theme in JS) */
         --tr-watermark-boost-opacity: 0.22;
         --tr-today-ring-mix: 55%;
@@ -361,19 +369,31 @@
         opacity: 0;
         transition: opacity 0.2s ease-out;
         z-index: 100;
+        max-width: min(420px, calc(100dvw - 24px - var(--tr-safe-left) - var(--tr-safe-right)));
+        max-height: calc(100dvh - 24px - var(--tr-safe-top) - var(--tr-safe-bottom));
+        overflow: hidden;
         white-space: nowrap;
+        text-overflow: ellipsis;
         /* [PERFORMANCE] GPU layer for smooth positioning */
         will-change: transform, opacity;
         transform: translateZ(0);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
         border: 1px solid oklch(from var(--tr-base-hex) 0.9 0.05 h / 0.5);
-        & b {
-          color: var(--tr-tooltip-accent);
-          display: block;
-          font-size: 85%;
-          margin-top: 4px;
-          text-transform: uppercase;
-        }
+      }
+
+      #tr-tooltip .tr-tip-line {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+
+      #tr-tooltip b.tr-tip-line {
+        color: var(--tr-tooltip-accent);
+        font-size: 85%;
+        margin-top: 4px;
+        text-transform: uppercase;
       }
 
       .tr-sr-only {
@@ -425,6 +445,19 @@
           transition:
             transform 0.1s ease-out,
             background-color 0.1s ease-out;
+          box-shadow: 0 6px 14px -10px oklch(from var(--tr-base-hex) 0.1 0.1 h / 0.28);
+        }
+
+        /* Keep today emphasis tidy on small screens */
+        .tr-day.tr-day--today {
+          box-shadow:
+            0 0 0 2px var(--tr-bg-system),
+            0 0 0 4px color-mix(in oklch, var(--tr-color-bar-adaptive) var(--tr-today-ring-mix, 55%), transparent),
+            0 10px 22px oklch(from var(--tr-base-hex) 0.2 0.1 h / calc(var(--tr-today-shadow-alpha, 0.28) * 0.85));
+        }
+
+        .tr-now-indicator {
+          box-shadow: 0 0 clamp(3px, 0.9vw, 6px) var(--tr-color-bar-adaptive);
         }
       }
     </style>
@@ -441,20 +474,20 @@
     <div id="tr-tooltip" aria-hidden="true"></div>
 
     <script type="module">
-      /* [THEME] Best of Pantone Color of the Year selections */
+      /* [THEME] Calm, balanced palettes (muted + modern) */
       const THEME_COLORS = [
-        '#F0EEE9', // 2024: Peach Fuzz (warm neutral base)
-        '#BB2649', // 2023: Viva Magenta (deep accent)
-        '#6667AB', // 2022: Very Peri (soft periwinkle)
-        '#F5DF4D', // 2021: Illuminating (gentle warmth)
-        '#939597', // 2021: Ultimate Gray (quiet stability)
-        '#0F4C81', // 2020: Classic Blue (calm depth)
-        '#FF6F61', // 2019: Living Coral (soft vitality)
-        '#5F4B8B', // 2018: Ultra Violet (muted mystery)
-        '#88B04B', // 2017: Greenery (restful green)
-        '#F7CAC9', // 2016: Rose Quartz (soft blush)
-        '#92A8D1', // 2016: Serenity (airy blue)
-        '#955251', // 2015: Marsala (earthy warmth)
+        '#F6F2EA', // linen (warm light)
+        '#1F2937', // slate (deep calm)
+        '#0F4C81', // ocean blue
+        '#2F6F6D', // muted teal
+        '#2E5E4E', // forest green
+        '#6B5B95', // muted violet
+        '#8C6A4A', // warm earth
+        '#B55A3C', // terracotta
+        '#A03D54', // muted raspberry
+        '#4B5563', // graphite
+        '#8AA1B4', // soft steel blue
+        '#C8B79B', // sand
       ];
 
       /**
@@ -661,6 +694,7 @@
           this._hoverMql = window.matchMedia('(hover: hover)');
           this.hasHover = this._hoverMql.matches;
           this.tooltipWidth = 0;
+          this.tooltipHeight = 0;
           this.currentFocusIndex = -1;
 
           // Error handling for localStorage with system preference detection
@@ -945,7 +979,7 @@
               const key = e.key.toLowerCase();
               if (key === 'c') this.cycleTheme();
               // [TESTING] Randomize for quick visual checks
-              else if (key === 'r') this.randomizeThemeNowAndLocale();
+              else if (key === 'r' && e.altKey && (e.ctrlKey || e.metaKey)) this.randomizeThemeNowAndLocale();
               else if (key === 'x') this.resetToDefaults();
             },
             { signal: this._signal }
@@ -963,6 +997,38 @@
           let isDragging = false;
           let activePointerId = null;
 
+          // [DEV] Hidden touch gesture: two-finger long-press to randomize
+          const devTouch = {
+            active: new Map(),
+            timer: null,
+            moved: false,
+            startCenterX: 0,
+            startCenterY: 0,
+          };
+
+          const clearDevTouchTimer = () => {
+            if (devTouch.timer) {
+              clearTimeout(devTouch.timer);
+              devTouch.timer = null;
+            }
+          };
+
+          const maybeStartDevTouchTimer = () => {
+            clearDevTouchTimer();
+            devTouch.moved = false;
+
+            const pts = Array.from(devTouch.active.values());
+            if (pts.length !== 2) return;
+            devTouch.startCenterX = (pts[0].x + pts[1].x) / 2;
+            devTouch.startCenterY = (pts[0].y + pts[1].y) / 2;
+            devTouch.timer = setTimeout(() => {
+              if (devTouch.active.size === 2 && !devTouch.moved) {
+                this.randomizeThemeNowAndLocale();
+                this.triggerHaptic('success');
+              }
+            }, 650);
+          };
+
           // [PERFORMANCE] Unified RAF-throttled pointer handler
           const processPointerMove = () => {
             this._rafPending = false;
@@ -979,10 +1045,7 @@
               }
               const dateText = target.dataset.trDate;
               const infoText = target.dataset.trInfo;
-              if (dateText && infoText) {
-                this.updateTooltipContent(dateText, infoText);
-                this.positionTooltip(this._pendingX, this._pendingY, true);
-              }
+              this.showTooltipAt(this._pendingX, this._pendingY, true, dateText, infoText);
             } else if (this._lastHoveredElement) {
               // Cleanup touch active class when pointer leaves viewport
               this._lastHoveredElement.classList.remove('tr-is-touch-active');
@@ -1004,6 +1067,14 @@
           // [MODERN] Pointer Events unify touch/pen interactions (no separate touch handlers)
           const handlePointerDown = (e) => {
             if (e.pointerType === 'mouse') return;
+
+            if (e.pointerType === 'touch') {
+              devTouch.active.set(e.pointerId, { x: e.clientX, y: e.clientY });
+              if (devTouch.active.size === 2) maybeStartDevTouchTimer();
+              // If this is a second touch point, don't hijack single-finger interaction.
+              if (devTouch.active.size > 1) return;
+            }
+
             activePointerId = e.pointerId;
             this.viewport.setPointerCapture(e.pointerId);
 
@@ -1047,6 +1118,24 @@
 
           const handlePointerMove = (e) => {
             if (e.pointerType === 'mouse') return;
+
+            if (e.pointerType === 'touch' && devTouch.active.has(e.pointerId)) {
+              devTouch.active.set(e.pointerId, { x: e.clientX, y: e.clientY });
+              if (devTouch.active.size === 2 && devTouch.timer && !devTouch.moved) {
+                const pts = Array.from(devTouch.active.values());
+                const cx = (pts[0].x + pts[1].x) / 2;
+                const cy = (pts[0].y + pts[1].y) / 2;
+                const dx = cx - devTouch.startCenterX;
+                const dy = cy - devTouch.startCenterY;
+                if (dx * dx + dy * dy > 18 * 18) {
+                  devTouch.moved = true;
+                  clearDevTouchTimer();
+                }
+              }
+              // Ignore move events from non-primary touch points.
+              if (activePointerId !== e.pointerId) return;
+            }
+
             if (activePointerId !== e.pointerId) return;
 
             const dx = e.clientX - this.startX;
@@ -1068,6 +1157,14 @@
 
           const handlePointerEnd = (e) => {
             if (e.pointerType === 'mouse') return;
+
+            if (e.pointerType === 'touch') {
+              devTouch.active.delete(e.pointerId);
+              if (devTouch.active.size < 2) clearDevTouchTimer();
+              // If this was a secondary touch point, do not affect single-finger flow.
+              if (activePointerId !== e.pointerId) return;
+            }
+
             if (activePointerId !== e.pointerId) return;
             activePointerId = null;
 
@@ -1085,11 +1182,8 @@
                 const el = document.elementFromPoint(x, y);
                 if (el?.classList.contains('tr-day') && !el.classList.contains('tr-day--filler')) {
                   const { trDate: dateText, trInfo: infoText } = el.dataset;
-                  if (dateText && infoText) {
-                    this.tooltip.style.transition = 'opacity 0.2s ease-out';
-                    this.updateTooltipContent(dateText, infoText);
-                    this.positionTooltip(x, y, true);
-                  }
+                  this.tooltip.style.transition = 'opacity 0.2s ease-out';
+                  this.showTooltipAt(x, y, true, dateText, infoText);
                 } else {
                   this.tooltip.style.transition = 'opacity 0.3s ease-out';
                   this.tooltip.style.opacity = 0;
@@ -1245,11 +1339,7 @@
 
           const processMouseMove = () => {
             mouseRafPending = false;
-            this.tooltip.style.left = `${Math.min(
-              Math.max(pendingMouseX, this.tooltipWidth / 2 + 10),
-              window.innerWidth - this.tooltipWidth / 2 - 10
-            )}px`;
-            this.tooltip.style.top = `${pendingMouseY - 20}px`;
+            this.positionTooltip(pendingMouseX, pendingMouseY, false);
           };
 
           this.viewport.addEventListener(
@@ -1261,10 +1351,7 @@
               if (target.classList.contains('tr-day') && !target.classList.contains('tr-day--filler')) {
                 const dateText = target.dataset.trDate;
                 const infoText = target.dataset.trInfo;
-                if (dateText && infoText) {
-                  this.updateTooltipContent(dateText, infoText);
-                  this.positionTooltip(e.clientX, e.clientY, false);
-                }
+                this.showTooltipAt(e.clientX, e.clientY, false, dateText, infoText);
               }
             },
             { signal: this._signal }
@@ -1357,10 +1444,7 @@
                 const rect = target.getBoundingClientRect();
                 const dateText = target.dataset.trDate;
                 const infoText = target.dataset.trInfo;
-                if (dateText && infoText) {
-                  this.updateTooltipContent(dateText, infoText);
-                  this.positionTooltip(rect.left + rect.width / 2, rect.top, false);
-                }
+                this.showTooltipAt(rect.left + rect.width / 2, rect.top + rect.height / 2, false, dateText, infoText);
               }
             },
             { signal: this._signal }
@@ -1398,18 +1482,34 @@
           if (this.tooltip.dataset.cache !== cacheKey) {
             // Clear and rebuild safely
             this.tooltip.textContent = '';
-            this.tooltip.appendChild(document.createTextNode(dateText));
+
+            const dateLine = document.createElement('span');
+            dateLine.className = 'tr-tip-line';
+            dateLine.textContent = dateText;
+            this.tooltip.appendChild(dateLine);
 
             const boldInfo = document.createElement('b');
+            boldInfo.className = 'tr-tip-line';
             boldInfo.textContent = infoText;
             this.tooltip.appendChild(boldInfo);
 
             this.tooltip.dataset.cache = cacheKey;
-            this.tooltipWidth = this.tooltip.getBoundingClientRect().width;
           }
+
+          // Measure every time we show (layout/orientation can change)
+          const rect = this.tooltip.getBoundingClientRect();
+          this.tooltipWidth = rect.width;
+          this.tooltipHeight = rect.height;
+
           // Ensure smooth fade-in (200ms)
           this.tooltip.style.transition = 'opacity 0.2s ease-out';
           this.tooltip.style.opacity = '1';
+        }
+
+        showTooltipAt(clientX, clientY, isTouch, dateText, infoText) {
+          if (!dateText || !infoText) return;
+          this.updateTooltipContent(dateText, infoText);
+          this.positionTooltip(clientX, clientY, isTouch);
         }
 
         /**
@@ -1497,18 +1597,56 @@
          * @param {boolean} isTouch - Whether this is a touch interaction
          */
         positionTooltip(clientX, clientY, isTouch = false) {
+          const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
+          const pxVar = (name) => {
+            const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            const v = Number.parseFloat(raw);
+            return Number.isFinite(v) ? v : 0;
+          };
+
+          const pad = 12;
+          const safeTop = pxVar('--tr-safe-top');
+          const safeRight = pxVar('--tr-safe-right');
+          const safeBottom = pxVar('--tr-safe-bottom');
+          const safeLeft = pxVar('--tr-safe-left');
+
+          const w = this.tooltipWidth || this.tooltip.getBoundingClientRect().width;
+          const h = this.tooltipHeight || this.tooltip.getBoundingClientRect().height;
+
           let x = clientX;
           let y = clientY;
-          if (x + this.tooltipWidth / 2 + 10 > window.innerWidth) x = window.innerWidth - this.tooltipWidth / 2 - 10;
-          else if (x - this.tooltipWidth / 2 - 10 < 0) x = this.tooltipWidth / 2 + 10;
 
-          if (isTouch) {
-            const isTopHalf = clientY < window.innerHeight / 2;
-            y = isTopHalf ? y + 60 : y - 60;
-            this.tooltip.style.transform = `translate(-50%, ${isTopHalf ? '0' : '-100%'})`;
+          const minX = safeLeft + pad + w / 2;
+          const maxX = window.innerWidth - safeRight - pad - w / 2;
+          x = clamp(x, minX, maxX);
+
+          // Unified placement: auto-flip above/below based on available space (safe-area aware)
+          const vOffset = pxVar('--tr-tooltip-vertical-offset') || 40;
+          const topBound = safeTop + pad;
+          const bottomBound = window.innerHeight - safeBottom - pad;
+
+          const aboveAnchorY = clientY - vOffset; // anchor at tooltip bottom (transform -100%)
+          const belowAnchorY = clientY + vOffset; // anchor at tooltip top (transform 0)
+
+          const aboveFits = aboveAnchorY - h >= topBound && aboveAnchorY <= bottomBound;
+          const belowFits = belowAnchorY >= topBound && belowAnchorY + h <= bottomBound;
+
+          const spaceAbove = aboveAnchorY - topBound;
+          const spaceBelow = bottomBound - belowAnchorY;
+
+          // Bias: prefer above if it fits. Only go below when above doesn't fit.
+          let placeBelow;
+          if (aboveFits) placeBelow = false;
+          else if (belowFits) placeBelow = true;
+          else placeBelow = spaceBelow > spaceAbove;
+
+          // Note: `isTouch` is kept for API compatibility; placement is now consistent across inputs.
+          if (placeBelow) {
+            y = clamp(belowAnchorY, topBound, bottomBound - h);
+            this.tooltip.style.transform = 'translate(-50%, 0)';
           } else {
-            y -= 20;
-            this.tooltip.style.transform = `translate(-50%, -100%)`;
+            y = clamp(aboveAnchorY, topBound + h, bottomBound);
+            this.tooltip.style.transform = 'translate(-50%, -100%)';
           }
           this.tooltip.style.left = `${x}px`;
           this.tooltip.style.top = `${y}px`;
