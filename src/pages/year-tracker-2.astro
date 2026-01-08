@@ -27,6 +27,15 @@
 
       :root {
         --tr-base-hex: #f6f2ea;
+        /* Watermark / now-area defaults to ensure predictable initial render */
+        --tr-now-x: 50%;
+        --tr-now-y: 50%;
+        --tr-now-r1: 140px;
+        --tr-now-r2: 360px;
+        /* Watermark alpha tuning */
+        --tr-watermark-inner-alpha: 0.95;
+        --tr-watermark-outer-alpha: 0.3;
+        --tr-watermark-base-opacity: 0.31;
         --tr-full-h: 100dvh;
         --tr-bg-system: oklch(from var(--tr-base-hex) 0.97 0.01 h);
         --tr-color-today: var(--tr-base-hex);
@@ -166,19 +175,19 @@
           /* [MINDFULNESS] Watermark dips away from the "now" area */
           -webkit-mask-image: radial-gradient(
             circle at var(--tr-now-x, 50%) var(--tr-now-y, 50%),
-            rgba(0, 0, 0, 0.95) 0%,
-            rgba(0, 0, 0, 0.95) var(--tr-now-r1, 140px),
-            rgba(0, 0, 0, 0.22) var(--tr-now-r2, 360px),
-            rgba(0, 0, 0, 0.22) 100%
+            rgba(0, 0, 0, var(--tr-watermark-inner-alpha, 0.95)) 0%,
+            rgba(0, 0, 0, var(--tr-watermark-inner-alpha, 0.95)) var(--tr-now-r1, 140px),
+            rgba(0, 0, 0, var(--tr-watermark-outer-alpha, 0.25)) var(--tr-now-r2, 360px),
+            rgba(0, 0, 0, var(--tr-watermark-outer-alpha, 0.25)) 100%
           );
           mask-image: radial-gradient(
             circle at var(--tr-now-x, 50%) var(--tr-now-y, 50%),
-            rgba(0, 0, 0, 0.95) 0%,
-            rgba(0, 0, 0, 0.95) var(--tr-now-r1, 140px),
-            rgba(0, 0, 0, 0.22) var(--tr-now-r2, 360px),
-            rgba(0, 0, 0, 0.22) 100%
+            rgba(0, 0, 0, var(--tr-watermark-inner-alpha, 0.95)) 0%,
+            rgba(0, 0, 0, var(--tr-watermark-inner-alpha, 0.95)) var(--tr-now-r1, 140px),
+            rgba(0, 0, 0, var(--tr-watermark-outer-alpha, 0.25)) var(--tr-now-r2, 360px),
+            rgba(0, 0, 0, var(--tr-watermark-outer-alpha, 0.25)) 100%
           );
-          opacity: 0.28;
+          opacity: var(--tr-watermark-base-opacity, 0.28);
           letter-spacing: -0.06em;
           pointer-events: none;
           user-select: none;
@@ -754,7 +763,8 @@
           const tone = lum < TraceEngine.TONE_TO_DARK_LUM ? 'dark' : 'light';
 
           // [TUNING] Calm defaults that adapt slightly per theme luminance
-          const watermarkBoostOpacity = lum > 0.72 ? 0.18 : lum < 0.3 ? 0.24 : 0.22;
+          // Slightly stronger watermark boost for better edge visibility across themes
+          const watermarkBoostOpacity = lum > 0.72 ? 0.2 : lum < 0.3 ? 0.26 : 0.24;
           const todayRingMixPct = lum > 0.72 ? 45 : lum < 0.3 ? 60 : 55;
           const todayShadowAlpha = lum > 0.72 ? 0.22 : lum < 0.3 ? 0.3 : 0.28;
 
@@ -1775,8 +1785,9 @@
               const isRtl = document.documentElement.dir === 'rtl';
               const nowX = isRtl ? r.width - rawNowX : rawNowX;
               const nowY = todayRow * step + layout.cellSize / 2;
-              const radius2 = Math.max(175, Math.min(r.width, r.height) * 0.26);
-              const radius1 = Math.max(105, radius2 * 0.4);
+              // Slightly increased minimum radii to ensure watermark edges remain visible
+              const radius2 = Math.max(220, Math.min(r.width, r.height) * 0.26);
+              const radius1 = Math.max(130, radius2 * 0.4);
               this.watermark.style.setProperty('--tr-now-x', `${nowX}px`);
               this.watermark.style.setProperty('--tr-now-y', `${nowY}px`);
               this.watermark.style.setProperty('--tr-now-r1', `${radius1.toFixed(0)}px`);
